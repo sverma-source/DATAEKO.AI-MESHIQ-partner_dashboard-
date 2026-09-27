@@ -9,7 +9,7 @@
 
 ## 1. Scope
 
-Phase 9.1 establishes the production configuration baseline, multi-stage containerization, and local production-like container orchestration for the DATAEKO × meshIQ Partner Dashboard.
+Phase 9.1 establishes the production configuration baseline, multi-stage containerization, local production-like container orchestration, and cookie-based authentication contract enforcement for the DATAEKO × meshIQ Partner Dashboard.
 
 ### In Scope
 1. **Production Configuration Foundation**: Environment-driven strict configuration with fail-closed validation for production mode (`ENVIRONMENT=production`).
@@ -17,7 +17,11 @@ Phase 9.1 establishes the production configuration baseline, multi-stage contain
 3. **Frontend Containerization**: Multi-stage Node 20-alpine Dockerfile with Next.js 16 standalone output, non-root user (`nextjs:nodejs`), minimal runtime image, and container healthcheck.
 4. **Local Production-Like Orchestration**: Docker Compose configuration integrating PostgreSQL 16, FastAPI backend, and Next.js frontend with isolated internal networking, dependency ordering on health conditions, and persistent volume management.
 5. **Database Initialization Strategy**: Clear separation between explicit Alembic migration management and runtime application lifecycle.
-6. **Container Health Checks**: Process-level health endpoints and probes for Postgres, backend, and frontend containers.
+6. **Authentication Security Contract Restoration**:
+   - Authentication cookies strictly enforce `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, and `Max-Age`.
+   - Raw JWT access tokens are **never** returned in JSON response payloads.
+   - Frontend operates strictly via `credentials: "include"`, with zero usage of `localStorage` or `sessionStorage` for tokens.
+7. **Container Health Checks**: Process-level health endpoints and probes for Postgres, backend, and frontend containers.
 
 ### Out of Scope (Deferred to Phases 9.2–9.7)
 * Phase 9.2: Structured logging, OpenTelemetry tracing, Prometheus metrics, and request correlation IDs.
@@ -47,9 +51,14 @@ Phase 9.1 establishes the production configuration baseline, multi-stage contain
 ### Modified Files
 | File | Changes Made |
 | --- | --- |
-| `backend/app/config.py` | Added `@model_validator` enforcing fail-closed rules when `ENVIRONMENT == "production"` |
+| `backend/app/config.py` | Added fail-closed production validation and configured `SECURE_COOKIES=True`, `COOKIE_SAMESITE="strict"` |
+| `backend/app/schemas/auth.py` | Defined `AuthResponse` schema excluding `access_token` and `token_type` from response bodies |
+| `backend/app/api/v1/auth.py` | Updated `/login` and `/me` to return `AuthResponse` and set `HttpOnly; Secure; SameSite=Strict; Path=/` cookies |
 | `backend/alembic/versions/0001_initial_schema.py` | Added PostgreSQL boolean defaults (`sa.true()`) and included `users` and `audit_events` tables |
 | `backend/app/models/tenant.py` | Updated `is_active` column definition to use explicit `Boolean` type |
+| `backend/tests/conftest.py` | Configured test client `base_url="https://test"` to enable secure cookie handling |
+| `backend/tests/security/test_authentication.py` | Added assertions that raw JWT is NOT returned in JSON response and verified cookie-only auth |
+| `frontend/src/types/auth.ts` | Updated `AuthResponse` and `TokenResponse` to remove `access_token` |
 | `frontend/next.config.ts` | Added `output: "standalone"` to compile optimized minimal server bundle |
 
 ---
@@ -145,6 +154,9 @@ The `docker-compose.yml` manages 3 services on an isolated bridge network `meshi
 | Production fail-closed | System rejects default/insecure secret in production mode | **PASS** |
 | Database exposure | PostgreSQL port `5432` not published to host in Compose | **PASS** |
 | Frontend bundle security | No backend secrets or private keys embedded in JS | **PASS** |
+| Cookie security | `HttpOnly; Secure; SameSite=Strict; Path=/` enforced | **PASS** |
+| No JWT in JSON body | Login/me endpoints omit `access_token` from JSON response | **PASS** |
+| Zero token storage | No `localStorage` or `sessionStorage` in frontend | **PASS** |
 | Context exclusion | `.dockerignore` properly excludes `.git`, `.venv`, `.env`, tests | **PASS** |
 
 ---
@@ -156,6 +168,7 @@ The `docker-compose.yml` manages 3 services on an isolated bridge network `meshi
   - 10/10 Golden Master calculations: PASSED
   - 8/8 RBAC & Tenant isolation tests: PASSED
   - 4/4 Production configuration fail-closed tests: PASSED
+  - 4/4 Authentication cookie-only tests: PASSED
 * **Frontend Component & Integration Tests**: **52 / 52 passed** (100%)
   - Intake workflow & Q01–Q22: PASSED
   - Auth context, Login, & Protected Route tests: PASSED
@@ -164,99 +177,67 @@ The `docker-compose.yml` manages 3 services on an isolated bridge network `meshi
 * **Executive PDF Generation**: **PASSED** (`DATAEKO_meshIQ_Executive_Assessment_Report.pdf`, 510.2 KB)
 * **Docker Image Builds**: **PASSED** (Both backend and frontend images built cleanly without errors)
 * **Docker Compose Stack**: **PASSED** (All 3 services running with `healthy` status)
-* **API End-to-End Live Check**: **PASSED** (`/api/v1/health` returned 200, `/api/v1/auth/login` returned JWT token and cookie)
+* **API End-to-End Live Check**: **PASSED** (`/api/v1/health` returned 200, `/api/v1/auth/login` returned secure cookie)
 
 ---
 
-## 11. Final Verification Addendum
+## 11. Final Verification Addendum: Authentication Contract Remediation
 
-### 1. Fresh Database Migration Result
-- Executed on a completely clean PostgreSQL volume created from scratch (`docker compose down -v && docker compose up -d db`).
-- Migration command: `docker compose run --rm backend alembic upgrade head`
-- Migration output:
-  ```text
-  INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
-  INFO  [alembic.runtime.migration] Will assume transactional DDL.
-  INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial schema for tenants, users, audit events, customers, assessments, responses, and calculation snapshots
-  ```
+### 1. Actual HTTP Response from Live Container
+Executed live against containerized backend:
+```bash
+curl -i -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"consultant@dataeko.ai","password":"Consultant123!"}'
+```
 
-### 2. Alembic Current Revision
-- Verification command: `docker compose run --rm backend alembic current`
-- Output: `0001_initial_schema (head)`
+**Observed Response**:
+```http
+HTTP/1.1 200 OK
+date: Sun, 27 Sep 2026 10:29:13 GMT
+server: uvicorn
+content-length: 513
+content-type: application/json
+set-cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Max-Age=3600; Path=/; SameSite=strict; Secure
+x-content-type-options: nosniff
+x-frame-options: DENY
+referrer-policy: strict-origin-when-cross-origin
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'
+vary: Origin
 
-### 3. Evidence of Existing PostgreSQL Tables
-- Query: `docker compose exec db psql -U meshiq_user -d meshiq -c "\dt"`
-- Output:
-  ```text
-                    List of relations
-   Schema |         Name          | Type  |    Owner    
-  --------+-----------------------+-------+-------------
-   public | alembic_version       | table | meshiq_user
-   public | assessment_responses  | table | meshiq_user
-   public | assessments           | table | meshiq_user
-   public | audit_events          | table | meshiq_user
-   public | calculation_snapshots | table | meshiq_user
-   public | customers             | table | meshiq_user
-   public | tenants               | table | meshiq_user
-   public | users                 | table | meshiq_user
-  (8 rows)
-  ```
+{"user":{"email":"consultant@dataeko.ai","full_name":"Lead MQ Consultant","role":"CONSULTANT","is_active":true,"tenant_id":"00000000-0000-0000-0000-000000000001","id":"00000000-0000-0000-0000-000000000002","created_at":"2026-09-27T10:23:22.357556Z","updated_at":"2026-09-27T10:23:22.357561Z"},"permissions":["audit:read","assessment:update","report:generate","assessment:read","assessment:calculate","customer:read","customer:create","snapshot:read","assessment:create","customer:update"],"expires_in_minutes":60}
+```
 
-### 4. Authentication Response & Cookie Verification
-- Executed: `curl -i -X POST http://localhost:8000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"consultant@dataeko.ai","password":"Consultant123!"}'`
-- Captured Headers:
-  ```http
-  HTTP/1.1 200 OK
-  set-cookie: access_token=eyJhbGci...; HttpOnly; Max-Age=3600; Path=/; SameSite=lax
-  x-content-type-options: nosniff
-  x-frame-options: DENY
-  referrer-policy: strict-origin-when-cross-origin
-  permissions-policy: camera=(), microphone=(), geolocation=()
-  content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'
-  ```
-- **Cookie Security Attributes**: `HttpOnly; Max-Age=3600; Path=/; SameSite=lax` (and `Secure` when HTTPS enabled).
-- **Frontend Storage Audit**: The Next.js client exclusively relies on `credentials: "include"` (`frontend/src/services/api.ts`). `localStorage` and `sessionStorage` are **never** used for JWT storage in the frontend.
+### 2. Cookie Security Attributes Verified
+* `HttpOnly`: Present
+* `Secure`: Present
+* `SameSite=strict`: Present
+* `Path=/`: Present
+* `Max-Age=3600`: Present
 
-### 5. Complete Docker Compose Process & Health Status
-- Command: `docker compose ps`
-- Output:
-  ```text
-  NAME              IMAGE                                          COMMAND                  SERVICE    CREATED              STATUS                        PORTS
-  meshiq_backend    dataekoai-meshiq-partner_dashboard--backend    "uvicorn app.main:ap…"   backend    28 seconds ago       Up 26 seconds (healthy)       0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
-  meshiq_frontend   dataekoai-meshiq-partner_dashboard--frontend   "docker-entrypoint.s…"   frontend   28 seconds ago       Up 21 seconds (healthy)       0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
-  meshiq_postgres   postgres:16-alpine                             "docker-entrypoint.s…"   db         About a minute ago   Up About a minute (healthy)   5432/tcp
-  ```
+### 3. Confirmation: No Raw JWT in JSON Body
+* The JSON response body strictly returns:
+  `{"user": { ... }, "permissions": [ ... ], "expires_in_minutes": 60}`
+* `access_token` and `token_type` fields are completely eliminated from response payloads.
 
-### 6. Endpoint Responses
-- **Backend Health Check** (`curl -i http://localhost:8000/api/v1/health`):
-  ```json
-  HTTP/1.1 200 OK
-  {"status":"healthy","project":"DATAEKO × meshIQ Partner Dashboard","environment":"development","calculation_engine_version":"3.0.0","database":"ok"}
-  ```
-- **Frontend Application Root** (`curl -i http://localhost:3000/`):
-  ```http
-  HTTP/1.1 200 OK
-  Content-Type: text/html; charset=utf-8
-  ```
+### 4. Cookie-Based `/auth/me` and `/auth/logout` Verification
+* Request `/auth/me` with cookie: `HTTP/1.1 200 OK` (returns user profile).
+* Request `/auth/logout` with cookie: `HTTP/1.1 200 OK` (clears cookie with `Max-Age=0`).
+* Subsequent `/auth/me`: `HTTP/1.1 401 Unauthorized` (`{"detail":"Authentication required. Please log in."}`).
 
-### 7. Backend Test Composition Breakdown
-Total Backend Tests: **45** (41 Phase 8 baseline + 4 Phase 9.1 production config tests)
-* **API Tests (8 tests)**: `test_assessment_lifecycle`, `test_calculation_api_and_snapshot_persistence`, `test_calculation_with_empty_responses`, `test_customer_lifecycle`, `test_health_check_endpoint`, `test_alembic_upgrade_and_downgrade_cycle`, `test_assessment_response_persistence`, `test_transaction_rollback_on_failed_assessment_creation`.
-* **Calculation Engine Tests (21 tests)**:
-  - **Golden Masters**: **10 / 10** (`test_tc01` to `test_tc10`)
-  - Boundary & Edge Cases: 5 tests
-  - Lookups: 3 tests
-  - Precision: 2 tests
-  - Scenarios: 1 test
-* **Security & Authorization Tests (16 tests)**:
-  - Audit logging: 1 test
-  - Authentication: 4 tests
-  - Authorization & RBAC: 2 tests
-  - Error sanitization & Security headers: 2 tests
-  - **Production Config Fail-Closed (New in Phase 9.1)**: 4 tests (`test_production_fails_closed_on_insecure_secret`, `test_production_fails_closed_on_sqlite`, `test_production_fails_closed_on_debug_mode`, `test_production_valid_configuration_succeeds`)
-  - Scenario isolation: 1 test
-  - Snapshot immutability: 1 test
-  - Tenant isolation & Anti-IDOR: 1 test
+### 5. Frontend Token Storage Audit
+* Audited all frontend source code.
+* Zero occurrences of `localStorage` or `sessionStorage` for tokens.
+* All API communication utilizes `credentials: "include"`.
+
+### 6. Process & Health Status
+```text
+NAME              IMAGE                                          COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+meshiq_backend    dataekoai-meshiq-partner_dashboard--backend    "uvicorn app.main:ap…"   backend    14 seconds ago   Up 13 seconds (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+meshiq_frontend   dataekoai-meshiq-partner_dashboard--frontend   "docker-entrypoint.s…"   frontend   5 minutes ago    Up 5 minutes (healthy)    0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+meshiq_postgres   postgres:16-alpine                             "docker-entrypoint.s…"   db         6 minutes ago    Up 6 minutes (healthy)    5432/tcp
+```
 
 ---
 

@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev-insecure-secret-key-change-in-production-dataeko-meshiq-2026"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
-    SECURE_COOKIES: bool = False  # Set to True in production (HTTPS)
-    COOKIE_SAMESITE: str = "lax"  # "strict" in production, "lax" for dev cross-origin
+    SECURE_COOKIES: bool = True  # Enforce Secure flag on cookies
+    COOKIE_SAMESITE: str = "strict"  # Enforce SameSite=Strict on cookies
     
     # CORS Configuration
     CORS_ORIGINS: List[str] = [

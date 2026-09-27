@@ -10,13 +10,13 @@ from app.core.errors import AuthenticationError
 from app.core.rbac import ROLE_PERMISSIONS, Role
 from app.core.security import create_access_token, verify_password
 from app.models.user import User
-from app.schemas.auth import LoginRequest, TokenResponse
+from app.schemas.auth import LoginRequest, AuthResponse
 from app.schemas.user import UserResponse
 
 router = APIRouter()
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=AuthResponse)
 async def login(
     request: Request,
     response: Response,
@@ -25,7 +25,8 @@ async def login(
 ):
     """
     Authenticate user with email and password.
-    Sets secure HTTP-only cookie and returns JWT token payload with permissions.
+    Sets secure HTTP-only cookie (HttpOnly, Secure, SameSite=Strict) and returns user profile with permissions.
+    The raw JWT access token is NEVER exposed in the JSON response body.
     """
     client_ip = request.client.host if request.client else "unknown"
 
@@ -34,7 +35,6 @@ async def login(
     user = res.scalar_one_or_none()
 
     if not user or not verify_password(login_data.password, user.hashed_password):
-        # Record failed login audit event if tenant can be identified, or log failure
         tenant_id = user.tenant_id if user else "00000000-0000-0000-0000-000000000001"
         await log_audit_event(
             session=db,
@@ -59,7 +59,7 @@ async def login(
         email=user.email,
     )
 
-    # Set HTTP-only, Secure, SameSite cookie
+    # Set HTTP-only, Secure, SameSite=Strict cookie
     response.set_cookie(
         key="access_token",
         value=access_token,
@@ -67,6 +67,7 @@ async def login(
         secure=settings.SECURE_COOKIES,
         samesite=settings.COOKIE_SAMESITE,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path="/",
     )
 
     # Log successful login
@@ -85,12 +86,10 @@ async def login(
     role_enum = Role(user.role) if user.role in Role.__members__ else Role.CONSULTANT
     user_perms = [p.value for p in ROLE_PERMISSIONS.get(role_enum, set())]
 
-    return TokenResponse(
-        access_token=access_token,
-        token_type="bearer",
-        expires_in_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+    return AuthResponse(
         user=UserResponse.model_validate(user),
         permissions=user_perms,
+        expires_in_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
     )
 
 
@@ -111,6 +110,7 @@ async def logout(
         httponly=True,
         secure=settings.SECURE_COOKIES,
         samesite=settings.COOKIE_SAMESITE,
+        path="/",
     )
 
     await log_audit_event(
@@ -127,7 +127,7 @@ async def logout(
     return {"detail": "Successfully logged out."}
 
 
-@router.get("/me", response_model=TokenResponse)
+@router.get("/me", response_model=AuthResponse)
 async def get_current_user_profile(
     current_user: User = Depends(get_current_user),
 ):
@@ -137,10 +137,8 @@ async def get_current_user_profile(
     role_enum = Role(current_user.role) if current_user.role in Role.__members__ else Role.CONSULTANT
     user_perms = [p.value for p in ROLE_PERMISSIONS.get(role_enum, set())]
 
-    return TokenResponse(
-        access_token="active_session",
-        token_type="bearer",
-        expires_in_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+    return AuthResponse(
         user=UserResponse.model_validate(current_user),
         permissions=user_perms,
+        expires_in_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
     )

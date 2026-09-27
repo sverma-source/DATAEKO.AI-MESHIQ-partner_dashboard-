@@ -16,13 +16,13 @@ export interface User {
   updated_at?: string;
 }
 
-export interface TokenResponse {
-  access_token: string;
-  token_type: string;
+export interface AuthResponse {
   expires_in_minutes: number;
   user: User;
   permissions: string[];
 }
+
+export type TokenResponse = AuthResponse;
 
 export interface LoginCredentials {
   email: string;

@@ -8,14 +8,18 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    expires_in_minutes: int
+class AuthResponse(BaseModel):
+    """
+    Cookie-driven authentication response.
+    Delivers user entity, assigned RBAC permissions, and session duration.
+    The raw JWT is strictly delivered via HttpOnly, Secure, SameSite=Strict cookie.
+    """
     user: UserResponse
     permissions: List[str]
+    expires_in_minutes: int
 
 
+# TokenPayload for internal JWT encoding and decoding
 class TokenPayload(BaseModel):
     sub: str
     tenant_id: str
