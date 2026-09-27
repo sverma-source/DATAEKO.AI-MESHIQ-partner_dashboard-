@@ -48,6 +48,8 @@ Phase 9.1 establishes the production configuration baseline, multi-stage contain
 | File | Changes Made |
 | --- | --- |
 | `backend/app/config.py` | Added `@model_validator` enforcing fail-closed rules when `ENVIRONMENT == "production"` |
+| `backend/alembic/versions/0001_initial_schema.py` | Added PostgreSQL boolean defaults (`sa.true()`) and included `users` and `audit_events` tables |
+| `backend/app/models/tenant.py` | Updated `is_active` column definition to use explicit `Boolean` type |
 | `frontend/next.config.ts` | Added `output: "standalone"` to compile optimized minimal server bundle |
 
 ---
@@ -115,10 +117,11 @@ The `docker-compose.yml` manages 3 services on an isolated bridge network `meshi
 
 1. **PostgreSQL Startup**: PostgreSQL initializes cluster and creates `meshiq` database and user.
 2. **Readiness Probe**: PostgreSQL becomes healthy via `pg_isready` probe.
-3. **Application Lifespan**: Backend starts and initializes connection pool.
-4. **Explicit Migration Execution**: Database schema changes are tracked via Alembic migrations.
-   - Command: `docker compose exec backend alembic upgrade head` (or `alembic stamp head` when seeding base tables).
-   - Current revision verified: `0001_initial_schema (head)`.
+3. **Explicit Migration Execution**: Database schema is initialized or upgraded via standard Alembic migrations.
+   - Execution command: `docker compose run --rm backend alembic upgrade head`
+   - Verification command: `docker compose run --rm backend alembic current`
+   - Status: `0001_initial_schema (head)` applied to fresh PostgreSQL database.
+4. **Application Lifespan**: Backend starts, connects to migrated PostgreSQL instance, and seeds default tenant/users if missing.
 
 ---
 
@@ -161,10 +164,102 @@ The `docker-compose.yml` manages 3 services on an isolated bridge network `meshi
 * **Executive PDF Generation**: **PASSED** (`DATAEKO_meshIQ_Executive_Assessment_Report.pdf`, 510.2 KB)
 * **Docker Image Builds**: **PASSED** (Both backend and frontend images built cleanly without errors)
 * **Docker Compose Stack**: **PASSED** (All 3 services running with `healthy` status)
-* **API End-to-End Live Check**: **PASSED** (`/api/v1/health` returned 200, `/api/v1/auth/login` returned JWT token)
+* **API End-to-End Live Check**: **PASSED** (`/api/v1/health` returned 200, `/api/v1/auth/login` returned JWT token and cookie)
 
 ---
 
-## 11. Final Status
+## 11. Final Verification Addendum
+
+### 1. Fresh Database Migration Result
+- Executed on a completely clean PostgreSQL volume created from scratch (`docker compose down -v && docker compose up -d db`).
+- Migration command: `docker compose run --rm backend alembic upgrade head`
+- Migration output:
+  ```text
+  INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+  INFO  [alembic.runtime.migration] Will assume transactional DDL.
+  INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial schema for tenants, users, audit events, customers, assessments, responses, and calculation snapshots
+  ```
+
+### 2. Alembic Current Revision
+- Verification command: `docker compose run --rm backend alembic current`
+- Output: `0001_initial_schema (head)`
+
+### 3. Evidence of Existing PostgreSQL Tables
+- Query: `docker compose exec db psql -U meshiq_user -d meshiq -c "\dt"`
+- Output:
+  ```text
+                    List of relations
+   Schema |         Name          | Type  |    Owner    
+  --------+-----------------------+-------+-------------
+   public | alembic_version       | table | meshiq_user
+   public | assessment_responses  | table | meshiq_user
+   public | assessments           | table | meshiq_user
+   public | audit_events          | table | meshiq_user
+   public | calculation_snapshots | table | meshiq_user
+   public | customers             | table | meshiq_user
+   public | tenants               | table | meshiq_user
+   public | users                 | table | meshiq_user
+  (8 rows)
+  ```
+
+### 4. Authentication Response & Cookie Verification
+- Executed: `curl -i -X POST http://localhost:8000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"consultant@dataeko.ai","password":"Consultant123!"}'`
+- Captured Headers:
+  ```http
+  HTTP/1.1 200 OK
+  set-cookie: access_token=eyJhbGci...; HttpOnly; Max-Age=3600; Path=/; SameSite=lax
+  x-content-type-options: nosniff
+  x-frame-options: DENY
+  referrer-policy: strict-origin-when-cross-origin
+  permissions-policy: camera=(), microphone=(), geolocation=()
+  content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'
+  ```
+- **Cookie Security Attributes**: `HttpOnly; Max-Age=3600; Path=/; SameSite=lax` (and `Secure` when HTTPS enabled).
+- **Frontend Storage Audit**: The Next.js client exclusively relies on `credentials: "include"` (`frontend/src/services/api.ts`). `localStorage` and `sessionStorage` are **never** used for JWT storage in the frontend.
+
+### 5. Complete Docker Compose Process & Health Status
+- Command: `docker compose ps`
+- Output:
+  ```text
+  NAME              IMAGE                                          COMMAND                  SERVICE    CREATED              STATUS                        PORTS
+  meshiq_backend    dataekoai-meshiq-partner_dashboard--backend    "uvicorn app.main:ap…"   backend    28 seconds ago       Up 26 seconds (healthy)       0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+  meshiq_frontend   dataekoai-meshiq-partner_dashboard--frontend   "docker-entrypoint.s…"   frontend   28 seconds ago       Up 21 seconds (healthy)       0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+  meshiq_postgres   postgres:16-alpine                             "docker-entrypoint.s…"   db         About a minute ago   Up About a minute (healthy)   5432/tcp
+  ```
+
+### 6. Endpoint Responses
+- **Backend Health Check** (`curl -i http://localhost:8000/api/v1/health`):
+  ```json
+  HTTP/1.1 200 OK
+  {"status":"healthy","project":"DATAEKO × meshIQ Partner Dashboard","environment":"development","calculation_engine_version":"3.0.0","database":"ok"}
+  ```
+- **Frontend Application Root** (`curl -i http://localhost:3000/`):
+  ```http
+  HTTP/1.1 200 OK
+  Content-Type: text/html; charset=utf-8
+  ```
+
+### 7. Backend Test Composition Breakdown
+Total Backend Tests: **45** (41 Phase 8 baseline + 4 Phase 9.1 production config tests)
+* **API Tests (8 tests)**: `test_assessment_lifecycle`, `test_calculation_api_and_snapshot_persistence`, `test_calculation_with_empty_responses`, `test_customer_lifecycle`, `test_health_check_endpoint`, `test_alembic_upgrade_and_downgrade_cycle`, `test_assessment_response_persistence`, `test_transaction_rollback_on_failed_assessment_creation`.
+* **Calculation Engine Tests (21 tests)**:
+  - **Golden Masters**: **10 / 10** (`test_tc01` to `test_tc10`)
+  - Boundary & Edge Cases: 5 tests
+  - Lookups: 3 tests
+  - Precision: 2 tests
+  - Scenarios: 1 test
+* **Security & Authorization Tests (16 tests)**:
+  - Audit logging: 1 test
+  - Authentication: 4 tests
+  - Authorization & RBAC: 2 tests
+  - Error sanitization & Security headers: 2 tests
+  - **Production Config Fail-Closed (New in Phase 9.1)**: 4 tests (`test_production_fails_closed_on_insecure_secret`, `test_production_fails_closed_on_sqlite`, `test_production_fails_closed_on_debug_mode`, `test_production_valid_configuration_succeeds`)
+  - Scenario isolation: 1 test
+  - Snapshot immutability: 1 test
+  - Tenant isolation & Anti-IDOR: 1 test
+
+---
+
+## 12. Final Status
 
 **PHASE 9.1 VERIFIED**

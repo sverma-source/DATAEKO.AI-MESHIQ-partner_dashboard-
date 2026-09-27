@@ -1,4 +1,4 @@
-"""Initial schema for tenants, customers, assessments, responses, and calculation snapshots
+"""Initial schema for tenants, users, audit events, customers, assessments, responses, and calculation snapshots
 
 Revision ID: 0001_initial_schema
 Revises: 
@@ -23,7 +23,7 @@ def upgrade() -> None:
         sa.Column("id", sa.String(length=36), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("slug", sa.String(length=100), nullable=False),
-        sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.text("1")),
+        sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.true()),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("id"),
@@ -31,7 +31,48 @@ def upgrade() -> None:
     op.create_index("ix_tenants_id", "tenants", ["id"], unique=False)
     op.create_index("ix_tenants_slug", "tenants", ["slug"], unique=True)
 
-    # 2. Customers Table
+    # 2. Users Table
+    op.create_table(
+        "users",
+        sa.Column("id", sa.String(length=36), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("hashed_password", sa.String(length=255), nullable=False),
+        sa.Column("full_name", sa.String(length=255), nullable=False),
+        sa.Column("role", sa.String(length=50), nullable=False, server_default="CONSULTANT"),
+        sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.true()),
+        sa.Column("tenant_id", sa.String(length=36), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+        sa.ForeignKeyConstraint(["tenant_id"], ["tenants.id"], ondelete="CASCADE"),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index("ix_users_id", "users", ["id"], unique=False)
+    op.create_index("ix_users_email", "users", ["email"], unique=True)
+    op.create_index("ix_users_tenant_id", "users", ["tenant_id"], unique=False)
+
+    # 3. Audit Events Table
+    op.create_table(
+        "audit_events",
+        sa.Column("id", sa.String(length=36), nullable=False),
+        sa.Column("event_type", sa.String(length=100), nullable=False),
+        sa.Column("user_id", sa.String(length=36), nullable=True),
+        sa.Column("tenant_id", sa.String(length=36), nullable=False),
+        sa.Column("resource_type", sa.String(length=100), nullable=True),
+        sa.Column("resource_id", sa.String(length=36), nullable=True),
+        sa.Column("status", sa.String(length=50), nullable=False, server_default="SUCCESS"),
+        sa.Column("ip_address", sa.String(length=45), nullable=True),
+        sa.Column("details_json", sa.JSON(), nullable=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+        sa.ForeignKeyConstraint(["tenant_id"], ["tenants.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="SET NULL"),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index("ix_audit_events_id", "audit_events", ["id"], unique=False)
+    op.create_index("ix_audit_events_event_type", "audit_events", ["event_type"], unique=False)
+    op.create_index("ix_audit_events_tenant_id", "audit_events", ["tenant_id"], unique=False)
+    op.create_index("ix_audit_events_user_id", "audit_events", ["user_id"], unique=False)
+
+    # 4. Customers Table
     op.create_table(
         "customers",
         sa.Column("id", sa.String(length=36), nullable=False),
@@ -50,7 +91,7 @@ def upgrade() -> None:
     op.create_index("ix_customers_tenant_id", "customers", ["tenant_id"], unique=False)
     op.create_index("ix_customers_name", "customers", ["name"], unique=False)
 
-    # 3. Assessments Table
+    # 5. Assessments Table
     op.create_table(
         "assessments",
         sa.Column("id", sa.String(length=36), nullable=False),
@@ -71,7 +112,7 @@ def upgrade() -> None:
     op.create_index("ix_assessments_customer_id", "assessments", ["customer_id"], unique=False)
     op.create_index("ix_assessments_status", "assessments", ["status"], unique=False)
 
-    # 4. Assessment Responses Table
+    # 6. Assessment Responses Table
     op.create_table(
         "assessment_responses",
         sa.Column("id", sa.String(length=36), nullable=False),
@@ -111,7 +152,7 @@ def upgrade() -> None:
     op.create_index("ix_assessment_responses_id", "assessment_responses", ["id"], unique=False)
     op.create_index("ix_assessment_responses_assessment_id", "assessment_responses", ["assessment_id"], unique=True)
 
-    # 5. Calculation Snapshots Table
+    # 7. Calculation Snapshots Table
     op.create_table(
         "calculation_snapshots",
         sa.Column("id", sa.String(length=36), nullable=False),
@@ -143,4 +184,6 @@ def downgrade() -> None:
     op.drop_table("assessment_responses")
     op.drop_table("assessments")
     op.drop_table("customers")
+    op.drop_table("audit_events")
+    op.drop_table("users")
     op.drop_table("tenants")
