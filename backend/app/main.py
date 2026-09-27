@@ -7,6 +7,7 @@ from sqlalchemy import select
 from app.api.deps import DEFAULT_TENANT_ID
 from app.api.v1.api import api_router
 from app.config import settings
+from app.core.correlation import get_request_id
 from app.core.database import AsyncSessionLocal, engine
 from app.core.errors import (
     AppError,
@@ -15,12 +16,21 @@ from app.core.errors import (
     PermissionDeniedError,
     TenantMismatchError,
 )
-from app.core.middleware import ExceptionSanitizerMiddleware, SecurityHeadersMiddleware
+from app.core.logging import setup_logging
+from app.core.middleware import (
+    ExceptionSanitizerMiddleware,
+    RequestCorrelationMiddleware,
+    RequestLifecycleMiddleware,
+    SecurityHeadersMiddleware,
+)
 from app.core.rbac import Role
 from app.core.security import get_password_hash
 from app.models.base import Base
 from app.models.tenant import Tenant
 from app.models.user import User
+
+# Configure structured JSON logging
+setup_logging()
 
 
 @asynccontextmanager
@@ -88,29 +98,46 @@ app = FastAPI(
     redoc_url=f"{settings.API_V1_STR}/redoc",
 )
 
-# 1. Security Headers Middleware
-app.add_middleware(SecurityHeadersMiddleware)
+# Middleware Pipeline (executed from outermost to innermost):
+# 1. CORS Middleware (outermost)
+# 2. Request Correlation (generates/propagates X-Request-ID)
+# 3. Request Lifecycle Logging (measures duration and logs start/completion)
+# 4. Security Headers
+# 5. Exception Sanitization (innermost exception catch-all)
 
-# 2. Exception Sanitization Middleware
 app.add_middleware(ExceptionSanitizerMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestLifecycleMiddleware)
+app.add_middleware(RequestCorrelationMiddleware)
 
-# 3. CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS if settings.ENVIRONMENT == "production" else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Request-ID"],
 )
+
+
+def _get_error_headers() -> dict:
+    req_id = get_request_id()
+    return {"X-Request-ID": req_id} if req_id else {}
 
 
 # Global Exception Handlers
 @app.exception_handler(AuthenticationError)
 async def authentication_error_handler(request: Request, exc: AuthenticationError):
+    headers = {"WWW-Authenticate": "Bearer", **_get_error_headers()}
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        content={"detail": exc.message, "error_type": "AuthenticationError", "details": exc.details},
-        headers={"WWW-Authenticate": "Bearer"},
+        content={
+            "detail": exc.message,
+            "error_type": "AuthenticationError",
+            "details": exc.details,
+            "request_id": get_request_id(),
+        },
+        headers=headers,
     )
 
 
@@ -118,7 +145,13 @@ async def authentication_error_handler(request: Request, exc: AuthenticationErro
 async def permission_denied_handler(request: Request, exc: PermissionDeniedError):
     return JSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
-        content={"detail": exc.message, "error_type": "PermissionDenied", "details": exc.details},
+        content={
+            "detail": exc.message,
+            "error_type": "PermissionDenied",
+            "details": exc.details,
+            "request_id": get_request_id(),
+        },
+        headers=_get_error_headers(),
     )
 
 
@@ -127,7 +160,13 @@ async def tenant_mismatch_handler(request: Request, exc: TenantMismatchError):
     # Hide cross-tenant resource existence
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
-        content={"detail": exc.message, "error_type": "EntityNotFound", "details": exc.details},
+        content={
+            "detail": exc.message,
+            "error_type": "EntityNotFound",
+            "details": exc.details,
+            "request_id": get_request_id(),
+        },
+        headers=_get_error_headers(),
     )
 
 
@@ -135,7 +174,13 @@ async def tenant_mismatch_handler(request: Request, exc: TenantMismatchError):
 async def entity_not_found_handler(request: Request, exc: EntityNotFoundError):
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
-        content={"detail": exc.message, "error_type": "EntityNotFound", "details": exc.details},
+        content={
+            "detail": exc.message,
+            "error_type": "EntityNotFound",
+            "details": exc.details,
+            "request_id": get_request_id(),
+        },
+        headers=_get_error_headers(),
     )
 
 
@@ -143,7 +188,13 @@ async def entity_not_found_handler(request: Request, exc: EntityNotFoundError):
 async def app_error_handler(request: Request, exc: AppError):
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content={"detail": exc.message, "error_type": "AppError", "details": exc.details},
+        content={
+            "detail": exc.message,
+            "error_type": "AppError",
+            "details": exc.details,
+            "request_id": get_request_id(),
+        },
+        headers=_get_error_headers(),
     )
 
 
@@ -158,3 +209,4 @@ async def root():
         "docs": f"{settings.API_V1_STR}/docs",
         "health": f"{settings.API_V1_STR}/health",
     }
+

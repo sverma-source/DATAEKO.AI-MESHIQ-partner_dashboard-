@@ -29,6 +29,7 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
   });
 
   if (!response.ok) {
+    const requestId = response.headers.get("X-Request-ID") || response.headers.get("x-request-id");
     let errorDetail = "An unexpected error occurred. Please try again.";
     try {
       const errJson = await response.json();
@@ -50,8 +51,17 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
         errorDetail = `Request failed (HTTP ${response.status}).`;
       }
     }
-    throw new Error(errorDetail);
+
+    if (requestId && !errorDetail.includes(requestId)) {
+      errorDetail = `${errorDetail} (Reference ID: ${requestId})`;
+    }
+
+    const error = new Error(errorDetail);
+    (error as any).requestId = requestId;
+    (error as any).status = response.status;
+    throw error;
   }
+
 
   if (response.status === 204) {
     return {} as T;
