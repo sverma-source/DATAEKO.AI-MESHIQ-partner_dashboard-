@@ -1,0 +1,488 @@
+name: CI/CD & Release Gates
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+  push:
+    branches:
+      - dev
+      - main
+    tags:
+      - 'v*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev' }}
+
+permissions:
+  contents: read
+
+jobs:
+  # ==============================================================================
+  # 1. Backend Unit, API & Observability Tests (Canonical Discovery)
+  # ==============================================================================
+  backend-tests:
+    name: Backend Test Suite
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest pytest-asyncio pytest-cov httpx
+
+      - name: Run Canonical Backend Tests
+        run: |
+          PYTHONPATH=. pytest tests/ -v --ignore=tests/calculation_engine/test_golden_masters.py
+
+  # ==============================================================================
+  # 2. Golden Master Release Gate (Strict Calculation Contract)
+  # ==============================================================================
+  golden-masters:
+    name: Golden Master Calculations Gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest pytest-asyncio
+
+      - name: Run Strict Golden Master Test Suite
+        run: |
+          PYTHONPATH=. pytest tests/calculation_engine/test_golden_masters.py -v --tb=short
+
+  # ==============================================================================
+  # 3. Frontend Unit & Integration Tests (Vitest)
+  # ==============================================================================
+  frontend-tests:
+    name: Frontend Vitest Suite
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Vitest Suite
+        run: npm run test
+
+  # ==============================================================================
+  # 4. Frontend TypeScript Validation
+  # ==============================================================================
+  frontend-typecheck:
+    name: Frontend TypeScript Typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Validate TypeScript Compilation
+        run: npx tsc --project tsconfig.json --noEmit
+
+  # ==============================================================================
+  # 5. Security & Fail-Closed Production Configuration Gate
+  # ==============================================================================
+  security-prod-config:
+    name: Security & Hardening Gates
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest pytest-asyncio httpx
+
+      - name: Run Security and Production Configuration Tests
+        run: |
+          PYTHONPATH=. pytest tests/security/ -v
+
+  # ==============================================================================
+  # 6. Frontend Production Build Gate
+  # ==============================================================================
+  frontend-build:
+    name: Frontend Production Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build Standalone Next.js Application
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:8000/api/v1
+        run: npm run build
+
+  # ==============================================================================
+  # 7. Docker Image & Docker Compose Validation
+  # ==============================================================================
+  docker-build-check:
+    name: Docker & Compose Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Configuration
+        run: docker compose config --quiet
+
+      - name: Build Backend Docker Image
+        run: docker build -t meshiq-backend:ci ./backend
+
+      - name: Build Frontend Docker Image
+        run: docker build -t meshiq-frontend:ci --build-arg NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1 ./frontend
+
+  # ==============================================================================
+  # 8. Real-Stack Browser-to-Backend E2E Suite (Playwright)
+  # ==============================================================================
+  e2e-browser-suite:
+    name: Browser-to-Backend E2E Suite
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt asyncpg alembic uvicorn
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Optional Playwright Browser Cache
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Playwright Chromium with OS Dependencies
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Alembic Database Migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:postgrespassword@127.0.0.1:5432/testdb
+          ENVIRONMENT: testing
+        run: alembic upgrade head
+
+      - name: Seed Deterministic E2E Fixtures
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:postgrespassword@127.0.0.1:5432/testdb
+          ENVIRONMENT: testing
+        run: python scripts/seed_e2e.py
+
+      - name: Launch FastAPI Backend Server
+        working-directory: backend
+        run: |
+          EPHEMERAL_JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(48))")
+          ENVIRONMENT=testing \
+          DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@127.0.0.1:5432/testdb \
+          JWT_SECRET=$EPHEMERAL_JWT_SECRET \
+          CORS_ORIGINS='["http://localhost:3000","http://127.0.0.1:3000"]' \
+          TRUSTED_PROXIES='["127.0.0.1"]' \
+          SECURE_COOKIES=false \
+          nohup python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/backend.log 2>&1 &
+
+      - name: Await Backend Health Probe Readiness
+        run: |
+          python3 -c "
+          import urllib.request, time, sys
+          for i in range(30):
+              try:
+                  res = urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready', timeout=2)
+                  if res.status == 200:
+                      print('✅ FastAPI backend is healthy and ready on 127.0.0.1:8000')
+                      sys.exit(0)
+              except Exception:
+                  time.sleep(1)
+          print('❌ FastAPI backend failed to reach ready state within 30 seconds')
+          sys.exit(1)
+          "
+
+      - name: Build and Launch Next.js Frontend Server
+        working-directory: frontend
+        run: |
+          NEXT_TELEMETRY_DISABLED=1 \
+          NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api/v1 \
+          npm run build
+          PORT=3000 nohup npm run start -- -p 3000 > /tmp/frontend.log 2>&1 &
+
+      - name: Await Frontend HTTP Readiness
+        run: |
+          python3 -c "
+          import urllib.request, time, sys
+          for i in range(30):
+              try:
+                  res = urllib.request.urlopen('http://127.0.0.1:3000/', timeout=2)
+                  if res.status in (200, 307, 308):
+                      print('✅ Next.js frontend is ready on 127.0.0.1:3000')
+                      sys.exit(0)
+              except Exception:
+                  time.sleep(1)
+          print('❌ Next.js frontend failed to start within 30 seconds')
+          sys.exit(1)
+          "
+
+      - name: Execute Playwright Browser E2E Suite (4 spec files / 10 tests)
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+          CI: "true"
+        run: npx playwright test
+
+      - name: Upload Playwright Report on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 14
+
+      - name: Upload Playwright Failure Traces & Screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: frontend/test-results/
+          retention-days: 14
+
+  # ==============================================================================
+  # 9. Deterministic Executive PDF Generation & Structural Validation Gate
+  # ==============================================================================
+  report-pdf-gate:
+    name: Executive PDF Generation Gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Python 3.11 (for validation script)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Frontend Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Optional Playwright Browser Cache
+        uses: actions/cache@v4
+        id: playwright-pdf-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Playwright Chromium with OS Dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Generate Deterministic Executive PDF
+        run: node scripts/generate_pdf.mjs
+
+      - name: Validate Structural PDF Integrity
+        run: |
+          python3 -c "
+          import os, sys
+
+          pdf_path = '../docs/artifacts/DATAEKO_meshIQ_Executive_Assessment_Report.pdf'
+          if not os.path.isfile(pdf_path):
+              print('❌ PDF file missing at expected path:', pdf_path)
+              sys.exit(1)
+
+          size = os.path.getsize(pdf_path)
+          if size < 50000:
+              print(f'❌ PDF sanity size check failed: size {size} bytes is unusually small')
+              sys.exit(1)
+
+          with open(pdf_path, 'rb') as f:
+              content = f.read()
+
+          if not content.startswith(b'%PDF-'):
+              print('❌ Invalid PDF: missing %PDF- magic header at byte 0')
+              sys.exit(1)
+
+          if b'%%EOF' not in content[-2048:]:
+              print('❌ Invalid PDF: missing %%EOF trailer marker')
+              sys.exit(1)
+
+          page_count = content.count(b'/Type /Page')
+          if page_count < 2:
+              print(f'❌ PDF structural page verification failed: found {page_count} page objects')
+              sys.exit(1)
+
+          print(f'✅ PDF structurally verified: {size} bytes, valid header, trailer, and {page_count} pages.')
+          "
+
+      - name: Upload Generated PDF Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: executive-assessment-report
+          path: docs/artifacts/DATAEKO_meshIQ_Executive_Assessment_Report.pdf
+          retention-days: 30
+
+  # ==============================================================================
+  # 10. Consolidated Release Gate
+  # ==============================================================================
+  release-gate:
+    name: Final Release Gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - backend-tests
+      - golden-masters
+      - frontend-tests
+      - frontend-typecheck
+      - security-prod-config
+      - frontend-build
+      - docker-build-check
+      - e2e-browser-suite
+      - report-pdf-gate
+    steps:
+      - name: Audit All Upstream Gates
+        run: |
+          echo "=========================================================="
+          echo "RELEASE GATE AUDIT EVALUATION"
+          echo "=========================================================="
+          RESULTS=(
+            "backend-tests: ${{ needs.backend-tests.result }}"
+            "golden-masters: ${{ needs.golden-masters.result }}"
+            "frontend-tests: ${{ needs.frontend-tests.result }}"
+            "frontend-typecheck: ${{ needs.frontend-typecheck.result }}"
+            "security-prod-config: ${{ needs.security-prod-config.result }}"
+            "frontend-build: ${{ needs.frontend-build.result }}"
+            "docker-build-check: ${{ needs.docker-build-check.result }}"
+            "e2e-browser-suite: ${{ needs.e2e-browser-suite.result }}"
+            "report-pdf-gate: ${{ needs.report-pdf-gate.result }}"
+          )
+
+          FAILED=0
+          for item in "${RESULTS[@]}"; do
+            echo "  $item"
+            if [[ ! "$item" =~ :[[:space:]]success$ ]]; then
+              FAILED=1
+            fi
+          done
+
+          echo "=========================================================="
+          if [ $FAILED -ne 0 ]; then
+            echo "❌ RELEASE GATE REJECTED: One or more upstream jobs failed, was cancelled, or was skipped."
+            exit 1
+          fi
+          echo "✅ ALL REQUIRED RELEASE GATES PASSED! RELEASE AUTHORIZED."
