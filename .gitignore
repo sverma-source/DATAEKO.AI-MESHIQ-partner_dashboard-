@@ -40,5 +40,7 @@ logs/
 scratch/
 tmp/
 coverage/
+playwright-report/
+test-results/
 *.db
 *.sqlite3
