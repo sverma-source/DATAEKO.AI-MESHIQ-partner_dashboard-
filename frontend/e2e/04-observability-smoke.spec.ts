@@ -14,7 +14,7 @@ test.describe('Observability, Health Probes & Error Sanitization E2E (Phase 9.4)
     const readyData = await readyResp.json();
     expect(readyData.status).toBe('ready');
     expect(readyData.database).toBe('connected');
-    expect(readyData.calculation_engine_version).toBe('3.0.0');
+    expect(readyData.calculation_engine_version).toBe('1.0.0');
 
     // 3. Frontend loads successfully
     const feResp = await page.goto('http://localhost:3000/login');

@@ -53,6 +53,70 @@ export default function AssessmentWizardPage() {
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
   const [calculationResult, setCalculationResult] = useState<CalculationRunResponse | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [resumeError, setResumeError] = useState<string | null>(null);
+  const [isLoadingAssessment, setIsLoadingAssessment] = useState<boolean>(false);
+
+  // Load assessment by ID from backend persistence
+  const loadAssessmentById = useCallback(async (id: string) => {
+    try {
+      setIsLoadingAssessment(true);
+      setResumeError(null);
+      const ass = await api.getAssessment(id);
+      setCurrentAssessment(ass);
+      if (ass.customer) {
+        setCurrentCustomer(ass.customer);
+      }
+      if (ass.response?.raw_responses) {
+        setAnswers(ass.response.raw_responses);
+      } else if (ass.response) {
+        const mapped: AssessmentResponseState = {
+          q01_scale: ass.response.q03_environment_scale,
+          q03_staffing_model: ass.response.q05_mq_role_split,
+          q04_admin_hours: ass.response.q04_weekly_admin_hours,
+          q06_frequency: ass.response.q06_frequency_text,
+          q07_labor_hours: ass.response.q07_labor_hours_text,
+          q07_override: ass.response.q07_labor_hours_override,
+          q08_duration: ass.response.q08_duration_text,
+          q09_tools_count: ass.response.q09_root_cause_categories,
+          q10_manual_tracing: ass.response.q10_problem_types,
+          q11_productivity_constraint: ass.response.q11_monitoring_status,
+          q12_business_impact: ass.response.q12_business_impact,
+          q14_disruption_duration: ass.response.q14_duration_text,
+          q15_hourly_cost_override: ass.response.q15_hourly_cost_override,
+          q16_cost_mandate: ass.response.q16_config_management_method,
+          q18_audit_effort: ass.response.q18_audit_effort,
+          q19_documentation_effort: ass.response.q19_documentation_effort,
+          q20_annual_labor_rate: ass.response.q20_annual_labor_rate,
+          q20_use_default: ass.response.q20_annual_labor_rate === null || ass.response.q20_annual_labor_rate === undefined,
+          q21_annual_mq_spend: ass.response.q21_annual_mq_spend,
+          q22_migration_plans: ass.response.q22_migration_plans,
+        };
+        setAnswers(mapped);
+      }
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("assessment_id", id);
+        window.history.replaceState({}, "", url.toString());
+      }
+      setSaveStatus("saved");
+    } catch (err: any) {
+      setResumeError(err.message || "Failed to load assessment. Cross-tenant access denied or assessment not found.");
+      setCurrentAssessment(null);
+    } finally {
+      setIsLoadingAssessment(false);
+    }
+  }, []);
+
+  // Check URL query parameters for assessment_id on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlAssessmentId = params.get("assessment_id");
+      if (urlAssessmentId) {
+        loadAssessmentById(urlAssessmentId);
+      }
+    }
+  }, [loadAssessmentById]);
 
   // Fetch initial customer list on mount
   useEffect(() => {
@@ -93,7 +157,8 @@ export default function AssessmentWizardPage() {
 
   // Save Responses to Backend
   const handleSaveProgress = async () => {
-    if (!currentAssessment) {
+    let targetAssessment = currentAssessment;
+    if (!targetAssessment) {
       // Auto-create assessment if not exists
       if (!currentCustomer) {
         setIsCustomerModalOpen(true);
@@ -104,24 +169,27 @@ export default function AssessmentWizardPage() {
         setSaveStatus("saving");
         const ass = await api.createAssessment({
           customer_id: currentCustomer.id,
-          title: "IBM MQ Economic Assessment",
+          title: `${currentCustomer.name} - IBM MQ Economic Assessment`,
         });
+        targetAssessment = ass;
         setCurrentAssessment(ass);
-        await api.saveResponses(ass.id, answers);
-        setSaveStatus("saved");
       } catch (err) {
         setSaveStatus("error");
-      } finally {
         setIsSaving(false);
+        return;
       }
-      return;
     }
 
     try {
       setIsSaving(true);
       setSaveStatus("saving");
-      await api.saveResponses(currentAssessment.id, answers);
+      await api.saveResponses(targetAssessment.id, answers);
       setSaveStatus("saved");
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("assessment_id", targetAssessment.id);
+        window.history.replaceState({}, "", url.toString());
+      }
     } catch (err) {
       setSaveStatus("error");
     } finally {
@@ -203,6 +271,11 @@ export default function AssessmentWizardPage() {
       title: title,
     });
     setCurrentAssessment(ass);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("assessment_id", ass.id);
+      window.history.replaceState({}, "", url.toString());
+    }
     setCurrentSectionId("A");
   };
 
@@ -252,6 +325,26 @@ export default function AssessmentWizardPage() {
 
       {/* Wizard Content Body */}
       <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        {/* Error Banner for Cross-Tenant / Failed Resume */}
+        {resumeError && (
+          <div data-testid="resume-error-banner" className="mb-6 rounded-xl bg-red-50 p-4 border border-red-200 text-sm text-red-800 flex items-center justify-between">
+            <span className="font-medium">{resumeError}</span>
+            <button
+              onClick={() => setResumeError(null)}
+              className="text-xs text-red-600 font-semibold hover:underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {/* Persisted Assessment Identifier */}
+        {currentAssessment && (
+          <div data-testid="active-assessment-id" className="hidden">
+            {currentAssessment.id}
+          </div>
+        )}
+
         {/* State A: Section Questions Form (Sections A through G) */}
         {currentSectionId !== "REVIEW" && currentSectionId !== "CALCULATED" && (
           <div className="space-y-6 max-w-4xl mx-auto">

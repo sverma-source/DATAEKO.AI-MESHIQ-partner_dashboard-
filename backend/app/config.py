@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     ]
 
     # Calculation engine versioning
-    CALCULATION_ENGINE_VERSION: str = "3.0.0"
+    CALCULATION_ENGINE_VERSION: str = "1.0.0"
     DEFAULT_ASSESSMENT_VERSION: str = "1.0.0"
 
     model_config = SettingsConfigDict(

@@ -97,7 +97,12 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
   // Single-Event Exposure Hierarchy
   const exposureMetric = metrics.representative_single_event_exposure;
-  const isExposureBenchmark = exposureMetric?.state === "INDUSTRY_BENCHMARK" || exposureMetric?.provenance === "BENCHMARK_FALLBACK";
+  const isExposureBenchmark =
+    exposureMetric?.provenance === "INDUSTRY_BENCHMARK" ||
+    exposureMetric?.state === "INDUSTRY_BENCHMARK" ||
+    exposureMetric?.provenance === "BENCHMARK_FALLBACK" ||
+    answers.q15_is_unknown ||
+    !answers.q15_hourly_cost_override;
 
   if (isReportViewOpen) {
     return (

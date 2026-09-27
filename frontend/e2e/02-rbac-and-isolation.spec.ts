@@ -142,4 +142,61 @@ test.describe('RBAC & Multi-Tenant Isolation (Phase 9.4)', () => {
 
     await context.close();
   });
+
+  test('RBAC Negative Enforcement: Customer User cannot perform admin-only operations', async ({ page }) => {
+    // 1. Authenticate as Customer User (Tenant A)
+    await page.goto('/login');
+    await page.fill('#email', 'customer_user_a@acme.com');
+    await page.fill('#password', 'CustomerUser123!');
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL('http://localhost:3000/');
+
+    // 2. Negative Test: Customer User cannot access audit-events (lacks audit:read)
+    const auditResp = await page.request.get('http://localhost:8000/api/v1/audit-events');
+    expect(auditResp.status()).toBe(403);
+    const auditErr = await auditResp.json();
+    expect(auditErr.detail).toMatch(/lacks required permission/i);
+  });
+
+  test('RBAC Negative Enforcement: Customer Admin cannot access platform audit logs', async ({ page }) => {
+    // 1. Authenticate as Customer Admin (Tenant A)
+    await page.goto('/login');
+    await page.fill('#email', 'customer_admin_a@acme.com');
+    await page.fill('#password', 'CustomerAdmin123!');
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL('http://localhost:3000/');
+
+    // 2. Negative Test: Attempt to read audit log -> must be 403 Forbidden
+    const auditResp = await page.request.get('http://localhost:8000/api/v1/audit-events');
+    expect(auditResp.status()).toBe(403);
+    const auditErr = await auditResp.json();
+    expect(auditErr.detail).toMatch(/lacks required permission/i);
+  });
+
+  test('RBAC Platform Admin: Retains permitted cross-tenant administration and audit access', async ({ page }) => {
+    // 1. Authenticate as Platform Admin
+    await page.goto('/login');
+    await page.fill('#email', 'admin@dataeko.ai');
+    await page.fill('#password', 'AdminPass123!');
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL('http://localhost:3000/');
+
+    // 2. Permitted Test: Access audit log -> 200 OK
+    const auditResp = await page.request.get('http://localhost:8000/api/v1/audit-events');
+    expect(auditResp.status()).toBe(200);
+    const auditData = await auditResp.json();
+    expect(Array.isArray(auditData)).toBe(true);
+
+    // 3. Permitted Cross-Tenant Test: Query Tenant B customers using X-Tenant-ID header
+    const crossTenantResp = await page.request.get('http://localhost:8000/api/v1/customers', {
+      headers: {
+        'X-Tenant-ID': '00000000-0000-0000-0000-000000000002',
+      },
+    });
+    expect(crossTenantResp.status()).toBe(200);
+    const tenantBCustomers = await crossTenantResp.json();
+    tenantBCustomers.forEach((c: any) => {
+      expect(c.tenant_id).toBe('00000000-0000-0000-0000-000000000002');
+    });
+  });
 });
