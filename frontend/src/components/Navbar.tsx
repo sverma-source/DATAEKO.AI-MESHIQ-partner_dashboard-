@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../services/api";
 import { Activity, Building2, CheckCircle2, ShieldAlert } from "lucide-react";
+import { UserMenu } from "./UserMenu";
 
 interface NavbarProps {
   customerName?: string;
@@ -97,6 +98,8 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
               </>
             )}
           </div>
+          {/* User Menu & Session */}
+          <UserMenu />
         </div>
       </div>
     </header>

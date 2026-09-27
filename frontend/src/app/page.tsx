@@ -22,6 +22,8 @@ import { ExecutiveDashboard } from "../components/ExecutiveDashboard";
 import { CustomerModal } from "../components/CustomerModal";
 import { QUESTIONS, SECTIONS } from "../data/questionCatalog";
 import { api } from "../services/api";
+import { ProtectedRoute } from "../components/ProtectedRoute";
+import { useAuth } from "../context/AuthContext";
 import {
   Assessment,
   AssessmentResponseState,
@@ -30,6 +32,7 @@ import {
 } from "../types/assessment";
 
 export default function AssessmentWizardPage() {
+  const { user, hasPermission } = useAuth();
   // Session / Entity State
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [currentCustomer, setCurrentCustomer] = useState<Customer | null>(null);
@@ -211,12 +214,13 @@ export default function AssessmentWizardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans antialiased text-slate-900">
-      {/* Top Navigation */}
-      <Navbar
-        customerName={currentCustomer?.name}
-        assessmentTitle={currentAssessment?.title}
-      />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-slate-100 flex flex-col font-sans antialiased text-slate-900">
+        {/* Top Navigation */}
+        <Navbar
+          customerName={currentCustomer?.name}
+          assessmentTitle={currentAssessment?.title}
+        />
 
       {/* Main Wizard Header */}
       {currentSectionId !== "CALCULATED" && (
@@ -459,5 +463,6 @@ export default function AssessmentWizardPage() {
         onCreateCustomer={handleCreateCustomer}
       />
     </div>
+    </ProtectedRoute>
   );
 }

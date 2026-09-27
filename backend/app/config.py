@@ -1,4 +1,5 @@
 from typing import List, Optional
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,6 +37,33 @@ class Settings(BaseSettings):
         case_sensitive=True,
         extra="ignore",
     )
+
+    @model_validator(mode="after")
+    def validate_production_configuration(self) -> "Settings":
+        if self.ENVIRONMENT == "production":
+            insecure_defaults = {
+                "dev-insecure-secret-key-change-in-production-dataeko-meshiq-2026",
+                "secret",
+                "change-me",
+                "changethis",
+                "default",
+                "",
+            }
+            if self.SECRET_KEY in insecure_defaults or len(self.SECRET_KEY) < 32:
+                raise ValueError(
+                    "Production configuration error: Insecure or default SECRET_KEY detected. "
+                    "A strong secret key (at least 32 characters) must be supplied via the SECRET_KEY environment variable."
+                )
+            if self.DATABASE_URL.startswith("sqlite"):
+                raise ValueError(
+                    "Production configuration error: SQLite is not permitted in production. "
+                    "A valid PostgreSQL connection string (postgresql+asyncpg://...) must be supplied via the DATABASE_URL environment variable."
+                )
+            if self.DEBUG is True:
+                raise ValueError(
+                    "Production configuration error: DEBUG mode must be False in production."
+                )
+        return self
 
 
 settings = Settings()

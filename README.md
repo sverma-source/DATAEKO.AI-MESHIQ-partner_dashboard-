@@ -134,7 +134,7 @@ The platform incorporates server-side security controls:
 
 ## 8. Verification & Automated Test Status
 
-The codebase is validated across all unit, integration, Golden Master, and end-to-end security suites:
+The codebase is validated across all unit, integration, Golden Master, security, and frontend authentication suites:
 
 ```text
 ================================================================================
@@ -154,11 +154,12 @@ The codebase is validated across all unit, integration, Golden Master, and end-t
    • 8/8 Wizard Components & Navigation Tests                              PASSED
    • 9/9 Executive Dashboard & Scenario Sandbox Tests                      PASSED
    • 9/9 Report Data Adapter & Executive Report Tests                      PASSED
+   • 11/11 AuthContext, LoginPage & ProtectedRoute Tests                   PASSED
    -----------------------------------------------------------------------------
-   Total Frontend Tests: 41/41 PASSED (100%)
+   Total Frontend Tests: 52/52 PASSED (100% across 10 test files)
 
 3. Production Build & Artifact Generation:
-   • Next.js Production Build (next build):                                PASSED
+   • Next.js Production Build (next build):                                PASSED (/ and /login)
    • Playwright Headless Chromium PDF Export:                             PASSED (510.2 KB A4 PDF)
 ================================================================================
 ```
@@ -167,14 +168,12 @@ The codebase is validated across all unit, integration, Golden Master, and end-t
 
 ## 9. Current Project Status & Remaining Work
 
-* **Current Checkpoint**: **Phase 8 Completed & Validated (`🟢 PHASE 8 VALIDATED`)**.
-* **Status**: Core calculation engine, assessment intake, executive dashboard, scenario sandbox, reporting pipeline, and foundational security/RBAC architecture are complete and tested.
-* **Upcoming Scope (Phase 8.1 / Deployment Hardening)**:
-  * Formalized CSRF double-submit token verification for multi-domain deployments.
-  * API rate limiting and abuse controls for calculation and PDF generation endpoints.
-  * Comprehensive dependency security scanning and static analysis tooling.
-  * Resource-by-resource granular IDOR test matrices.
+* **Current Checkpoint**: **Phase 8.1 Completed & Validated (`🟢 PHASE 8.1 VALIDATED`)**.
+* **Status**: Core calculation engine, assessment discovery wizard, executive KPI dashboard, scenario sandbox, executive report, deterministic PDF generation, JWT backend security, and full frontend authentication/session/RBAC integration are complete and verified.
+* **Upcoming Scope (Deployment Hardening & Production Operations)**:
   * Cloud infrastructure deployment orchestration (TLS reverse proxy, AWS RDS WAL backups, secret manager integration).
+  * API rate limiting and edge WAF protection for public endpoints.
+  * Formalized multi-region disaster recovery verification.
 
 ---
 

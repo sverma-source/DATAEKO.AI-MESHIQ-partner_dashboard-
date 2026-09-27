@@ -10,6 +10,8 @@ export const metadata: Metadata = {
     "Enterprise discovery intake and deterministic economic assessment modeling for IBM MQ messaging environments.",
 };
 
+import { AuthProvider } from "../context/AuthContext";
+
 export default function RootLayout({
   children,
 }: {
@@ -18,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full bg-slate-100 antialiased">
       <body className={`${inter.className} min-h-full flex flex-col bg-slate-100 text-slate-900`}>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

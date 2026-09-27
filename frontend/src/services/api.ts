@@ -5,6 +5,7 @@ import {
   CalculationSnapshot,
   Customer,
 } from "../types/assessment";
+import { LoginCredentials, TokenResponse, User } from "../types/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -16,11 +17,11 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
   const url = `${API_BASE}${endpoint}`;
   const defaultHeaders: Record<string, string> = {
     "Content-Type": "application/json",
-    "X-Tenant-ID": "00000000-0000-0000-0000-000000000001",
   };
 
   const response = await fetch(url, {
     ...options,
+    credentials: "include", // Ensure HTTP-only cookies are included
     headers: {
       ...defaultHeaders,
       ...options.headers,
@@ -28,12 +29,26 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
   });
 
   if (!response.ok) {
-    let errorDetail = "API request failed";
+    let errorDetail = "An unexpected error occurred. Please try again.";
     try {
       const errJson = await response.json();
-      errorDetail = errJson.detail || errJson.message || JSON.stringify(errJson);
+      if (errJson.detail) {
+        errorDetail = typeof errJson.detail === "string" ? errJson.detail : JSON.stringify(errJson.detail);
+      } else if (errJson.message) {
+        errorDetail = errJson.message;
+      }
     } catch {
-      errorDetail = `HTTP ${response.status}: ${response.statusText}`;
+      if (response.status === 401) {
+        errorDetail = "Authentication required or session expired. Please log in.";
+      } else if (response.status === 403) {
+        errorDetail = "You do not have permission to perform this action.";
+      } else if (response.status === 404) {
+        errorDetail = "The requested resource was not found.";
+      } else if (response.status >= 500) {
+        errorDetail = "Internal server error. Please contact system support.";
+      } else {
+        errorDetail = `Request failed (HTTP ${response.status}).`;
+      }
     }
     throw new Error(errorDetail);
   }
@@ -116,4 +131,28 @@ export const api = {
   // Snapshots
   getLatestSnapshot: (assessmentId: string) =>
     request<CalculationSnapshot>(`/assessments/${assessmentId}/snapshots/latest`),
+
+  // Authentication & Session
+  login: (credentials: LoginCredentials) =>
+    request<TokenResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    }),
+
+  logout: () =>
+    request<{ detail: string }>("/auth/logout", {
+      method: "POST",
+    }),
+
+  getCurrentUser: () => request<TokenResponse>("/auth/me"),
+
+  // Audit Events
+  listAuditEvents: (params?: { limit?: number; event_type?: string; resource_type?: string }) => {
+    const query = new URLSearchParams();
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.event_type) query.set("event_type", params.event_type);
+    if (params?.resource_type) query.set("resource_type", params.resource_type);
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return request<any[]>(`/audit-events${qs}`);
+  },
 };
