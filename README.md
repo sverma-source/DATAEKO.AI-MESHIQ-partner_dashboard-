@@ -134,46 +134,75 @@ The platform incorporates server-side security controls:
 
 ## 8. Verification & Automated Test Status
 
-The codebase is validated across all unit, integration, Golden Master, security, and frontend authentication suites:
+The codebase is validated across unit, integration, Golden Master, security, browser-to-backend E2E, and production build pipelines:
 
 ```text
 ================================================================================
                          AUTOMATED VERIFICATION SUMMARY
 ================================================================================
 1. Backend & Security Suite (pytest):
-   • 10/10 Golden Master Profiles (TC-01 through TC-10)                   PASSED
-   • 11/11 Calculation Engine Edge Cases & Precision Tests                 PASSED
-   • 8/8 Backend API, Persistence & Database Migration Tests               PASSED
-   • 12/12 Security Tests (Auth, RBAC, IDOR, Immutability, Audit, Sanitizer) PASSED
+   • 10/10 Golden Master Reference Scenarios (TC-01–TC-10)               PASSED
+   • 11/11 Calculation Engine Edge Cases & Precision Tests               PASSED
+   • 8/8 Backend API, Persistence & Database Migration Tests             PASSED
+   • 12/12 Security Tests (Auth, RBAC, IDOR, Immutability, Sanitizer)     PASSED
+   • 141/141 Total Backend Tests Across Full Test Tree                   PASSED
    -----------------------------------------------------------------------------
-   Total Backend Tests: 41/41 PASSED (100%)
+   Backend Test Suite: 100% PASS
 
 2. Frontend Test Suite (vitest):
-   • 10/10 Question Catalog & Discovery Tests                              PASSED
-   • 5/5 Comprehensive 7-Section Intake Workflow Tests                     PASSED
-   • 8/8 Wizard Components & Navigation Tests                              PASSED
-   • 9/9 Executive Dashboard & Scenario Sandbox Tests                      PASSED
-   • 9/9 Report Data Adapter & Executive Report Tests                      PASSED
-   • 11/11 AuthContext, LoginPage & ProtectedRoute Tests                   PASSED
+   • 10/10 Question Catalog & Discovery Tests                            PASSED
+   • 5/5 Comprehensive 7-Section Intake Workflow Tests                   PASSED
+   • 8/8 Wizard Components & Navigation Tests                            PASSED
+   • 9/9 Executive Dashboard & Scenario Sandbox Tests                    PASSED
+   • 9/9 Report Data Adapter & Executive Report Tests                    PASSED
+   • 11/11 AuthContext, LoginPage & ProtectedRoute Tests                 PASSED
    -----------------------------------------------------------------------------
-   Total Frontend Tests: 52/52 PASSED (100% across 10 test files)
+   Frontend Test Suite: 52/52 PASSED (10 test files)
 
-3. Production Build & Artifact Generation:
-   • Next.js Production Build (next build):                                PASSED (/ and /login)
-   • Playwright Headless Chromium PDF Export:                             PASSED (510.2 KB A4 PDF)
+3. Browser-to-Backend E2E Suite (playwright):
+   • 4/4 Spec Files / 10 Comprehensive Tests (Auth, RBAC, Intake, PDF)   PASSED (Local)
+
+4. Production Build & PDF Artifact Validation:
+   • Next.js Standalone Production Build (`next build`):                 PASSED
+   • Playwright Chromium Executive PDF Generator & Structural Check:    PASSED
 ================================================================================
 ```
 
 ---
 
-## 9. Current Project Status & Remaining Work
+## 9. Project Progress & Release Gating Status
 
-* **Current Checkpoint**: **Phase 8.1 Completed & Validated (`🟢 PHASE 8.1 VALIDATED`)**.
-* **Status**: Core calculation engine, assessment discovery wizard, executive KPI dashboard, scenario sandbox, executive report, deterministic PDF generation, JWT backend security, and full frontend authentication/session/RBAC integration are complete and verified.
-* **Upcoming Scope (Deployment Hardening & Production Operations)**:
-  * Cloud infrastructure deployment orchestration (TLS reverse proxy, AWS RDS WAL backups, secret manager integration).
-  * API rate limiting and edge WAF protection for public endpoints.
-  * Formalized multi-region disaster recovery verification.
+* **Project**: **DATAEKO × meshIQ Partner Dashboard**
+* **Completed Phases**:
+  * **Phase 1–8.1**: Core deterministic calculation engine, 22-question intake wizard, scenario sandbox, executive reporting, Playwright PDF export, JWT HttpOnly security, and RBAC integration.
+  * **Phase 9.1**: PostgreSQL boolean schema alignment & database persistence validation (`VERIFIED`).
+  * **Phase 9.2**: Production configuration enforcement, secret rotation, and strict production validation (`VERIFIED`).
+  * **Phase 9.3**: Production observability, structured JSON logging, and `/health/liveness` + `/health/readiness` probes (`VERIFIED`).
+  * **Phase 9.4**: Comprehensive browser-to-backend E2E lifecycle, customer save/resume persistence, and calculation engine provenance audit (`VERIFIED`).
+  * **Phase 9.5**: Operational hardening & rate limiting (`VERIFIED WITH FINDINGS`):
+    * Rate limiting: `POST /api/v1/auth/login` (5 req/min per resolved IP) and general API throttling (120 req/min).
+    * Request body protection: `RequestSizeLimiterMiddleware` (10MB limit enforcement with `413 Request Entity Too Large`).
+    * Trusted proxy handling: explicit IP/CIDR validation and spoof-resistant client IP resolution.
+    * Security & production error sanitization with `X-Request-ID` correlation.
+    * *Finding (P2)*: Process-local in-memory sliding-window limiter retains empty keys across eviction cycles (minor memory footprint; documented single-worker process limitation).
+
+* **Phase 9.6: CI/CD & Release Gates (`IMPLEMENTED — VERIFICATION IN PROGRESS`)**:
+  * *Implementation*: 10-job multi-stage GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml`):
+    1. `backend-tests`: Full canonical backend discovery (`pytest backend/tests`).
+    2. `golden-masters`: Strict 10/10 reference scenario calculation gate.
+    3. `frontend-tests`: Frontend Vitest component & workflow test suite.
+    4. `frontend-typecheck`: Strict TypeScript typechecking (`tsc --project tsconfig.json --noEmit`).
+    5. `security-prod-config`: Security middleware, RBAC, error sanitization, and production settings gate.
+    6. `frontend-build`: Next.js standalone production build verification.
+    7. `docker-build-check`: Multi-service Dockerfile and compose validation.
+    8. `e2e-browser-suite`: Real-stack Playwright browser-to-backend E2E test suite (PostgreSQL + FastAPI + Next.js).
+    9. `report-pdf-gate`: Headless Chromium executive PDF generation and structural integrity validation.
+    10. `release-gate`: Unified release gate running under `if: always()`, evaluating all 9 upstream job results.
+  * *Current CI Evidence & Status*:
+    * **Run 36317997179**: Frontend Vitest failed using `threads` pool due to an environment-level worker thread conflict with `jsdom`/`undici` on Node 20.
+    * **Targeted CI Remediation**: Commit `2bf093f42948890d989977561a32bc146a82bdef` adjusted Vitest CI execution from `threads` to `forks` pool.
+    * **Run 36318655727**: In progress / ongoing evaluation.
+  * *Note*: Phase 9.6 remains open and is **NOT** marked verified until a clean end-to-end GitHub Actions workflow run completes and all 10 release gates succeed.
 
 ---
 
