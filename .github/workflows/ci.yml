@@ -95,8 +95,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run Vitest Suite (Threads Pool)
-        run: npm run test -- --pool=threads
+      - name: Run Vitest Suite (Forks Pool)
+        run: npm run test -- --pool=forks
 
   # ==============================================================================
   # 4. Frontend TypeScript Validation
