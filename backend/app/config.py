@@ -1,9 +1,16 @@
+import ipaddress
 import re
 from typing import Any, Dict, List, Optional
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 SUPPORTED_ENVIRONMENTS = {"development", "test", "production"}
+
+BROAD_PRIVATE_NETWORKS = {
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+}
 
 INSECURE_PLACEHOLDER_SECRETS = {
     "dev-insecure-secret-key-change-in-production-dataeko-meshiq-2026",
@@ -39,6 +46,19 @@ def is_placeholder_or_low_entropy_secret(secret: str) -> bool:
     return False
 
 
+def validate_ip_or_cidr(entry: str) -> ipaddress.IPv4Network | ipaddress.IPv6Network:
+    """Validates and parses an IP address or CIDR string."""
+    cleaned = entry.strip()
+    if not cleaned:
+        raise ValueError("Trusted proxy entry cannot be empty.")
+    if cleaned == "*":
+        raise ValueError("Wildcard '*' is forbidden for TRUSTED_PROXY_IPS.")
+    try:
+        return ipaddress.ip_network(cleaned, strict=False)
+    except ValueError as exc:
+        raise ValueError(f"Invalid IP address or CIDR network '{cleaned}': {exc}") from exc
+
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "DATAEKO × meshIQ Partner Dashboard"
     API_V1_STR: str = "/api/v1"
@@ -68,6 +88,19 @@ class Settings(BaseSettings):
     CALCULATION_ENGINE_VERSION: str = "1.0.0"
     DEFAULT_ASSESSMENT_VERSION: str = "1.0.0"
 
+    # Rate Limiting & Resource Protection (Configurable Operational Defaults)
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_LOGIN_PER_MINUTE: int = 5
+    RATE_LIMIT_CALCULATION_PER_MINUTE: int = 10
+    RATE_LIMIT_MUTATION_PER_MINUTE: int = 60
+    RATE_LIMIT_READ_PER_MINUTE: int = 300
+
+    # Trusted Proxy Resolution (Explicit IPs/CIDRs)
+    TRUSTED_PROXY_IPS: List[str] = ["127.0.0.1", "::1"]
+
+    # Maximum Request Payload Size (Defense against payload flooding / memory exhaustion)
+    MAX_REQUEST_BODY_BYTES: int = 2 * 1024 * 1024  # 2 MB default
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -82,6 +115,13 @@ class Settings(BaseSettings):
             return self.JWT_SECRET.strip()
         return self.SECRET_KEY
 
+    @field_validator("TRUSTED_PROXY_IPS", mode="before")
+    @classmethod
+    def parse_trusted_proxies(cls, v: Any) -> List[str]:
+        if isinstance(v, str):
+            return [item.strip() for item in v.split(",") if item.strip()]
+        return v
+
     @model_validator(mode="after")
     def validate_environment_and_production_settings(self) -> "Settings":
         # 1. Environment canonical validation
@@ -91,7 +131,20 @@ class Settings(BaseSettings):
                 f"Supported environments are: {', '.join(sorted(SUPPORTED_ENVIRONMENTS))}."
             )
 
-        # 2. Production fail-closed validation
+        # 2. General validation across all environments
+        if self.MAX_REQUEST_BODY_BYTES <= 0:
+            raise ValueError("MAX_REQUEST_BODY_BYTES must be greater than 0.")
+
+        if not (1 <= self.RATE_LIMIT_LOGIN_PER_MINUTE <= 30):
+            raise ValueError(
+                f"RATE_LIMIT_LOGIN_PER_MINUTE must be between 1 and 30 (got {self.RATE_LIMIT_LOGIN_PER_MINUTE})."
+            )
+
+        # Validate trusted proxy IP/CIDR syntax
+        for proxy_entry in self.TRUSTED_PROXY_IPS:
+            validate_ip_or_cidr(proxy_entry)
+
+        # 3. Production fail-closed validation
         if self.ENVIRONMENT == "production":
             # A. Authentication & Secret Key
             effective_key = self.effective_secret_key
@@ -143,6 +196,35 @@ class Settings(BaseSettings):
                         f"Production configuration error: Invalid CORS origin '{origin}'. Origins must start with http:// or https://."
                     )
 
+            # F. Rate Limiting & Resource Protection
+            if not self.RATE_LIMIT_ENABLED:
+                raise ValueError(
+                    "Production configuration error: RATE_LIMIT_ENABLED must be True in production."
+                )
+            if not (1 <= self.RATE_LIMIT_LOGIN_PER_MINUTE <= 30):
+                raise ValueError(
+                    f"Production configuration error: RATE_LIMIT_LOGIN_PER_MINUTE must be between 1 and 30 in production (got {self.RATE_LIMIT_LOGIN_PER_MINUTE})."
+                )
+            if self.MAX_REQUEST_BODY_BYTES > 10 * 1024 * 1024:
+                raise ValueError(
+                    f"Production configuration error: MAX_REQUEST_BODY_BYTES cannot exceed 10MB in production (got {self.MAX_REQUEST_BODY_BYTES})."
+                )
+
+            # G. Trusted Proxies in Production
+            if not self.TRUSTED_PROXY_IPS:
+                raise ValueError(
+                    "Production configuration error: TRUSTED_PROXY_IPS cannot be empty in production. "
+                    "Specify explicit load balancer / reverse proxy IPs or CIDRs (e.g. ['127.0.0.1', '::1'])."
+                )
+
+            for proxy_entry in self.TRUSTED_PROXY_IPS:
+                net = validate_ip_or_cidr(proxy_entry)
+                if net in BROAD_PRIVATE_NETWORKS:
+                    raise ValueError(
+                        f"Production configuration error: Broad private network '{proxy_entry}' is too wide for trusted proxies. "
+                        "Specify exact reverse proxy IPs or narrow subnet CIDRs."
+                    )
+
         return self
 
     def get_safe_diagnostics(self) -> Dict[str, Any]:
@@ -168,6 +250,11 @@ class Settings(BaseSettings):
             "cors_origins_count": len(self.CORS_ORIGINS),
             "cors_origins": [re.sub(r"://.*@", "://", o) for o in self.CORS_ORIGINS],
             "calculation_engine_version": self.CALCULATION_ENGINE_VERSION,
+            "rate_limit_enabled": self.RATE_LIMIT_ENABLED,
+            "rate_limit_login_per_minute": self.RATE_LIMIT_LOGIN_PER_MINUTE,
+            "rate_limit_calculation_per_minute": self.RATE_LIMIT_CALCULATION_PER_MINUTE,
+            "trusted_proxy_ips_count": len(self.TRUSTED_PROXY_IPS),
+            "max_request_body_bytes": self.MAX_REQUEST_BODY_BYTES,
         }
 
 

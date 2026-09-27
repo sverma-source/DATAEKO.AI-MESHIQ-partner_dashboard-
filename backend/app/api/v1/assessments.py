@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_tenant_id, get_current_user_optional, get_db
 from app.core.audit import log_audit_event
 from app.core.errors import EntityNotFoundError
+from app.core.rate_limit import rate_limit_calculation
 from app.models.user import User
 from app.schemas.assessment import (
     AssessmentCreate,
@@ -186,6 +187,7 @@ async def get_assessment_responses(
 )
 async def calculate_assessment_endpoint(
     assessment_id: str,
+    _rate_limit: None = Depends(rate_limit_calculation),
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),

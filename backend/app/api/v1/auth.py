@@ -7,6 +7,7 @@ from app.api.deps import get_current_user, get_db
 from app.config import settings
 from app.core.audit import log_audit_event
 from app.core.errors import AuthenticationError
+from app.core.rate_limit import get_trusted_client_ip, rate_limit_login
 from app.core.rbac import ROLE_PERMISSIONS, Role
 from app.core.security import create_access_token, verify_password
 from app.models.user import User
@@ -21,14 +22,16 @@ async def login(
     request: Request,
     response: Response,
     login_data: LoginRequest,
+    _rate_limit: None = Depends(rate_limit_login),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Authenticate user with email and password.
+    Enforces pre-lookup rate limiting (5 attempts/min per resolved client IP).
     Sets secure HTTP-only cookie (HttpOnly, Secure, SameSite=Strict) and returns user profile with permissions.
     The raw JWT access token is NEVER exposed in the JSON response body.
     """
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = get_trusted_client_ip(request)
 
     stmt = select(User).where(User.email == login_data.email)
     res = await db.execute(stmt)
@@ -103,7 +106,7 @@ async def logout(
     """
     Invalidate session by clearing the access_token cookie.
     """
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = get_trusted_client_ip(request)
 
     response.delete_cookie(
         key="access_token",

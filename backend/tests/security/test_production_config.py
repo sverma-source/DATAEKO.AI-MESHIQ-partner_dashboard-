@@ -164,6 +164,68 @@ def test_production_valid_configuration_succeeds():
     assert diagnostics["auth_secret_configured"] is True
     assert diagnostics["secure_cookies"] is True
     assert diagnostics["cookie_samesite"] == "strict"
+    assert diagnostics["rate_limit_enabled"] is True
+    assert diagnostics["rate_limit_login_per_minute"] == 5
     assert "super_secret_pw" not in str(diagnostics)
     assert "a-very-secure-production" not in str(diagnostics)
+
+
+# 7. Production Rate Limiting & Resource Protection Validation
+def test_production_fails_closed_when_rate_limiting_disabled():
+    with pytest.raises(ValueError, match="RATE_LIMIT_ENABLED must be True in production"):
+        Settings(
+            ENVIRONMENT="production",
+            SECRET_KEY="a-very-secure-production-random-secret-key-at-least-32-chars-long-1234",
+            DATABASE_URL="postgresql+asyncpg://meshiq_user:super_secret_pw@db:5432/meshiq",
+            DEBUG=False,
+            CORS_ORIGINS=["https://meshiq.dataeko.ai"],
+            RATE_LIMIT_ENABLED=False,
+        )
+
+
+def test_production_fails_closed_on_invalid_login_rate_limit():
+    for bad_limit in [0, -5, 31, 100]:
+        with pytest.raises(ValueError, match="RATE_LIMIT_LOGIN_PER_MINUTE must be between 1 and 30"):
+            Settings(
+                ENVIRONMENT="production",
+                SECRET_KEY="a-very-secure-production-random-secret-key-at-least-32-chars-long-1234",
+                DATABASE_URL="postgresql+asyncpg://meshiq_user:super_secret_pw@db:5432/meshiq",
+                DEBUG=False,
+                CORS_ORIGINS=["https://meshiq.dataeko.ai"],
+                RATE_LIMIT_LOGIN_PER_MINUTE=bad_limit,
+            )
+
+
+def test_production_fails_closed_on_excessive_request_body_size():
+    with pytest.raises(ValueError, match="MAX_REQUEST_BODY_BYTES cannot exceed 10MB"):
+        Settings(
+            ENVIRONMENT="production",
+            SECRET_KEY="a-very-secure-production-random-secret-key-at-least-32-chars-long-1234",
+            DATABASE_URL="postgresql+asyncpg://meshiq_user:super_secret_pw@db:5432/meshiq",
+            DEBUG=False,
+            CORS_ORIGINS=["https://meshiq.dataeko.ai"],
+            MAX_REQUEST_BODY_BYTES=20 * 1024 * 1024,
+        )
+
+
+def test_production_fails_closed_on_broad_trusted_proxies():
+    for broad_net in ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]:
+        with pytest.raises(ValueError, match="Broad private network.*is too wide for trusted proxies"):
+            Settings(
+                ENVIRONMENT="production",
+                SECRET_KEY="a-very-secure-production-random-secret-key-at-least-32-chars-long-1234",
+                DATABASE_URL="postgresql+asyncpg://meshiq_user:super_secret_pw@db:5432/meshiq",
+                DEBUG=False,
+                CORS_ORIGINS=["https://meshiq.dataeko.ai"],
+                TRUSTED_PROXY_IPS=[broad_net],
+            )
+
+
+def test_trusted_proxy_fails_closed_on_wildcard_or_malformed():
+    with pytest.raises(ValueError, match="Wildcard '\\*' is forbidden for TRUSTED_PROXY_IPS"):
+        Settings(TRUSTED_PROXY_IPS=["*"])
+
+    with pytest.raises(ValueError, match="Invalid IP address or CIDR network 'invalid.ip.string'"):
+        Settings(TRUSTED_PROXY_IPS=["invalid.ip.string"])
+
 

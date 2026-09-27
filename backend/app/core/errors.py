@@ -51,3 +51,37 @@ class InvalidStateTransitionError(AppError):
             f"Cannot transition assessment from '{current_status}' to '{target_status}'.",
             {"current_status": current_status, "target_status": target_status},
         )
+
+
+class RateLimitExceededError(AppError):
+    """Raised when request rate exceeds configured threshold (HTTP 429)."""
+    def __init__(
+        self,
+        message: str = "Rate limit exceeded. Too many requests.",
+        retry_after_seconds: int = 60,
+        limit: int = 5,
+        window_seconds: int = 60,
+    ):
+        details = {
+            "retry_after_seconds": retry_after_seconds,
+            "limit": limit,
+            "window_seconds": window_seconds,
+        }
+        super().__init__(message, details)
+        self.retry_after_seconds = retry_after_seconds
+        self.limit = limit
+        self.window_seconds = window_seconds
+
+
+class PayloadTooLargeError(AppError):
+    """Raised when request body exceeds maximum allowed size (HTTP 413)."""
+    def __init__(
+        self,
+        message: Optional[str] = None,
+        max_bytes: int = 2 * 1024 * 1024,
+    ):
+        msg = message or f"Request payload exceeds maximum allowed size of {max_bytes} bytes."
+        details = {"max_bytes": max_bytes}
+        super().__init__(msg, details)
+        self.max_bytes = max_bytes
+

@@ -13,7 +13,9 @@ from app.core.errors import (
     AppError,
     AuthenticationError,
     EntityNotFoundError,
+    PayloadTooLargeError,
     PermissionDeniedError,
+    RateLimitExceededError,
     TenantMismatchError,
 )
 from app.core.logging import setup_logging
@@ -21,6 +23,7 @@ from app.core.middleware import (
     ExceptionSanitizerMiddleware,
     RequestCorrelationMiddleware,
     RequestLifecycleMiddleware,
+    RequestSizeLimiterMiddleware,
     SecurityHeadersMiddleware,
 )
 from app.core.rbac import Role
@@ -103,9 +106,11 @@ app = FastAPI(
 # 2. Request Correlation (generates/propagates X-Request-ID)
 # 3. Request Lifecycle Logging (measures duration and logs start/completion)
 # 4. Security Headers
-# 5. Exception Sanitization (innermost exception catch-all)
+# 5. Request Size Limiter (non-buffering body size defense)
+# 6. Exception Sanitization (innermost exception catch-all)
 
 app.add_middleware(ExceptionSanitizerMiddleware)
+app.add_middleware(RequestSizeLimiterMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestLifecycleMiddleware)
 app.add_middleware(RequestCorrelationMiddleware)
@@ -116,7 +121,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["X-Request-ID"],
+    expose_headers=[
+        "X-Request-ID",
+        "Retry-After",
+        "X-RateLimit-Limit",
+        "X-RateLimit-Remaining",
+        "X-RateLimit-Reset",
+    ],
 )
 
 
@@ -126,6 +137,41 @@ def _get_error_headers() -> dict:
 
 
 # Global Exception Handlers
+@app.exception_handler(RateLimitExceededError)
+async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceededError):
+    headers = {
+        "Retry-After": str(exc.retry_after_seconds),
+        "X-RateLimit-Limit": str(exc.limit),
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": str(exc.retry_after_seconds),
+        **_get_error_headers(),
+    }
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={
+            "detail": exc.message,
+            "error_type": "RateLimitExceeded",
+            "details": exc.details,
+            "request_id": get_request_id(),
+        },
+        headers=headers,
+    )
+
+
+@app.exception_handler(PayloadTooLargeError)
+async def payload_too_large_handler(request: Request, exc: PayloadTooLargeError):
+    return JSONResponse(
+        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+        content={
+            "detail": exc.message,
+            "error_type": "PayloadTooLarge",
+            "details": exc.details,
+            "request_id": get_request_id(),
+        },
+        headers=_get_error_headers(),
+    )
+
+
 @app.exception_handler(AuthenticationError)
 async def authentication_error_handler(request: Request, exc: AuthenticationError):
     headers = {"WWW-Authenticate": "Bearer", **_get_error_headers()}
