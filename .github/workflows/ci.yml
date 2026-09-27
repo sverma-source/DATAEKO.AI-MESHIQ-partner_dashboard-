@@ -26,9 +26,6 @@ jobs:
   backend-tests:
     name: Backend Test Suite
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -43,11 +40,11 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt pytest pytest-asyncio pytest-cov httpx
+          pip install -r backend/requirements.txt pytest pytest-asyncio pytest-cov httpx
 
       - name: Run Canonical Backend Tests
         run: |
-          PYTHONPATH=. pytest tests/ -v --ignore=tests/calculation_engine/test_golden_masters.py
+          PYTHONPATH=backend pytest backend/tests/ -v --ignore=backend/tests/calculation_engine/test_golden_masters.py
 
   # ==============================================================================
   # 2. Golden Master Release Gate (Strict Calculation Contract)
@@ -55,9 +52,6 @@ jobs:
   golden-masters:
     name: Golden Master Calculations Gate
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -72,11 +66,11 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt pytest pytest-asyncio
+          pip install -r backend/requirements.txt pytest pytest-asyncio
 
       - name: Run Strict Golden Master Test Suite
         run: |
-          PYTHONPATH=. pytest tests/calculation_engine/test_golden_masters.py -v --tb=short
+          PYTHONPATH=backend pytest backend/tests/calculation_engine/test_golden_masters.py -v --tb=short
 
   # ==============================================================================
   # 3. Frontend Unit & Integration Tests (Vitest)
@@ -101,8 +95,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run Vitest Suite
-        run: npm run test
+      - name: Run Vitest Suite (Threads Pool)
+        run: npm run test -- --pool=threads
 
   # ==============================================================================
   # 4. Frontend TypeScript Validation
@@ -136,9 +130,6 @@ jobs:
   security-prod-config:
     name: Security & Hardening Gates
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -153,11 +144,11 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt pytest pytest-asyncio httpx
+          pip install -r backend/requirements.txt pytest pytest-asyncio httpx
 
       - name: Run Security and Production Configuration Tests
         run: |
-          PYTHONPATH=. pytest tests/security/ -v
+          PYTHONPATH=backend pytest backend/tests/security/ -v
 
   # ==============================================================================
   # 6. Frontend Production Build Gate
@@ -246,10 +237,9 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install Backend Dependencies
-        working-directory: backend
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt asyncpg alembic uvicorn
+          pip install -r backend/requirements.txt asyncpg alembic uvicorn
 
       - name: Install Frontend Dependencies
         working-directory: frontend
@@ -267,30 +257,30 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Alembic Database Migrations
-        working-directory: backend
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:postgrespassword@127.0.0.1:5432/testdb
-          ENVIRONMENT: testing
-        run: alembic upgrade head
+          ENVIRONMENT: test
+        run: |
+          cd backend
+          alembic upgrade head
 
       - name: Seed Deterministic E2E Fixtures
-        working-directory: backend
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:postgrespassword@127.0.0.1:5432/testdb
-          ENVIRONMENT: testing
-        run: python scripts/seed_e2e.py
+          ENVIRONMENT: test
+        run: |
+          PYTHONPATH=backend python3 backend/scripts/seed_e2e.py
 
       - name: Launch FastAPI Backend Server
-        working-directory: backend
         run: |
           EPHEMERAL_JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(48))")
-          ENVIRONMENT=testing \
+          ENVIRONMENT=test \
           DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@127.0.0.1:5432/testdb \
           JWT_SECRET=$EPHEMERAL_JWT_SECRET \
           CORS_ORIGINS='["http://localhost:3000","http://127.0.0.1:3000"]' \
           TRUSTED_PROXIES='["127.0.0.1"]' \
           SECURE_COOKIES=false \
-          nohup python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/backend.log 2>&1 &
+          PYTHONPATH=backend nohup python3 -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 > /tmp/backend.log 2>&1 &
 
       - name: Await Backend Health Probe Readiness
         run: |
