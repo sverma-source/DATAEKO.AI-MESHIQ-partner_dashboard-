@@ -325,7 +325,7 @@ jobs:
       - name: Execute Playwright Browser E2E Suite (4 spec files / 10 tests)
         working-directory: frontend
         env:
-          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
           CI: "true"
         run: npx playwright test
 
