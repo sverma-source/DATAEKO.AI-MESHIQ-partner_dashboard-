@@ -52,9 +52,14 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                 type="button"
                 onClick={() => onSelectSection(sec.id)}
                 aria-current={isActive ? "step" : undefined}
-                className={`group flex items-center space-x-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap border ${
+                aria-label={`Section ${sec.id}: ${sec.title} - ${
+                  stats.isComplete
+                    ? "Completed"
+                    : `${stats.answered} of ${stats.total} questions answered`
+                }`}
+                className={`group flex items-center space-x-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-2 ${
                   isActive
-                    ? "bg-white text-[#172033] border-[#38B449] shadow-xs ring-2 ring-[#38B449]/20 font-bold"
+                    ? "bg-white text-[#172033] border-[#008638] shadow-xs ring-2 ring-[#008638]/20 font-bold"
                     : stats.isComplete
                     ? "bg-white text-[#172033] border-[#E2E6EE] hover:border-[#A8E2B5]"
                     : stats.isPartial
@@ -70,9 +75,10 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                       : stats.isPartial
                       ? "bg-amber-50 text-amber-700 border border-amber-300"
                       : isActive
-                      ? "bg-[#38B449] text-white"
+                      ? "bg-[#008638] text-white"
                       : "bg-[#E2E6EE] text-[#667085]"
                   }`}
+                  aria-hidden="true"
                 >
                   {stats.isComplete ? (
                     <Check className="h-3 w-3 stroke-[3] text-[#008638]" />
@@ -111,13 +117,14 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
             type="button"
             onClick={() => onSelectSection("REVIEW")}
             aria-current={currentSectionId === "REVIEW" ? "step" : undefined}
-            className={`flex items-center space-x-2 px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap border ${
+            aria-label="Review & Submit - Assessment Summary"
+            className={`flex items-center space-x-2 px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-2 ${
               currentSectionId === "REVIEW"
-                ? "bg-white text-[#008638] border-[#38B449] shadow-xs ring-2 ring-[#38B449]/20"
+                ? "bg-white text-[#008638] border-[#008638] shadow-xs ring-2 ring-[#008638]/20"
                 : "text-[#172033] bg-[#EEF8F0] border-[#A8E2B5] hover:bg-[#E2F5E6]"
             }`}
           >
-            <FileCheck className="h-4 w-4 text-[#38B449]" />
+            <FileCheck className="h-4 w-4 text-[#008638]" aria-hidden="true" />
             <span>Review &amp; Submit</span>
           </button>
         </div>

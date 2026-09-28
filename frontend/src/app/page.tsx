@@ -54,7 +54,7 @@ export default function AssessmentWizardPage() {
   });
 
   // Save / Calculation State
-  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved" | "error">("saved");
+  const [saveStatus, setSaveStatus] = useState<"initialized" | "saved" | "saving" | "unsaved" | "error">("initialized");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
   const [calculationResult, setCalculationResult] = useState<CalculationRunResponse | null>(null);
@@ -308,6 +308,7 @@ export default function AssessmentWizardPage() {
       window.history.replaceState({}, "", url.toString());
     }
     setCurrentSectionId("A");
+    setSaveStatus("initialized");
   };
 
   const handleConfirmCustomerSwitch = async () => {
@@ -320,7 +321,7 @@ export default function AssessmentWizardPage() {
     });
 
     // 2. Reset session status indicators
-    setSaveStatus("saved");
+    setSaveStatus("initialized");
     setCalculationResult(null);
     setValidationErrors({});
     setResumeError(null);

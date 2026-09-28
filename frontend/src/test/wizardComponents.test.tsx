@@ -9,6 +9,8 @@ import { CalculationStatusView } from "../components/CalculationStatusView";
 import { QUESTIONS, SECTIONS } from "../data/questionCatalog";
 import { CalculationRunResponse } from "../types/assessment";
 
+import { CustomerModal } from "../components/CustomerModal";
+
 describe("WizardHeader Component", () => {
   it("renders section info and progress percentage accurately", () => {
     const handleSave = vi.fn();
@@ -34,6 +36,57 @@ describe("WizardHeader Component", () => {
     fireEvent.click(saveBtn);
     expect(handleSave).toHaveBeenCalledTimes(1);
   });
+
+  it("renders Draft initialized state distinctly on brand new assessments", () => {
+    render(
+      <WizardHeader
+        currentSection={SECTIONS[0]}
+        currentSectionIndex={1}
+        totalSections={7}
+        answeredCount={0}
+        totalQuestions={22}
+        saveStatus="initialized"
+        onSave={vi.fn()}
+        isSaving={false}
+      />
+    );
+
+    expect(screen.getByText("Draft initialized")).toBeInTheDocument();
+  });
+
+  it("renders Unsaved changes state when responses are modified", () => {
+    render(
+      <WizardHeader
+        currentSection={SECTIONS[0]}
+        currentSectionIndex={1}
+        totalSections={7}
+        answeredCount={2}
+        totalQuestions={22}
+        saveStatus="unsaved"
+        onSave={vi.fn()}
+        isSaving={false}
+      />
+    );
+
+    expect(screen.getByText("Unsaved changes")).toBeInTheDocument();
+  });
+
+  it("renders Saving... indicator during active persistence", () => {
+    render(
+      <WizardHeader
+        currentSection={SECTIONS[0]}
+        currentSectionIndex={1}
+        totalSections={7}
+        answeredCount={2}
+        totalQuestions={22}
+        saveStatus="saving"
+        onSave={vi.fn()}
+        isSaving={true}
+      />
+    );
+
+    expect(screen.getByText("Saving...")).toBeInTheDocument();
+  });
 });
 
 describe("SectionNavigation Component", () => {
@@ -56,6 +109,25 @@ describe("SectionNavigation Component", () => {
     const secBBtn = screen.getByRole("button", { name: /section b/i });
     fireEvent.click(secBBtn);
     expect(handleSelect).toHaveBeenCalledWith("B");
+  });
+
+  it("exposes aria-current='step' and descriptive accessible labels for sections", () => {
+    render(
+      <SectionNavigation
+        sections={SECTIONS}
+        currentSectionId="B"
+        onSelectSection={vi.fn()}
+        answers={{ q01_queue_managers: "51–100", q02_fte_count: "2–4 FTEs" }}
+        questionsMap={QUESTIONS}
+      />
+    );
+
+    const activeSecB = screen.getByRole("button", { name: /section b:/i });
+    expect(activeSecB).toHaveAttribute("aria-current", "step");
+
+    const secA = screen.getByRole("button", { name: /section a:/i });
+    expect(secA).not.toHaveAttribute("aria-current");
+    expect(secA).toHaveAttribute("aria-label", expect.stringContaining("questions answered"));
   });
 });
 
@@ -102,6 +174,129 @@ describe("QuestionCard Component", () => {
 
     fireEvent.change(inputEl, { target: { value: "95" } });
     expect(handleOverride).toHaveBeenCalledWith(95);
+  });
+
+  it("blurs number input on mouse wheel to prevent accidental scroll changes", () => {
+    render(
+      <QuestionCard
+        question={QUESTIONS.Q04}
+        selectedValue="40–100 hours"
+        overrideValue={80}
+        onSelectOption={vi.fn()}
+        onOverrideChange={vi.fn()}
+      />
+    );
+
+    const inputEl = screen.getByLabelText("Exact Quarterly Administration Hours");
+    const blurSpy = vi.spyOn(inputEl, "blur");
+
+    fireEvent.wheel(inputEl);
+    expect(blurSpy).toHaveBeenCalled();
+  });
+
+  it("associates validation error with input via aria-invalid and aria-describedby", () => {
+    render(
+      <QuestionCard
+        question={QUESTIONS.Q04}
+        selectedValue="40–100 hours"
+        overrideValue={-10}
+        error="Hours must be a non-negative number."
+        onSelectOption={vi.fn()}
+        onOverrideChange={vi.fn()}
+      />
+    );
+
+    const inputEl = screen.getByLabelText("Exact Quarterly Administration Hours");
+    expect(inputEl).toHaveAttribute("aria-invalid", "true");
+    expect(inputEl).toHaveAttribute("aria-describedby", "error-Q04");
+    expect(screen.getByRole("alert")).toHaveTextContent("Hours must be a non-negative number.");
+  });
+
+  it("toggles seller guidance accordion with accessible aria-expanded and aria-controls", () => {
+    render(
+      <QuestionCard
+        question={QUESTIONS.Q01}
+        selectedValue="51–100"
+        onSelectOption={vi.fn()}
+        onOverrideChange={vi.fn()}
+      />
+    );
+
+    const guidanceBtn = screen.getByRole("button", { name: /consultant probing & seller guidance/i });
+    expect(guidanceBtn).toHaveAttribute("aria-expanded", "false");
+    expect(guidanceBtn).toHaveAttribute("aria-controls", "guidance-Q01");
+
+    fireEvent.click(guidanceBtn);
+    expect(guidanceBtn).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText(QUESTIONS.Q01.sellerGuidance!)).toBeInTheDocument();
+  });
+});
+
+describe("CustomerModal Component", () => {
+  const mockCustomers = [
+    { id: "cust-1", name: "Apex Financial", industry: "Banking" },
+    { id: "cust-2", name: "Beta Corp", industry: "Technology" },
+  ];
+
+  it("renders accessible dialog semantics, title, description, and tablist", () => {
+    render(
+      <CustomerModal
+        isOpen={true}
+        onClose={vi.fn()}
+        customers={mockCustomers}
+        onSelectCustomerAndAssessment={vi.fn()}
+        onCreateCustomer={vi.fn()}
+      />
+    );
+
+    const dialog = screen.getByRole("dialog", { name: /start assessment discovery session/i });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveAttribute("aria-describedby", "customer-modal-desc");
+
+    const tabList = screen.getByRole("tablist", { name: /customer configuration mode/i });
+    expect(tabList).toBeInTheDocument();
+
+    const existingTab = screen.getByRole("tab", { name: /existing customer/i });
+    const createTab = screen.getByRole("tab", { name: /create new customer/i });
+    expect(existingTab).toHaveAttribute("aria-selected", "true");
+    expect(createTab).toHaveAttribute("aria-selected", "false");
+  });
+
+  it("switches to create customer mode and displays registration fields", () => {
+    render(
+      <CustomerModal
+        isOpen={true}
+        onClose={vi.fn()}
+        customers={mockCustomers}
+        onSelectCustomerAndAssessment={vi.fn()}
+        onCreateCustomer={vi.fn()}
+      />
+    );
+
+    const createTab = screen.getByRole("tab", { name: /create new customer/i });
+    fireEvent.click(createTab);
+
+    expect(createTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByLabelText(/company \/ organization name \*/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/industry sector/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/primary contact email/i)).toBeInTheDocument();
+  });
+
+  it("closes dialog when pressing Escape", () => {
+    const handleClose = vi.fn();
+    render(
+      <CustomerModal
+        isOpen={true}
+        onClose={handleClose}
+        customers={mockCustomers}
+        onSelectCustomerAndAssessment={vi.fn()}
+        onCreateCustomer={vi.fn()}
+      />
+    );
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(handleClose).toHaveBeenCalledTimes(1);
   });
 });
 

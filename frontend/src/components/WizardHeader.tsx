@@ -10,7 +10,7 @@ interface WizardHeaderProps {
   totalSections: number;
   answeredCount: number;
   totalQuestions: number;
-  saveStatus: "saved" | "saving" | "unsaved" | "error";
+  saveStatus: "initialized" | "saved" | "saving" | "unsaved" | "error";
   onSave: () => void;
   isSaving: boolean;
 }
@@ -49,12 +49,13 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
           <div className="flex items-center space-x-3 w-full sm:w-48">
             <div className="flex-1 bg-[#F1F3F7] rounded-full h-2.5 overflow-hidden border border-[#E2E6EE]">
               <div
-                className="bg-[#38B449] h-full rounded-full transition-all duration-300 ease-out"
+                className="bg-[#008638] h-full rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${percentage}%` }}
                 role="progressbar"
                 aria-valuenow={percentage}
                 aria-valuemin={0}
                 aria-valuemax={100}
+                aria-label={`Assessment completion progress: ${percentage}%`}
               />
             </div>
             <span className="text-xs font-bold text-[#172033] font-mono w-10 text-right">
@@ -64,11 +65,16 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
 
           {/* Save Status & Action */}
           <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1.5 text-xs text-[#667085] mr-1">
+            <div className="flex items-center space-x-1.5 text-xs text-[#667085] mr-1" aria-live="polite">
               {saveStatus === "saving" ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#38B449]" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#008638]" />
                   <span>Saving...</span>
+                </>
+              ) : saveStatus === "initialized" ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-slate-500" />
+                  <span className="text-slate-600 font-medium">Draft initialized</span>
                 </>
               ) : saveStatus === "saved" ? (
                 <>
@@ -89,7 +95,8 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
               type="button"
               onClick={onSave}
               disabled={isSaving}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#CBD2DE] bg-white text-[#172033] hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:ring-offset-1 transition-colors shadow-xs disabled:opacity-50"
+              aria-label="Save Progress"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#CBD2DE] bg-white text-[#172033] hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#008638] focus:ring-offset-1 transition-colors shadow-xs disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <Save className="h-3.5 w-3.5 text-[#667085]" />
               <span>Save Progress</span>

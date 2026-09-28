@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Building2, FileText, Loader2, Plus, X } from "lucide-react";
 import { Customer } from "../types/assessment";
 
@@ -31,15 +31,53 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Close on Escape key press
+  const modalRef = useRef<HTMLDivElement>(null);
+  const initialFocusRef = useRef<HTMLButtonElement>(null);
+
+  // Keyboard trap and Escape listener
   useEffect(() => {
+    if (!isOpen) return;
+
+    // Focus the initial control when opening
+    const timer = setTimeout(() => {
+      initialFocusRef.current?.focus();
+    }, 50);
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen && !isLoading) {
+      if (e.key === "Escape" && !isLoading) {
         onClose();
+        return;
+      }
+
+      // Trap focus inside modal
+      if (e.key === "Tab" && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, isLoading, onClose]);
 
   // Keep selectedCustomerId in sync when customers list updates or modal opens
@@ -97,23 +135,30 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       }}
     >
       <div
+        ref={modalRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="customer-modal-title"
+        aria-describedby="customer-modal-desc"
         className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E6EE] animate-in fade-in zoom-in-95 duration-150"
       >
-        <div className="flex items-center justify-between pb-4 border-b border-[#E2E6EE]">
-          <div className="flex items-center space-x-2">
-            <Building2 className="h-5 w-5 text-[#008638]" />
-            <h3 id="customer-modal-title" className="text-lg font-bold text-[#172033]">
-              Start Assessment Discovery Session
-            </h3>
+        <div className="flex items-start justify-between pb-4 border-b border-[#E2E6EE]">
+          <div>
+            <div className="flex items-center space-x-2">
+              <Building2 className="h-5 w-5 text-[#008638]" />
+              <h3 id="customer-modal-title" className="text-lg font-bold text-[#172033]">
+                Start Assessment Discovery Session
+              </h3>
+            </div>
+            <p id="customer-modal-desc" className="text-xs text-[#667085] mt-1">
+              Select an existing enterprise account or register a new customer profile to link this assessment.
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close customer dialog"
-            className="text-[#667085] hover:text-[#172033] transition-colors rounded-lg p-1 hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#008638]"
+            className="text-[#667085] hover:text-[#172033] transition-colors rounded-lg p-1 hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#008638] cursor-pointer shrink-0 ml-2"
           >
             <X className="h-5 w-5" />
           </button>
@@ -127,11 +172,20 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
           )}
 
           {/* Mode Switcher */}
-          <div className="flex rounded-lg bg-[#F1F3F7] p-1 text-xs font-semibold border border-[#E2E6EE]">
+          <div
+            role="tablist"
+            aria-label="Customer configuration mode"
+            className="flex rounded-lg bg-[#F1F3F7] p-1 text-xs font-semibold border border-[#E2E6EE]"
+          >
             <button
+              ref={initialFocusRef}
               type="button"
+              role="tab"
+              id="tab-existing-customer"
+              aria-selected={mode === "select"}
+              aria-controls="panel-existing-customer"
               onClick={() => setMode("select")}
-              className={`flex-1 py-1.5 rounded-md transition-colors ${
+              className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 mode === "select"
                   ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
                   : "text-[#667085] hover:text-[#172033]"
@@ -141,8 +195,12 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
             </button>
             <button
               type="button"
+              role="tab"
+              id="tab-create-customer"
+              aria-selected={mode === "create"}
+              aria-controls="panel-create-customer"
               onClick={() => setMode("create")}
-              className={`flex-1 py-1.5 rounded-md transition-colors ${
+              className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 mode === "create"
                   ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
                   : "text-[#667085] hover:text-[#172033]"
@@ -153,7 +211,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
           </div>
 
           {mode === "select" ? (
-            <div>
+            <div id="panel-existing-customer" role="tabpanel" aria-labelledby="tab-existing-customer">
               <label htmlFor="customer-select" className="block text-xs font-semibold text-[#172033] mb-1">
                 Select Customer Account
               </label>
@@ -161,6 +219,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 id="customer-select"
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
+                aria-label="Select Customer Account"
                 className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
               >
                 {customers.length === 0 && <option value="">No customers found — create one</option>}
@@ -172,7 +231,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
               </select>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div id="panel-create-customer" role="tabpanel" aria-labelledby="tab-create-customer" className="space-y-3">
               <div>
                 <label htmlFor="company-name" className="block text-xs font-semibold text-[#172033] mb-1">
                   Company / Organization Name *
@@ -181,6 +240,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   id="company-name"
                   type="text"
                   required
+                  aria-required="true"
                   placeholder="e.g. Global Freight Logistics Corp"
                   value={newCustName}
                   onChange={(e) => setNewCustName(e.target.value)}
@@ -196,6 +256,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   id="industry-select"
                   value={newCustIndustry}
                   onChange={(e) => setNewCustIndustry(e.target.value)}
+                  aria-label="Industry Sector"
                   className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
                 >
                   <option value="Financial Services & Banking">Financial Services & Banking</option>
@@ -237,6 +298,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 id="assessment-title"
                 type="text"
                 required
+                aria-required="true"
                 value={assessmentTitle}
                 onChange={(e) => setAssessmentTitle(e.target.value)}
                 className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
@@ -251,14 +313,15 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 text-xs font-semibold text-[#667085] hover:text-[#172033] rounded-lg hover:bg-[#F1F3F7] transition-colors focus:outline-none focus:ring-2 focus:ring-[#CBD2DE]"
+              className="px-4 py-2 text-xs font-semibold text-[#667085] hover:text-[#172033] rounded-lg hover:bg-[#F1F3F7] transition-colors focus:outline-none focus:ring-2 focus:ring-[#CBD2DE] cursor-pointer disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] hover:bg-[#006b2d] px-5 py-2.5 text-xs font-bold text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008638] transition-colors disabled:opacity-50"
+              aria-label={mode === "create" ? "Create Customer and Launch Intake Wizard" : "Select Customer and Launch Intake Wizard"}
+              className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] hover:bg-[#006B2D] px-5 py-2.5 text-xs font-bold text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008638] focus:ring-offset-2 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

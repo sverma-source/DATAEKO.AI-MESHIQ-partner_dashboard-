@@ -93,7 +93,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 id={`select-${question.id}`}
                 value={selectedValue || ""}
                 onChange={(e) => onSelectOption(e.target.value)}
-                className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 sm:py-2.5 pr-10 text-xs sm:text-sm font-medium text-[#172033] shadow-xs transition-colors focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:border-[#38B449] ${
+                aria-label={`${question.code}: ${question.title}`}
+                aria-invalid={!!error}
+                aria-describedby={error ? `error-${question.id}` : undefined}
+                className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 sm:py-2.5 pr-10 text-xs sm:text-sm font-medium text-[#172033] shadow-xs transition-colors focus:outline-none focus:ring-2 focus:ring-[#008638] focus:border-[#008638] ${
                   error
                     ? "border-rose-400 focus:border-rose-500 focus:ring-rose-200"
                     : "border-[#CBD2DE] hover:border-slate-400"
@@ -120,9 +123,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               <button
                 type="button"
                 onClick={() => setUseOverrideMode(!useOverrideMode)}
-                className="text-xs font-semibold text-[#008638] hover:text-[#38B449] flex items-center space-x-1.5 transition-colors"
+                aria-expanded={useOverrideMode}
+                className="text-xs font-semibold text-[#008638] hover:text-[#006B2D] flex items-center space-x-1.5 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] rounded-sm"
               >
-                <Sparkles className="h-3.5 w-3.5 text-[#38B449]" />
+                <Sparkles className="h-3.5 w-3.5 text-[#008638]" />
                 <span>
                   {useOverrideMode
                     ? "Hide exact numeric customer fact"
@@ -134,7 +138,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 <button
                   type="button"
                   onClick={() => onDefaultToggle(!useDefault)}
-                  className={`text-[11px] px-2.5 py-0.5 rounded-md border font-semibold transition-colors ${
+                  className={`text-[11px] px-2.5 py-0.5 rounded-md border font-semibold transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                     useDefault
                       ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]"
                       : "bg-[#F1F3F7] text-[#667085] border-[#CBD2DE]"
@@ -164,12 +168,16 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     type="number"
                     step="any"
                     placeholder={question.overridePlaceholder || "0.00"}
+                    aria-label={`${question.code} exact numeric value: ${question.overrideLabel || "Exact Numeric Override"}`}
+                    aria-invalid={!!error}
+                    aria-describedby={error ? `error-${question.id}` : undefined}
                     value={overrideValue !== undefined && overrideValue !== null ? overrideValue : ""}
+                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     onChange={(e) => {
                       const val = e.target.value === "" ? undefined : parseFloat(e.target.value);
                       onOverrideChange(val);
                     }}
-                    className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#172033] shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
+                    className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
                   />
                   {question.overrideUnit && (
                     <span className="absolute right-3 text-xs font-semibold text-[#667085] pointer-events-none">
@@ -187,7 +195,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
         {/* Validation Error */}
         {error && (
-          <div className="flex items-center space-x-1.5 text-xs text-rose-600 font-medium pt-0.5">
+          <div id={`error-${question.id}`} role="alert" className="flex items-center space-x-1.5 text-xs text-rose-600 font-medium pt-0.5">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -197,7 +205,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         {question.calculationNote && (
           <div className="rounded-lg bg-[#F8FAFC] px-3 py-2 border border-[#E2E6EE] text-xs">
             <div className="flex items-center space-x-1.5 text-[10px] font-bold uppercase tracking-wider text-[#008638]">
-              <Info className="h-3.5 w-3.5 shrink-0 text-[#38B449]" />
+              <Info className="h-3.5 w-3.5 shrink-0 text-[#008638]" />
               <span>ENGINE IMPACT</span>
             </div>
             <p className="text-xs text-[#172033] mt-0.5 leading-normal">
@@ -212,7 +220,9 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             <button
               type="button"
               onClick={() => setShowSellerNotes(!showSellerNotes)}
-              className="flex items-center space-x-1 text-xs font-semibold text-[#667085] hover:text-[#172033] transition-colors"
+              aria-expanded={showSellerNotes}
+              aria-controls={`guidance-${question.id}`}
+              className="flex items-center space-x-1 text-xs font-semibold text-[#667085] hover:text-[#172033] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] rounded-sm"
             >
               <HelpCircle className="h-3.5 w-3.5" />
               <span>Consultant Probing &amp; Seller Guidance</span>
@@ -223,7 +233,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               )}
             </button>
             {showSellerNotes && (
-              <div className="mt-2 rounded-lg bg-amber-50/80 p-3 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+              <div id={`guidance-${question.id}`} className="mt-2 rounded-lg bg-amber-50/80 p-3 border border-amber-200 text-xs text-amber-900 leading-relaxed">
                 <span className="font-bold block mb-0.5">Discovery Probe:</span>
                 {question.sellerGuidance}
               </div>
