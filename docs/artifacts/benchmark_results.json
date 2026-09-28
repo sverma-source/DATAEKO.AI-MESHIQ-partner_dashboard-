@@ -1,0 +1,122 @@
+{
+  "summary": {
+    "1. GET /health/live": {
+      "min": 0.86,
+      "p50": 1.0,
+      "p95": 2.66,
+      "p99": 6.77,
+      "max": 6.77,
+      "mean": 1.3,
+      "requests": 50,
+      "concurrency": 1,
+      "success_rate": "50/50",
+      "throughput": 727.3
+    },
+    "2. GET /health/ready": {
+      "min": 1.09,
+      "p50": 1.31,
+      "p95": 1.92,
+      "p99": 2.49,
+      "max": 2.49,
+      "mean": 1.38,
+      "requests": 50,
+      "concurrency": 1,
+      "success_rate": "50/50",
+      "throughput": 688.0
+    },
+    "3. POST /auth/login": {
+      "min": 207.33,
+      "p50": 209.23,
+      "p95": 209.23,
+      "p99": 209.23,
+      "max": 209.23,
+      "mean": 208.28,
+      "requests": 2,
+      "concurrency": 1,
+      "success_rate": "2/2",
+      "throughput": 4.8
+    },
+    "4. PUT /assessments/{id}/responses": {
+      "min": 4.0,
+      "p50": 4.31,
+      "p95": 81.57,
+      "p99": 81.57,
+      "max": 81.57,
+      "mean": 9.38,
+      "requests": 20,
+      "concurrency": 1,
+      "success_rate": "20/20",
+      "throughput": 105.3
+    },
+    "5. POST /assessments/{id}/calculate": {
+      "min": 5.15,
+      "p50": 6.66,
+      "p95": 15.83,
+      "p99": 15.83,
+      "max": 15.83,
+      "mean": 7.58,
+      "requests": 6,
+      "concurrency": 1,
+      "success_rate": "6/6",
+      "throughput": 129.5
+    },
+    "6. GET /assessments/{id}/snapshots/latest": {
+      "min": 1.46,
+      "p50": 1.82,
+      "p95": 2.95,
+      "p99": 5.45,
+      "max": 5.45,
+      "mean": 2.03,
+      "requests": 50,
+      "concurrency": 1,
+      "success_rate": "50/50",
+      "throughput": 457.7
+    },
+    "7. Rate-Limit Throttling (HTTP 429)": {
+      "min": 1.15,
+      "p50": 1.39,
+      "p95": 191.52,
+      "p99": 191.52,
+      "max": 191.52,
+      "mean": 33.62,
+      "requests": 6,
+      "status_distribution": {
+        "200": 1,
+        "429": 5
+      },
+      "http_429_verified": true
+    },
+    "8. 20 Concurrent Mixed Pool Stress": {
+      "min": 9.27,
+      "p50": 171.24,
+      "p95": 190.23,
+      "p99": 190.23,
+      "max": 190.23,
+      "mean": 136.94,
+      "requests": 20,
+      "concurrency": 20,
+      "status_distribution": {
+        "200": 20
+      },
+      "errors_count": 0,
+      "total_duration_sec": 0.202
+    }
+  },
+  "http_429_inspection": {
+    "payload": {
+      "detail": "Rate limit exceeded. Too many login attempts. Please retry in 59 seconds.",
+      "error_type": "RateLimitExceeded",
+      "details": {
+        "retry_after_seconds": 59,
+        "limit": 5,
+        "window_seconds": 60
+      },
+      "request_id": "42f9b0de-b05f-4118-851e-03c1932b2593"
+    },
+    "headers": {
+      "x-request-id": "42f9b0de-b05f-4118-851e-03c1932b2593",
+      "retry-after": "59"
+    }
+  },
+  "concurrent_errors": []
+}

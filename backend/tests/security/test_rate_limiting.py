@@ -509,3 +509,55 @@ def test_in_memory_rate_limiter_process_local_reset():
     """TEST-RL-18: BaseRateLimiter reset() clears process-local buckets."""
     limiter.reset()
     assert len(limiter._buckets) == 0
+
+
+@pytest.mark.asyncio
+async def test_in_memory_rate_limiter_empty_bucket_cleanup():
+    """TEST-RL-19: Expired buckets are deleted completely from _buckets dictionary."""
+    import time
+    limiter.reset()
+
+    # Add expired timestamp to key1 (e.g. 120s ago)
+    old_time = time.time() - 120.0
+    limiter._buckets["expired_ip_key"] = [old_time]
+    assert "expired_ip_key" in limiter._buckets
+
+    # Check another key; verify expired_ip_key is pruned
+    is_limited, rem, retry = await limiter.check_rate_limit("active_ip_key", limit=5, window_seconds=60)
+    assert is_limited is False
+    assert "expired_ip_key" not in limiter._buckets
+    assert "active_ip_key" in limiter._buckets
+
+
+@pytest.mark.asyncio
+async def test_in_memory_rate_limiter_active_bucket_retained():
+    """TEST-RL-20: Active timestamps are retained while empty/expired buckets are removed."""
+    import time
+    limiter.reset()
+
+    now = time.time()
+    limiter._buckets["stale_key"] = [now - 90.0]
+    limiter._buckets["active_key"] = [now - 10.0]
+
+    pruned_count = await limiter.prune_expired(window_seconds=60)
+    assert pruned_count == 1
+    assert "stale_key" not in limiter._buckets
+    assert "active_key" in limiter._buckets
+    assert len(limiter._buckets["active_key"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_in_memory_rate_limiter_concurrent_protection():
+    """TEST-RL-21: Concurrent access to rate limiter remains protected under asyncio.gather."""
+    import asyncio
+    limiter.reset()
+
+    async def hit(key):
+        return await limiter.check_rate_limit(key, limit=10, window_seconds=60)
+
+    # 30 concurrent checks on same key
+    results = await asyncio.gather(*[hit("concurrent_key") for _ in range(30)])
+    limited_results = [r[0] for r in results]
+    # Exactly 10 allowed (False), 20 throttled (True)
+    assert limited_results.count(False) == 10
+    assert limited_results.count(True) == 20

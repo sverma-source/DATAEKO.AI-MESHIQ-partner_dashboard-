@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, Optional, TYPE_CHECKING
-from sqlalchemy import DateTime, ForeignKey, JSON, String
+from sqlalchemy import DateTime, ForeignKey, Index, JSON, String, desc
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin, get_utc_now
 
@@ -11,6 +11,9 @@ if TYPE_CHECKING:
 
 class CalculationSnapshot(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "calculation_snapshots"
+    __table_args__ = (
+        Index("ix_calc_snapshots_assessment_created_at_desc", "assessment_id", desc("created_at")),
+    )
 
     assessment_id: Mapped[str] = mapped_column(
         String(36),

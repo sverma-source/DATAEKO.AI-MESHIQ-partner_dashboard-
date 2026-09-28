@@ -56,7 +56,15 @@ class InMemorySlidingWindowRateLimiter(BaseRateLimiter):
         window_start = now - window_seconds
 
         async with self._lock:
-            # Retrieve or initialize timestamps list for this key
+            # Prune all expired keys whose timestamps have rolled off completely
+            expired_keys = [
+                k for k, ts in self._buckets.items()
+                if not any(t > window_start for t in ts)
+            ]
+            for k in expired_keys:
+                del self._buckets[k]
+
+            # Retrieve timestamps list for this key
             timestamps = self._buckets.get(key, [])
 
             # Prune timestamps older than the sliding window start
@@ -74,6 +82,19 @@ class InMemorySlidingWindowRateLimiter(BaseRateLimiter):
             self._buckets[key] = valid_timestamps
             remaining = limit - len(valid_timestamps)
             return False, remaining, 0
+
+    async def prune_expired(self, window_seconds: int = 60) -> int:
+        """Explicitly prune expired buckets and delete empty keys. Returns number of pruned keys."""
+        now = time.time()
+        window_start = now - window_seconds
+        async with self._lock:
+            expired_keys = [
+                k for k, ts in self._buckets.items()
+                if not any(t > window_start for t in ts)
+            ]
+            for k in expired_keys:
+                del self._buckets[k]
+            return len(expired_keys)
 
     def reset(self) -> None:
         self._buckets.clear()

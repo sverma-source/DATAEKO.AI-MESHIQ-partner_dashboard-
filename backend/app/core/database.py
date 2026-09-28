@@ -10,14 +10,23 @@ from app.config import settings
 # Create asynchronous engine
 # connect_args={"check_same_thread": False} is required only for sqlite
 connect_args = {}
+engine_kwargs = {
+    "echo": settings.DEBUG and settings.ENVIRONMENT == "development",
+    "future": True,
+}
+
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+else:
+    # Resilience hardening for PostgreSQL/production database connections
+    engine_kwargs["pool_pre_ping"] = True
+    engine_kwargs["pool_recycle"] = 1800
+
+engine_kwargs["connect_args"] = connect_args
 
 engine: AsyncEngine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.DEBUG and settings.ENVIRONMENT == "development",
-    future=True,
-    connect_args=connect_args,
+    **engine_kwargs,
 )
 
 # Async session factory
