@@ -281,13 +281,13 @@ jobs:
           TRUSTED_PROXIES='["127.0.0.1"]' \
           SECURE_COOKIES=false \
           RATE_LIMIT_ENABLED=true \
-          RATE_LIMIT_LOGIN_PER_MINUTE=100 \
+          RATE_LIMIT_LOGIN_PER_MINUTE=30 \
           PYTHONPATH=backend nohup python3 -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 > /tmp/backend.log 2>&1 &
 
       - name: Await Backend Health Probe Readiness
         run: |
           python3 -c "
-          import urllib.request, time, sys
+          import urllib.request, time, sys, os
           for i in range(30):
               try:
                   res = urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready', timeout=2)
@@ -297,6 +297,11 @@ jobs:
               except Exception:
                   time.sleep(1)
           print('❌ FastAPI backend failed to reach ready state within 30 seconds')
+          if os.path.exists('/tmp/backend.log'):
+              print('=== /tmp/backend.log ===')
+              with open('/tmp/backend.log', 'r') as f:
+                  print(f.read())
+              print('========================')
           sys.exit(1)
           "
 
