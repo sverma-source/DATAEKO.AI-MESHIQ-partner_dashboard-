@@ -28,28 +28,28 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
   const percentage = Math.round((answeredCount / totalQuestions) * 100);
 
   return (
-    <div className="bg-white border-b border-slate-200 px-4 py-4 sm:px-6 lg:px-8 shadow-sm">
+    <div className="bg-white border-b border-[#E2E6EE] px-4 py-4 sm:px-6 lg:px-8 shadow-xs">
       <div className="mx-auto max-w-7xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         {/* Section Context */}
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-blue-700">
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#008638]">
             <span>Section {currentSection.id} of {totalSections}</span>
-            <span>•</span>
+            <span className="text-[#CBD2DE]">•</span>
             <span>{answeredCount} of {totalQuestions} Questions Answered</span>
           </div>
-          <h1 className="text-xl font-bold text-slate-900 sm:text-2xl tracking-tight mt-0.5">
+          <h1 className="text-xl font-extrabold text-[#172033] sm:text-2xl tracking-tight mt-0.5">
             {currentSection.title}
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5 max-w-2xl">{currentSection.subtitle}</p>
+          <p className="text-xs sm:text-sm text-[#667085] mt-0.5 max-w-2xl">{currentSection.subtitle}</p>
         </div>
 
         {/* Action & Progress */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:self-center">
           {/* Progress Bar & Percentage */}
           <div className="flex items-center space-x-3 w-full sm:w-48">
-            <div className="flex-1 bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200/80">
+            <div className="flex-1 bg-[#F1F3F7] rounded-full h-2.5 overflow-hidden border border-[#E2E6EE]">
               <div
-                className="bg-blue-600 h-full rounded-full transition-all duration-300 ease-out"
+                className="bg-[#38B449] h-full rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${percentage}%` }}
                 role="progressbar"
                 aria-valuenow={percentage}
@@ -57,23 +57,23 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
                 aria-valuemax={100}
               />
             </div>
-            <span className="text-xs font-bold text-slate-700 font-mono w-10 text-right">
+            <span className="text-xs font-bold text-[#172033] font-mono w-10 text-right">
               {percentage}%
             </span>
           </div>
 
           {/* Save Status & Action */}
           <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1.5 text-xs text-slate-500 mr-1">
+            <div className="flex items-center space-x-1.5 text-xs text-[#667085] mr-1">
               {saveStatus === "saving" ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#38B449]" />
                   <span>Saving...</span>
                 </>
               ) : saveStatus === "saved" ? (
                 <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  <span className="text-slate-600">Progress saved</span>
+                  <Check className="h-3.5 w-3.5 text-[#008638]" />
+                  <span className="text-[#008638] font-medium">Progress saved</span>
                 </>
               ) : saveStatus === "unsaved" ? (
                 <>
@@ -89,9 +89,9 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
               type="button"
               onClick={onSave}
               disabled={isSaving}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors shadow-sm disabled:opacity-50"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#CBD2DE] bg-white text-[#172033] hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:ring-offset-1 transition-colors shadow-xs disabled:opacity-50"
             >
-              <Save className="h-3.5 w-3.5 text-slate-500" />
+              <Save className="h-3.5 w-3.5 text-[#667085]" />
               <span>Save Progress</span>
             </button>
           </div>

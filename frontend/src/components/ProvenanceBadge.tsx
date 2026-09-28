@@ -52,7 +52,7 @@ export const ProvenanceBadge: React.FC<ProvenanceBadgeProps> = ({
         return {
           label: "Customer Fact",
           icon: Building,
-          color: "bg-blue-50 text-blue-700 border-blue-200",
+          color: "bg-slate-100 text-[#172033] border-slate-300",
           description: "Verified customer input provided during assessment discovery.",
         };
       case "INDUSTRY_BENCHMARK":
@@ -60,7 +60,7 @@ export const ProvenanceBadge: React.FC<ProvenanceBadgeProps> = ({
         return {
           label: "Industry Benchmark",
           icon: Sparkles,
-          color: "bg-purple-50 text-purple-700 border-purple-200",
+          color: "bg-[#FAF5FF] text-[#722F8A] border-[#E9D5FF]",
           description: "Authoritative industry benchmark applied due to unspecified customer figure.",
         };
       case "CALCULATED_RESULT":
@@ -68,7 +68,7 @@ export const ProvenanceBadge: React.FC<ProvenanceBadgeProps> = ({
         return {
           label: "Calculated Metric",
           icon: Calculator,
-          color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+          color: "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]",
           description: "Deterministic mathematical computation executed by Phase 3 calculation engine.",
         };
       case "SCENARIO_PROJECTION":
@@ -76,7 +76,7 @@ export const ProvenanceBadge: React.FC<ProvenanceBadgeProps> = ({
         return {
           label: "Illustrative Scenario",
           icon: Sliders,
-          color: "bg-amber-50 text-amber-700 border-amber-200",
+          color: "bg-amber-50 text-amber-800 border-amber-300",
           description: "Hypothetical model projection based on approved improvement scenario parameters.",
         };
       case "MODEL_ASSUMPTION":
@@ -103,12 +103,12 @@ export const ProvenanceBadge: React.FC<ProvenanceBadgeProps> = ({
       case "VALID_WITH_DEFAULTS":
         return {
           label: "Validated",
-          color: "bg-emerald-100 text-emerald-800 border-emerald-300",
+          color: "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]",
         };
       case "INDUSTRY_BENCHMARK":
         return {
           label: "Benchmark Applied",
-          color: "bg-purple-100 text-purple-800 border-purple-300",
+          color: "bg-[#FAF5FF] text-[#722F8A] border-[#E9D5FF]",
         };
       case "INSUFFICIENT_DATA":
         return {

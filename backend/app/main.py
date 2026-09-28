@@ -38,52 +38,54 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize tables (for dev/test SQLite environments when migrations haven't run)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # In development and test environments, auto-initialize tables and seed development users
+    if settings.ENVIRONMENT != "production":
+        # Initialize tables (for dev/test SQLite environments when migrations haven't run)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
 
-    # Ensure default tenant and seed users exist
-    async with AsyncSessionLocal() as session:
-        stmt = select(Tenant).where(Tenant.id == DEFAULT_TENANT_ID)
-        res = await session.execute(stmt)
-        default_tenant = res.scalar_one_or_none()
-        if not default_tenant:
-            tenant = Tenant(
-                id=DEFAULT_TENANT_ID,
-                name="Primary Organization (DATAEKO / meshIQ)",
-                slug="default-org",
-            )
-            session.add(tenant)
-            await session.flush()
+        # Ensure default tenant and seed development users exist for dev convenience
+        async with AsyncSessionLocal() as session:
+            stmt = select(Tenant).where(Tenant.id == DEFAULT_TENANT_ID)
+            res = await session.execute(stmt)
+            default_tenant = res.scalar_one_or_none()
+            if not default_tenant:
+                tenant = Tenant(
+                    id=DEFAULT_TENANT_ID,
+                    name="Primary Organization (DATAEKO / meshIQ)",
+                    slug="default-org",
+                )
+                session.add(tenant)
+                await session.flush()
 
-        # Seed default users if they don't exist
-        user_stmt = select(User).where(User.email == "consultant@dataeko.ai")
-        user_res = await session.execute(user_stmt)
-        default_user = user_res.scalar_one_or_none()
-        if not default_user:
-            consultant_user = User(
-                id="00000000-0000-0000-0000-000000000002",
-                email="consultant@dataeko.ai",
-                hashed_password=get_password_hash("Consultant123!"),
-                full_name="Lead MQ Consultant",
-                role=Role.CONSULTANT.value,
-                tenant_id=DEFAULT_TENANT_ID,
-                is_active=True,
-            )
-            session.add(consultant_user)
+            # Seed default development users if they don't exist
+            user_stmt = select(User).where(User.email == "consultant@dataeko.ai")
+            user_res = await session.execute(user_stmt)
+            default_user = user_res.scalar_one_or_none()
+            if not default_user:
+                consultant_user = User(
+                    id="00000000-0000-0000-0000-000000000002",
+                    email="consultant@dataeko.ai",
+                    hashed_password=get_password_hash("Consultant123!"),
+                    full_name="Lead MQ Consultant",
+                    role=Role.CONSULTANT.value,
+                    tenant_id=DEFAULT_TENANT_ID,
+                    is_active=True,
+                )
+                session.add(consultant_user)
 
-            admin_user = User(
-                id="00000000-0000-0000-0000-000000000003",
-                email="admin@dataeko.ai",
-                hashed_password=get_password_hash("AdminPass123!"),
-                full_name="Platform Admin",
-                role=Role.PLATFORM_ADMIN.value,
-                tenant_id=DEFAULT_TENANT_ID,
-                is_active=True,
-            )
-            session.add(admin_user)
+                admin_user = User(
+                    id="00000000-0000-0000-0000-000000000003",
+                    email="admin@dataeko.ai",
+                    hashed_password=get_password_hash("AdminPass123!"),
+                    full_name="Platform Admin",
+                    role=Role.PLATFORM_ADMIN.value,
+                    tenant_id=DEFAULT_TENANT_ID,
+                    is_active=True,
+                )
+                session.add(admin_user)
 
-        await session.commit()
+            await session.commit()
 
     yield
 

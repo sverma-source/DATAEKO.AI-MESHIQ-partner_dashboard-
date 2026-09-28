@@ -106,33 +106,97 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
     }
   };
 
+  // Calculate Readiness Metrics
+  const totalQuestions = 22;
+  let answeredCount = 0;
+  let attentionCount = 0;
+  let engineInputsAnswered = 0;
+  let customerFactsCount = 0;
+
+  Object.values(questionsMap).forEach((q) => {
+    const ans = formatAnswerDisplay(q);
+    const isUnanswered = ans === "Not answered" || ans === "Not provided";
+    const isUnknown = ans.includes("Unknown") || ans.includes("Not sure");
+    const isOverride = ans.includes("Exact") || ans.includes("Override") || ans.includes("Custom");
+
+    if (!isUnanswered) {
+      answeredCount++;
+      if (q.feedsCalculation) engineInputsAnswered++;
+      if (isOverride) customerFactsCount++;
+    }
+    if (isUnanswered || isUnknown) {
+      attentionCount++;
+    }
+  });
+
+  const isAllAnswered = answeredCount === totalQuestions;
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
-      {/* Review Header Card */}
-      <div className="rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-6 sm:p-8 text-white shadow-lg">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div>
-            <span className="inline-flex items-center space-x-1 rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-300 border border-blue-400/30">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Assessment Discovery Review</span>
-            </span>
-            <h2 className="text-2xl font-bold tracking-tight mt-2 text-white sm:text-3xl">
+      {/* Review Header Hero Card */}
+      <div className="rounded-2xl bg-[#0D1322] border border-[#1E293B] p-6 sm:p-8 text-white shadow-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <span className="inline-flex items-center space-x-1.5 rounded-full bg-[#38B449]/20 px-3 py-1 text-xs font-bold text-[#8CC63E] border border-[#38B449]/40">
+                <Sparkles className="h-3.5 w-3.5 text-[#38B449]" />
+                <span>Assessment Readiness Review</span>
+              </span>
+              <span
+                className={`text-xs px-2.5 py-0.5 rounded font-bold border ${
+                  isAllAnswered
+                    ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]"
+                    : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                }`}
+              >
+                {isAllAnswered ? "100% Intake Complete" : `${answeredCount}/${totalQuestions} Questions Complete`}
+              </span>
+            </div>
+            <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
               Ready for Engine Calculation
             </h2>
-            <p className="text-slate-300 text-sm mt-1 max-w-xl">
-              Review all 22 intake responses below. Submitting will execute the pure deterministic calculation engine and generate an immutable snapshot.
+            <p className="text-slate-300 text-xs sm:text-sm max-w-xl leading-relaxed">
+              Review all 22 discovery responses below. Submitting executes the deterministic economic calculation engine and generates an immutable, audited snapshot.
             </p>
+
+            {/* High-Level Stat Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div className="rounded-lg bg-[#172033] p-2.5 border border-[#1E293B]">
+                <span className="text-[10px] text-slate-400 font-semibold uppercase block">Answered</span>
+                <span className="text-lg font-bold font-mono text-[#8CC63E]">{answeredCount} / {totalQuestions}</span>
+              </div>
+              <div className="rounded-lg bg-[#172033] p-2.5 border border-[#1E293B]">
+                <span className="text-[10px] text-slate-400 font-semibold uppercase block">Attention Needed</span>
+                <span className={`text-lg font-bold font-mono ${attentionCount > 0 ? "text-amber-400" : "text-slate-400"}`}>
+                  {attentionCount}
+                </span>
+              </div>
+              <div className="rounded-lg bg-[#172033] p-2.5 border border-[#1E293B]">
+                <span className="text-[10px] text-slate-400 font-semibold uppercase block">Engine Inputs</span>
+                <span className="text-lg font-bold font-mono text-white">{engineInputsAnswered}</span>
+              </div>
+              <div className="rounded-lg bg-[#172033] p-2.5 border border-[#1E293B]">
+                <span className="text-[10px] text-slate-400 font-semibold uppercase block">Customer Facts</span>
+                <span className="text-lg font-bold font-mono text-[#8CC63E]">{customerFactsCount}</span>
+              </div>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onSubmitCalculation}
-            disabled={isCalculating}
-            className="inline-flex items-center justify-center space-x-2 rounded-xl bg-blue-500 px-6 py-3.5 text-sm font-bold text-white shadow-md hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all disabled:opacity-50"
-          >
-            <Play className="h-4 w-4 fill-white" />
-            <span>{isCalculating ? "Executing Engine..." : "Submit for Calculation"}</span>
-          </button>
+          {/* Dominant Primary CTA */}
+          <div className="flex flex-col items-stretch lg:items-end gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={onSubmitCalculation}
+              disabled={isCalculating}
+              className="inline-flex items-center justify-center space-x-2.5 rounded-xl bg-[#38B449] px-7 py-4 text-sm font-extrabold text-white shadow-lg hover:bg-[#008638] focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:ring-offset-2 focus:ring-offset-[#0D1322] transition-all disabled:opacity-50"
+            >
+              <Play className="h-4 w-4 fill-white" />
+              <span>{isCalculating ? "Executing Calculation Engine..." : "Submit for Calculation"}</span>
+            </button>
+            <p className="text-[11px] text-slate-400 text-center lg:text-right">
+              Generates cryptographic calculation snapshot
+            </p>
+          </div>
         </div>
       </div>
 
@@ -141,14 +205,14 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
         {sections.map((section) => (
           <div
             key={section.id}
-            className="rounded-xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm"
+            className="rounded-xl border border-[#E2E6EE] bg-white p-5 sm:p-6 shadow-xs"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <div className="flex items-center justify-between border-b border-[#E2E6EE] pb-3 mb-3">
               <div>
-                <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#008638] uppercase tracking-wider">
                   Section {section.id}
                 </span>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-[#172033]">
                   {section.title}
                 </h3>
               </div>
@@ -156,46 +220,70 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
               <button
                 type="button"
                 onClick={() => onEditSection(section.id)}
-                className="inline-flex items-center space-x-1.5 text-xs font-medium text-slate-600 hover:text-blue-600 transition-colors px-2.5 py-1 rounded-md border border-slate-200 hover:border-blue-300 bg-slate-50"
+                className="inline-flex items-center space-x-1.5 text-xs font-semibold text-[#172033] hover:text-[#008638] transition-colors px-3 py-1.5 rounded-lg border border-[#CBD2DE] hover:border-[#38B449] bg-white shadow-xs"
               >
-                <Edit3 className="h-3.5 w-3.5" />
+                <Edit3 className="h-3.5 w-3.5 text-[#008638]" />
                 <span>Edit Section</span>
               </button>
             </div>
 
             {/* Questions in Section */}
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[#E2E6EE]">
               {section.questionIds.map((qId) => {
                 const q = questionsMap[qId];
                 if (!q) return null;
                 const answerText = formatAnswerDisplay(q);
                 const isUnanswered = answerText === "Not answered" || answerText === "Not provided";
                 const isUnknown = answerText.includes("Not sure") || answerText.includes("Unknown");
+                const isExactOverride = answerText.includes("Exact Override") || answerText.includes("Exact Target");
 
                 return (
-                  <div key={q.id} className="py-3 sm:grid sm:grid-cols-3 sm:gap-4 items-center">
-                    <dt className="text-xs font-semibold text-slate-700 flex items-center space-x-2">
-                      <span className="font-mono text-slate-400">{q.code}:</span>
-                      <span>{q.title}</span>
-                    </dt>
-                    <dd className="mt-1 sm:mt-0 sm:col-span-2 text-xs flex items-center justify-between">
-                      <span
-                        className={`font-medium ${
-                          isUnanswered
-                            ? "text-slate-400 italic"
-                            : isUnknown
-                            ? "text-amber-700 font-semibold"
-                            : "text-slate-900"
-                        }`}
-                      >
-                        {answerText}
+                  <div key={q.id} className="py-3 sm:grid sm:grid-cols-12 sm:gap-4 items-center">
+                    {/* Column 1: Question Identifier and Title (5 cols) */}
+                    <div className="sm:col-span-5 flex items-center space-x-2.5">
+                      <span className="font-mono text-xs font-bold text-[#172033] bg-[#F1F3F7] px-2 py-0.5 rounded border border-[#E2E6EE] shrink-0">
+                        {q.code}
                       </span>
+                      <span className="text-xs font-bold text-[#172033]">
+                        {q.title}
+                      </span>
+                    </div>
+
+                    {/* Column 2: Formatted Answer Representation (5 cols) */}
+                    <div className="sm:col-span-5 mt-1 sm:mt-0 text-xs">
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`font-semibold ${
+                            isUnanswered
+                              ? "text-[#8F9AA8] italic"
+                              : isUnknown
+                              ? "text-amber-800 font-semibold"
+                              : "text-[#172033]"
+                          }`}
+                        >
+                          {answerText}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Column 3: Badges & Status (2 cols) */}
+                    <div className="sm:col-span-2 mt-2 sm:mt-0 flex items-center justify-end space-x-1.5 shrink-0">
                       {q.feedsCalculation && (
-                        <span className="ml-2 inline-flex items-center text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200/60">
+                        <span className="inline-flex items-center text-[10px] font-bold text-[#008638] bg-[#EEF8F0] px-2 py-0.5 rounded border border-[#A8E2B5]">
                           Engine Input
                         </span>
                       )}
-                    </dd>
+                      {isExactOverride && (
+                        <span className="inline-flex items-center text-[10px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+                          Customer Fact
+                        </span>
+                      )}
+                      {isUnanswered && (
+                        <span className="inline-flex items-center text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          — Not Answered
+                        </span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -205,12 +293,15 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
       </div>
 
       {/* Bottom Submit Bar */}
-      <div className="flex items-center justify-end space-x-4 pt-4 border-t border-slate-200">
+      <div className="flex items-center justify-between pt-4 border-t border-[#E2E6EE]">
+        <div className="text-xs text-[#667085]">
+          <span className="font-bold text-[#172033]">{answeredCount} of {totalQuestions}</span> questions configured for deterministic economic calculation.
+        </div>
         <button
           type="button"
           onClick={onSubmitCalculation}
           disabled={isCalculating}
-          className="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50"
+          className="inline-flex items-center space-x-2 rounded-lg bg-[#38B449] px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-[#008638] focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:ring-offset-2 transition-all disabled:opacity-50"
         >
           <span>{isCalculating ? "Calculating Snapshot..." : "Calculate Assessment"}</span>
           <ArrowRight className="h-4 w-4" />

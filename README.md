@@ -1,34 +1,47 @@
 # DATAEKO × meshIQ Partner Dashboard
 
 > **Enterprise IBM MQ Economic Cost & Efficiency Assessment Platform**  
-> Modernizing and standardizing enterprise messaging economic assessments with deterministic calculations, immutable provenance, and executive-ready reporting.
+> Modernizing and standardizing enterprise messaging economic assessments with deterministic calculations, immutable provenance, executive-ready reporting, and consultant-led workflows.
 
 ---
 
 ## 1. Overview
 
-The **DATAEKO × meshIQ Partner Dashboard** is an enterprise-grade digital platform designed to digitize, modernize, and automate the legacy **IBM MQ Economic Cost & Efficiency Assessment** workflow. 
+The **DATAEKO × meshIQ Partner Dashboard** is an enterprise-grade digital platform designed to digitize, modernize, and automate the legacy **IBM MQ Economic Cost & Efficiency Assessment** workflow.
 
 By replacing complex, error-prone spreadsheets with a secure, auditable, and deterministic web application, the platform enables Dataeko consultants and meshIQ specialists to evaluate enterprise messaging environments, quantify operational friction, model controlled improvement scenarios, and deliver audit-grade executive business cases for C-level leadership.
 
+### Key Capabilities
+- **Structured Customer Assessment**: 22 standardized intake questions (Q01–Q22) organized into 7 thematic sections.
+- **Deterministic Economic Calculation Engine**: Pure Python calculation engine utilizing `Decimal` arithmetic with 10/10 validated Golden Master reference scenarios.
+- **Interactive Executive Dashboard**: Real-time KPI summaries, operational effort distribution, and multi-dimensional analysis.
+- **Scenario Sandbox**: Dynamic, controlled modeling of operational efficiency improvements and incident reduction.
+- **Executive Reporting & PDF Generation**: Deterministic report view and automated headless Chromium PDF generation for boardroom presentation.
+- **Consultant Workflow**: Save/resume drafts, exact customer fact overrides, consultant probing guidance, and multi-tenant access control.
+
 ---
 
-## 2. Product Purpose
+## 2. Current Project Status
 
-The platform provides an end-to-end evaluation lifecycle covering:
-* **Customer Assessment Intake**: Capturing environment topology, operational frequency, and financial parameters across 22 standardized questions (Q01–Q22).
-* **Operational Effort Quantification**: Modeling baseline administration and troubleshooting labor burden across enterprise queue manager environments.
-* **Troubleshooting Economics**: Quantifying staff hours dedicated to incident discovery, diagnostics, and resolution.
-* **Productivity Opportunity**: Calculating potential labor recovery under structured efficiency scenarios.
-* **Business Consequence & Exposure**: Evaluating representative single-event exposure during messaging disruptions without overstating operational risk.
-* **Cybersecurity & Governance Context**: Assessing configuration drift, compliance overhead, and manual verification labor.
-* **Executive Decision Support**: Generating interactive dashboards, controlled scenario sandboxes, and boardroom-ready executive PDF reports.
+The project has completed extensive architectural implementation, core engineering, security hardening, and interface refinement:
 
-### Safe Financial Terminology & Invariants
-* **Representative Single-Event Exposure ≠ Annual Loss**: Single-event exposure reflects estimated financial consequence for an individual outage event; it is not an annualized recurring financial loss.
-* **Illustrative Economic Value ≠ Guaranteed Savings**: Modeled efficiency improvements reflect illustrative operational potential based on industry benchmarks and client inputs; they do not constitute guaranteed ROI or contractual savings.
-* **Annual MQ Spend Isolation**: Customer-reported annual MQ spend (Q21) is tracked as an independent context metric and is never conflated with or added to calculated operational labor costs.
-* **Explicit Unknowns**: Missing or uncertain data is preserved as structured unmapped states rather than being silently coerced into zero.
+- [x] **Architecture & Specification**: Standardized Q01–Q22 discovery catalog, mathematical formulas, and data contracts.
+- [x] **Calculation Engine**: Standalone, deterministic in-memory calculation engine with full `Decimal` precision.
+- [x] **Golden Master Validation**: 10/10 authoritative reference customer profiles verified against audited baseline data.
+- [x] **Persistence & REST API**: FastAPI backend with async SQLAlchemy 2.0 ORM, PostgreSQL support, and transactional snapshots.
+- [x] **Assessment Wizard**: Multi-section intake wizard with save/resume, progress tracking, and validation safeguards.
+- [x] **Executive Dashboard & Scenario Sandbox**: Real-time visualization, dual-perspective views (Executive / Consultant), and sensitivity modeling.
+- [x] **Executive Report & PDF Export**: Boardroom-ready layout with automated headless Playwright Chromium PDF generation.
+- [x] **Authentication & RBAC**: Stateless JWT auth with `HttpOnly` / `SameSite=Strict` cookies and 5-tier role-based permissions.
+- [x] **Production Security Hardening**: Strict fail-closed configuration, secure proxy IP resolution, error sanitization, and security headers.
+- [x] **Observability & Probes**: Structured JSON logging, `X-Request-ID` correlation, and `/health/liveness` + `/health/readiness` endpoints.
+- [x] **Rate Limiting & Abuse Prevention**: Sliding-window rate limiting (login protection and general API throttling) and request size limiting (10MB).
+- [x] **Production Topology**: Multi-container Docker Compose architecture with Nginx reverse proxy and isolated internal networks.
+- [x] **CI/CD Pipeline**: 10-job multi-stage GitHub Actions workflow with release gating, image digest provenance, and deployment webhooks.
+- [x] **Enterprise UI & Brand Alignment**: Polished meshIQ green-led visual identity, high-density question cards, and distinct customer fact indicators.
+
+> [!IMPORTANT]
+> **Deployment Status**: Production deployment is intentionally **deferred**. The application is currently in a pre-deployment refinement stage focused on live UI polish and stakeholder/panel review. Cloud infrastructure and production environments have not yet been provisioned.
 
 ---
 
@@ -36,270 +49,407 @@ The platform provides an end-to-end evaluation lifecycle covering:
 
 The discovery model is structured into seven authoritative sections:
 
-* **Section A: Environment & Cost Baseline (Q01–Q05)**: Organization scale, industry vertical, queue manager fleet size, weekly administration hours, and team role distribution.
-* **Section B: Troubleshooting Economics (Q06–Q08)**: Incident frequency, labor hours spent per investigation, and average disruption duration.
-* **Section C: Operational Complexity & Productivity (Q09–Q11)**: Dominant incident categories, problem types, and proactive monitoring maturity.
-* **Section D: Business Consequence & Financial Exposure (Q12–Q15)**: Severity tier, business impact classification, annual outage frequency, outage duration, and financial consequence per downtime hour.
-* **Section E: Cost Reduction & Organizational Pressure (Q16–Q17)**: Configuration management methodology and compliance audit frequency.
-* **Section F: Cybersecurity & Remediation (Q18–Q19)**: Audit preparation effort and security documentation burden.
-* **Section G: Economic Inputs & Timing (Q20–Q22)**: Loaded annual employee cost, customer-reported annual MQ spend, and modernization/migration timelines.
+| Section | Title | Questions | Focus & Scope |
+| :--- | :--- | :--- | :--- |
+| **Section A** | Environment & Cost Baseline | Q01–Q05 | Organization scale, industry vertical, queue manager fleet size, weekly administration hours, and team role distribution. |
+| **Section B** | Troubleshooting Economics | Q06–Q08 | Incident frequency, labor hours spent per investigation, and average disruption duration. |
+| **Section C** | Operational Complexity & Productivity | Q09–Q11 | Dominant incident categories, problem types, and proactive monitoring maturity. |
+| **Section D** | Business Consequence & Financial Exposure | Q12–Q15 | Severity tier, business impact classification, annual outage frequency, disruption duration, and financial consequence per downtime hour. |
+| **Section E** | Cost Reduction & Organizational Pressure | Q16–Q17 | Configuration management methodology and compliance audit frequency. |
+| **Section F** | Cybersecurity & Remediation | Q18–Q19 | Audit preparation effort and security documentation burden. |
+| **Section G** | Economic Inputs & Timing | Q20–Q22 | Loaded annual employee cost, customer-reported annual MQ spend, and modernization/migration timelines. |
+
+### Assessment Workflow
+1. **Intake & Draft Storage**: Consultants capture responses with autosave (`PUT /api/v1/assessments/{id}/responses`).
+2. **Review & Pre-Flight Validation**: Review summary screen validates completeness, highlights missing inputs, and flags customer overrides.
+3. **Calculation Execution**: Engine executes upon submission (`POST /api/v1/assessments/{id}/calculate`) and generates an immutable calculation snapshot.
+4. **Analysis & Presentation**: View results in the Executive Dashboard, explore what-if scenarios in the Sandbox, and export the Executive PDF Report.
 
 ---
 
-## 4. Architecture
+## 4. Calculation Model & Provenance
 
-The platform follows a modular-monolith architecture with strict separation between user interface, persistence, security boundaries, and the core calculation engine.
+The calculation engine enforces exact mathematical fidelity with validated enterprise specifications:
 
-```text
-Browser Client (Next.js 16 / React 19)
-    │  [HTTP-only / SameSite=Strict Cookies]
-    ▼
-FastAPI Gateway & Security Middleware (/api/v1)
-    │  [JWT Validation, RBAC Enforcement, Tenant Filter, Error Sanitizer]
-    ├──► PostgreSQL / SQLAlchemy 2.0 (Persistence, Snapshots, Audit Trail)
-    │
-    └──► Standalone Deterministic Calculation Engine (In-Memory Python / Decimal Arithmetic)
-            │
-            ▼
-         Immutable Calculation Snapshot
-            │
-            ├──► Executive KPI Dashboard & Controlled Scenario Sandbox
-            │
-            └──► Deterministic Report Adapter & Headless Playwright PDF Generator
-```
-
-### Technology Stack
-* **Frontend**: Next.js 16 (Turbopack), React 19, TypeScript 5, Tailwind CSS 4, Lucide Icons.
-* **Backend**: Python 3.14, FastAPI, Pydantic v2 Settings & Schemas, Uvicorn.
-* **Database & ORM**: PostgreSQL (Production) / SQLite `aiosqlite` (Local Dev), SQLAlchemy 2.0 Async, Alembic.
-* **Calculation Engine**: Standalone, pure Python in-memory computational engine using `Decimal` arithmetic.
-* **Reporting & PDF**: Deterministic report adapter, CSS Print Paged Media, Headless Playwright Chromium.
-* **Testing & Verification**: Pytest, AsyncIO, Pytest-Cov, Vitest, React Testing Library.
-
----
-
-## 5. System Data Flow
-
-1. **Intake**: User answers questions Q01–Q22; progress is validated and autosaved via `PUT /api/v1/assessments/{id}/responses`.
-2. **Calculation Execution**: `POST /api/v1/assessments/{id}/calculate` passes normalized inputs to the pure calculation engine.
-3. **Snapshot Creation**: The engine generates an immutable calculation snapshot persisted with full provenance metadata.
-4. **Dashboard**: The Executive Dashboard displays KPI summaries, effort distribution, and controlled scenario sandboxes without recalculating metrics on the client.
-5. **Report Generation**: The deterministic `reportDataAdapter` maps snapshots to the executive report schema without altering calculation values.
-6. **PDF Export**: Playwright Chromium renders the deterministic print layout and exports an A4 PDF artifact.
-
----
-
-## 6. Calculation Model & Provenance
-
-The calculation engine enforces exact mathematical fidelity with the validated business specification:
-
-* **Loaded Hourly Employee Rate**: Derived from Q20 (`Annual Salary / 2,080 hours`) using unrounded `Decimal` arithmetic.
-* **Annual Administration Effort**: Quantified from weekly administrator hours (Q04) scaled to an annual baseline.
+### Operational Labor & Efficiency Formulas
+* **Loaded Hourly Rate**: Derived from Q20 (`Annual Loaded Salary / 2,080 working hours`) using unrounded `Decimal` arithmetic.
+* **Annual Administration Effort**: Quantified from weekly administrator hours (Q04) scaled to an annual baseline (`Weekly Admin Hours × 52`).
 * **Annual Troubleshooting Effort**: Computed as `Annual Incident Frequency (Q06) × Investigation Hours (Q07)`.
 * **Total Operational Labor**: Sum of Annual Administration Cost and Annual Troubleshooting Cost.
-* **FTE Burden**: Total operational labor hours divided by 2,080 annual working hours.
-* **Representative Single-Event Exposure**: Modeled as `Disruption Duration (Q14) × Financial Impact/Hour (Q15)` (using customer override or industry vertical benchmark fallback).
-* **10% Troubleshooting Productivity Opportunity**: Baseline metric reflecting operational friction recovery.
+* **FTE Labor Burden**: Total operational labor hours divided by 2,080 annual working hours.
+* **10% Troubleshooting Productivity Opportunity**: Baseline operational friction recovery potential.
 * **25% Investigation Efficiency Scenario**: meshIQ specialized investigation acceleration scenario (decomposed as 50% admin addressability × 50% efficiency + 25% investigation reduction).
+
+### Financial Invariants & Semantic Safeguards
+* **Representative Single-Event Exposure ≠ Annual Loss**: Modeled as `Disruption Duration (Q14) × Financial Impact/Hour (Q15)` (using customer override or industry vertical benchmark). Represents the estimated financial exposure of an individual disruption; it is **not** an annualized recurring loss.
+* **Illustrative Economic Value ≠ Guaranteed Savings**: Modeled operational improvements reflect illustrative efficiency gains based on industry benchmarks and customer inputs; they do not constitute contractual guarantees.
+* **Annual MQ Spend Isolation**: Customer-reported annual MQ spend (Q21) is tracked strictly as an independent contextual baseline and is never added to or conflated with calculated labor costs.
+* **Explicit Unknowns**: Missing or uncertain data is preserved as structured unmapped states rather than being silently coerced into zero.
 
 ### 5-Tier Provenance Taxonomy
 Every metric rendered in the application carries explicit provenance badging:
-1. `CUSTOMER_FACT`: Values provided directly by the customer (e.g., custom labor rate, specific outage count).
-2. `BENCHMARK`: Values derived from authoritative industry datasets (e.g., vertical hourly downtime costs).
-3. `CALCULATED`: Deterministic outputs of the Phase 3 calculation engine.
-4. `SCENARIO`: Exploratory user adjustments modeled in the Scenario Sandbox.
+1. `CUSTOMER_FACT`: Direct customer-provided input or exact numeric override.
+2. `BENCHMARK`: Authoritative industry vertical or operational benchmark data.
+3. `CALCULATED`: Deterministic output generated by the calculation engine.
+4. `SCENARIO`: Dynamic value modeled within the Scenario Sandbox.
 5. `DEMO_DATA`: Synthetic data clearly labeled for demonstration purposes.
 
 ---
 
-## 7. Security, Identity & Multi-Tenancy
+## 5. Technology Stack
 
-The platform incorporates server-side security controls:
+### Frontend
+- **Framework**: [Next.js 16.3.6](https://nextjs.org/) (App Router, Turbopack)
+- **UI Library**: [React 19.2.8](https://react.dev/)
+- **Language**: [TypeScript 5](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Icons**: [Lucide React 1.48.0](https://lucide.dev/)
+- **Unit & Component Testing**: [Vitest 5.0.2](https://vitest.dev/), [React Testing Library 16.3.3](https://testing-library.com/)
+- **E2E & PDF Generation**: [Playwright 1.63.0](https://playwright.dev/)
 
-* **Authentication**: Stateless JSON Web Tokens (JWT) transported via `HTTP-only`, `Secure`, `SameSite=Strict` cookies (`access_token`). Passwords hashed with Bcrypt (cost factor 12).
-* **Role-Based Access Control (RBAC)**:
-  * `PLATFORM_ADMIN`: System-wide administration and tenant management.
-  * `PARTNER_ADMIN`: Partner tenant administration and full assessment authority.
-  * `CONSULTANT`: Customer assessment creation, calculation execution, report generation, and audit review.
-  * `CUSTOMER_ADMIN`: Organization assessment management, review, and team access.
-  * `CUSTOMER_USER`: Organization discovery intake and executive view access.
-* **Tenant Isolation & Anti-IDOR**: All database queries enforce `tenant_id == current_user.tenant_id`. Cross-tenant resource requests return `404 Not Found` with zero metadata disclosure.
-* **Snapshot Immutability**: Persisted calculation snapshots are append-only; update/delete endpoints are strictly disabled.
-* **Append-Only Audit Trail**: All security-relevant actions (login, calculation, customer update, report export) are logged to the `audit_events` table.
-* **Defensive Middleware**: Enforces `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, and traceback/internal exception sanitization.
+### Backend
+- **Framework**: [FastAPI 0.115+](https://fastapi.tiangolo.com/)
+- **Runtime**: Python 3.11+ (Python 3.14 fully supported)
+- **Server**: [Uvicorn](https://www.uvicorn.org/)
+- **Data Validation & Settings**: [Pydantic v2](https://docs.pydantic.dev/) & Pydantic Settings
+- **ORM & Database**: [SQLAlchemy 2.0 Async](https://www.sqlalchemy.org/), [Alembic](https://alembic.sqlalchemy.org/)
+- **Async Database Drivers**: `asyncpg` (PostgreSQL) / `aiosqlite` (Local Development)
+- **Testing**: [pytest 9.1+](https://docs.pytest.org/), pytest-asyncio, pytest-cov
 
-*Note: Infrastructure-level controls (HTTPS TLS termination, WAF, automated RDS point-in-time backups) are deployment-environment responsibilities.*
+### Infrastructure & Deployment
+- **Containerization**: Docker & Docker Compose (`docker-compose.prod.yml`)
+- **Reverse Proxy & Ingress**: Nginx (reverse proxy, SSL termination, security headers, rate limiting)
+- **Database**: PostgreSQL 16
+- **CI/CD**: GitHub Actions Multi-Stage Workflow (`.github/workflows/ci.yml`)
 
 ---
 
-## 8. Verification & Automated Test Status
-
-The codebase is validated across unit, integration, Golden Master, security, browser-to-backend E2E, and production build pipelines:
+## 6. Repository Structure
 
 ```text
-================================================================================
-                         AUTOMATED VERIFICATION SUMMARY
-================================================================================
-1. Backend & Security Suite (pytest):
-   • 10/10 Golden Master Reference Scenarios (TC-01–TC-10)               PASSED
-   • 11/11 Calculation Engine Edge Cases & Precision Tests               PASSED
-   • 8/8 Backend API, Persistence & Database Migration Tests             PASSED
-   • 12/12 Security Tests (Auth, RBAC, IDOR, Immutability, Sanitizer)     PASSED
-   • 141/141 Total Backend Tests Across Full Test Tree                   PASSED
-   -----------------------------------------------------------------------------
-   Backend Test Suite: 100% PASS
-
-2. Frontend Test Suite (vitest):
-   • 10/10 Question Catalog & Discovery Tests                            PASSED
-   • 5/5 Comprehensive 7-Section Intake Workflow Tests                   PASSED
-   • 8/8 Wizard Components & Navigation Tests                            PASSED
-   • 9/9 Executive Dashboard & Scenario Sandbox Tests                    PASSED
-   • 9/9 Report Data Adapter & Executive Report Tests                    PASSED
-   • 11/11 AuthContext, LoginPage & ProtectedRoute Tests                 PASSED
-   -----------------------------------------------------------------------------
-   Frontend Test Suite: 52/52 PASSED (10 test files)
-
-3. Browser-to-Backend E2E Suite (playwright):
-   • 4/4 Spec Files / 10 Comprehensive Tests (Auth, RBAC, Intake, PDF)   PASSED (Local)
-
-4. Production Build & PDF Artifact Validation:
-   • Next.js Standalone Production Build (`next build`):                 PASSED
-   • Playwright Chromium Executive PDF Generator & Structural Check:    PASSED
-================================================================================
+.
+├── .github/
+│   └── workflows/
+│       └── ci.yml                 # 10-stage CI/CD pipeline with release gating & provenance
+├── backend/
+│   ├── alembic/                   # Database schema migrations
+│   ├── app/
+│   │   ├── api/                   # REST API routes (auth, customers, assessments, health, audit)
+│   │   ├── calculation_engine/    # Standalone deterministic calculation engine
+│   │   ├── core/                  # Security, RBAC, database, audit, and middleware
+│   │   ├── models/                # SQLAlchemy async domain entities
+│   │   ├── schemas/               # Pydantic v2 DTOs and API contracts
+│   │   ├── services/              # Business logic and persistence orchestration
+│   │   ├── config.py              # Application settings and environment validation
+│   │   └── main.py                # FastAPI entrypoint and middleware assembly
+│   ├── scripts/
+│   │   └── bootstrap_admin.py     # Production platform admin bootstrap utility
+│   ├── tests/
+│   │   ├── api/                   # REST API and persistence integration tests
+│   │   ├── calculation_engine/    # Golden Master and math verification tests
+│   │   ├── observability/         # Health probe and logging tests
+│   │   └── security/              # Auth, RBAC, IDOR, immutability, and config tests
+│   ├── Dockerfile                 # Backend container definition
+│   └── requirements.txt           # Python dependencies
+├── frontend/
+│   ├── public/                    # Static assets, meshIQ and DATAEKO logos
+│   ├── scripts/                   # Playwright PDF export script (generate_pdf.mjs)
+│   ├── src/
+│   │   ├── app/                   # Next.js App Router pages (login, assessment wizard)
+│   │   ├── components/            # Wizard cards, dashboard, charts, navigation, reports
+│   │   ├── context/               # React AuthContext and state providers
+│   │   ├── data/                  # Authoritative Q01–Q22 discovery catalog
+│   │   ├── services/              # API client and deterministic report adapter
+│   │   ├── test/                  # Vitest automated test suite (58 unit tests)
+│   │   └── types/                 # TypeScript interfaces and data models
+│   ├── Dockerfile                 # Next.js standalone container definition
+│   └── package.json               # Node.js dependencies and build scripts
+├── docs/
+│   ├── architecture/              # Architecture Decision Records (ADRs)
+│   ├── artifacts/                 # Generated executive report PDF artifacts
+│   ├── business-spec/             # Calculation engine specifications & Golden Masters
+│   ├── security/                  # Threat models and security verification checklists
+│   └── PRODUCTION_DEPLOYMENT_GUIDE.md # Production operator deployment manual
+├── nginx/
+│   ├── default.conf               # Nginx reverse proxy configuration (HTTP/HTTPS)
+│   └── ssl.conf.template          # TLS/SSL template with strict security headers
+└── docker-compose.prod.yml        # Multi-container production topology definition
 ```
 
 ---
 
-## 9. Project Progress & Release Gating Status
-
-* **Project**: **DATAEKO × meshIQ Partner Dashboard**
-* **Completed Phases**:
-  * **Phase 1–8.1**: Core deterministic calculation engine, 22-question intake wizard, scenario sandbox, executive reporting, Playwright PDF export, JWT HttpOnly security, and RBAC integration.
-  * **Phase 9.1**: PostgreSQL boolean schema alignment & database persistence validation (`VERIFIED`).
-  * **Phase 9.2**: Production configuration enforcement, secret rotation, and strict production validation (`VERIFIED`).
-  * **Phase 9.3**: Production observability, structured JSON logging, and `/health/liveness` + `/health/readiness` probes (`VERIFIED`).
-  * **Phase 9.4**: Comprehensive browser-to-backend E2E lifecycle, customer save/resume persistence, and calculation engine provenance audit (`VERIFIED`).
-  * **Phase 9.5**: Operational hardening & rate limiting (`VERIFIED WITH FINDINGS`):
-    * Rate limiting: `POST /api/v1/auth/login` (5 req/min per resolved IP) and general API throttling (120 req/min).
-    * Request body protection: `RequestSizeLimiterMiddleware` (10MB limit enforcement with `413 Request Entity Too Large`).
-    * Trusted proxy handling: explicit IP/CIDR validation and spoof-resistant client IP resolution.
-    * Security & production error sanitization with `X-Request-ID` correlation.
-    * *Finding (P2)*: Process-local in-memory sliding-window limiter retains empty keys across eviction cycles (minor memory footprint; documented single-worker process limitation).
-
-* **Phase 9.6: CI/CD & Release Gates (`IMPLEMENTED — VERIFICATION IN PROGRESS`)**:
-  * *Implementation*: 10-job multi-stage GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml`):
-    1. `backend-tests`: Full canonical backend discovery (`pytest backend/tests`).
-    2. `golden-masters`: Strict 10/10 reference scenario calculation gate.
-    3. `frontend-tests`: Frontend Vitest component & workflow test suite.
-    4. `frontend-typecheck`: Strict TypeScript typechecking (`tsc --project tsconfig.json --noEmit`).
-    5. `security-prod-config`: Security middleware, RBAC, error sanitization, and production settings gate.
-    6. `frontend-build`: Next.js standalone production build verification.
-    7. `docker-build-check`: Multi-service Dockerfile and compose validation.
-    8. `e2e-browser-suite`: Real-stack Playwright browser-to-backend E2E test suite (PostgreSQL + FastAPI + Next.js).
-    9. `report-pdf-gate`: Headless Chromium executive PDF generation and structural integrity validation.
-    10. `release-gate`: Unified release gate running under `if: always()`, evaluating all 9 upstream job results.
-  * *Current CI Evidence & Status*:
-    * **Run 36317997179**: Frontend Vitest failed using `threads` pool due to an environment-level worker thread conflict with `jsdom`/`undici` on Node 20.
-    * **Targeted CI Remediation**: Commit `2bf093f42948890d989977561a32bc146a82bdef` adjusted Vitest CI execution from `threads` to `forks` pool.
-    * **Run 36318655727**: In progress / ongoing evaluation.
-  * *Note*: Phase 9.6 remains open and is **NOT** marked verified until a clean end-to-end GitHub Actions workflow run completes and all 10 release gates succeed.
-
----
-
-## 10. Local Development Guide
+## 7. Local Development Guide
 
 ### Prerequisites
-* Python 3.11+ (Python 3.14 supported)
-* Node.js 22+ (LTS) and npm
-* Chromium (for Playwright PDF export)
+- **Python**: 3.11 or higher (Python 3.14 tested)
+- **Node.js**: 20.x or 22.x LTS and npm
+- **Docker & Docker Compose**: (Optional, for PostgreSQL / containerized workflow)
 
-### Backend Setup
+### 1. Backend Setup (Local Development)
 ```bash
 # Navigate to backend directory
 cd backend
 
-# Create virtual environment and install dependencies
+# Create and activate virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-
-# Start backend development server (defaults to SQLite on port 8000)
-./.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-
-### Frontend Setup
-```bash
-# Navigate to frontend directory
-cd frontend
 
 # Install dependencies
+pip install -r requirements.txt
+
+# Start backend server (defaults to local SQLite database on port 8000)
+PYTHONPATH=. .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 2. Frontend Setup (Local Development)
+```bash
+# In a separate terminal, navigate to frontend directory
+cd frontend
+
+# Install Node.js dependencies
 npm install
 
 # Start Next.js development server (runs on port 3000)
 npm run dev
 ```
 
-### Running Tests & Builds
-```bash
-# Run all backend & calculation tests
-cd backend && pytest -v
+### 3. Verification & Health Probes
+- **Frontend Application**: [http://localhost:3000](http://localhost:3000)
+- **Backend API Base**: [http://localhost:8000/api/v1](http://localhost:8000/api/v1)
+- **Liveness Probe**: [http://localhost:8000/api/v1/health/live](http://localhost:8000/api/v1/health/live)
+- **Readiness Probe**: [http://localhost:8000/api/v1/health/ready](http://localhost:8000/api/v1/health/ready)
 
-# Run all frontend tests
-cd frontend && npm test
-
-# Compile production frontend build
-cd frontend && npm run build
-
-# Generate deterministic Executive Report PDF artifact
-cd frontend && npm run generate:pdf
-```
-
-### Pre-Configured Local Development Credentials
-* **Consultant**: `consultant@dataeko.ai` / `Consultant123!`
-* **Platform Admin**: `admin@dataeko.ai` / `AdminPass123!`
+### Pre-Configured Development Credentials
+When running in `ENVIRONMENT=development`, pre-seeded development accounts are available:
+- **Consultant**: `consultant@dataeko.ai` / `Consultant123!`
+- **Platform Admin**: `admin@dataeko.ai` / `AdminPass123!`
+- **Partner Admin**: `partner@dataeko.ai` / `PartnerPass123!`
+- **Customer Admin**: `customer_admin@dataeko.ai` / `CustAdmin123!`
+- **Customer User**: `customer_user@dataeko.ai` / `CustUser123!`
 
 ---
 
-## 11. Repository Structure
+## 8. Automated Testing & Verification
+
+The test suite validates calculations, API contracts, security boundaries, UI components, and build artifacts:
+
+### Test Execution Commands
+
+```bash
+# 1. Run all backend tests (Unit, Integration, Security, Golden Masters)
+cd backend
+PYTHONPATH=. .venv/bin/pytest tests/ -v
+
+# 2. Run Golden Master reference calculations only
+PYTHONPATH=. .venv/bin/pytest tests/calculation_engine/test_golden_masters.py -v
+
+# 3. Run frontend Vitest test suite
+cd ../frontend
+npm test
+
+# 4. Run TypeScript type check
+npx tsc --project tsconfig.json --noEmit
+
+# 5. Compile production frontend build
+npm run build
+
+# 6. Generate Executive Report PDF artifact
+npm run generate:pdf
+```
+
+### Verified Test Summary
 
 ```text
-.
-├── backend/
-│   ├── alembic/                 # Database migrations (Alembic)
-│   ├── app/
-│   │   ├── api/                 # API routers (v1 auth, customers, assessments, audit)
-│   │   ├── calculation_engine/  # Deterministic headless calculation package
-│   │   ├── core/                # Security, RBAC, database, audit, middleware
-│   │   ├── models/              # SQLAlchemy async domain entities
-│   │   ├── schemas/             # Pydantic v2 DTOs and API contracts
-│   │   ├── services/            # Business orchestration services
-│   │   ├── config.py            # Application settings
-│   │   └── main.py              # FastAPI application entrypoint
-│   └── tests/
-│       ├── api/                 # Backend integration tests
-│       ├── calculation_engine/  # Golden Master and math verification tests
-│       └── security/            # Auth, RBAC, IDOR, audit, and sanitizer tests
-├── frontend/
-│   ├── public/                  # Static assets and icons
-│   ├── scripts/                 # Playwright deterministic PDF export scripts
-│   ├── src/
-│   │   ├── app/                 # Next.js App Router pages
-│   │   ├── components/          # Intake wizard, dashboard, charts, report components
-│   │   ├── data/                # Authoritative Q01–Q22 discovery catalog
-│   │   ├── services/            # API client and report data adapter
-│   │   ├── test/                # Vitest automated test suite
-│   │   └── types/               # TypeScript data models and interfaces
-│   └── package.json
-└── docs/
-    ├── architecture/            # Architecture Decision Records (ADRs)
-    ├── artifacts/               # Generated reports and sample PDF artifacts
-    ├── business-spec/           # Audited business rules, math specs, Golden Masters
-    ├── security/                # Threat model, security architecture, checklists
-    └── PHASE_8_COMPLETION_REPORT.md
+================================================================================
+                         AUTOMATED TEST SUITE SUMMARY
+================================================================================
+1. Backend & Calculation Suite (pytest 9.1):
+   • 10/10 Golden Master Reference Scenarios (TC-01–TC-10)               PASSED
+   • 11/11 Calculation Engine Precision & Boundary Tests                 PASSED
+   • 7/7 API Integration & Database Migration Tests                      PASSED
+   • 13/13 Observability, Health Probes & Structured Logging Tests       PASSED
+   • 61/61 Security Tests (Auth, RBAC, IDOR, Rate Limiter, Bootstrap)    PASSED
+   -----------------------------------------------------------------------------
+   Total Backend Suite: 102/102 PASSED (100%)
+
+2. Frontend Test Suite (Vitest 5.0):
+   • 10/10 Question Catalog & Discovery Tests                            PASSED
+   • 5/5 Comprehensive 7-Section Intake Workflow Tests                   PASSED
+   • 6/6 Wizard Components & Navigation Tests                            PASSED
+   • 9/9 Executive Dashboard & Scenario Sandbox Tests                    PASSED
+   • 7/7 Report Data Adapter & Executive Report Tests                    PASSED
+   • 12/12 AuthContext, LoginPage & ProtectedRoute Tests                 PASSED
+   • 5/5 API Service Layer Tests                                         PASSED
+   • 4/4 Executive Report View Component Tests                           PASSED
+   -----------------------------------------------------------------------------
+   Total Frontend Suite: 58/58 PASSED (11 test files)
+
+3. Static Analysis & Build:
+   • TypeScript Static Typecheck (`tsc --noEmit`):                       0 ERRORS
+   • Next.js Production Turbopack Build (`next build`):                  PASSED
+================================================================================
 ```
 
 ---
 
-## 12. Licensing & Governance
+## 9. Security Architecture
+
+The platform enforces multi-layered server-side security controls:
+
+- **Stateless JWT Authentication**: Tokens stored in `HttpOnly`, `Secure`, `SameSite=Strict` cookies (`access_token`). Password hashing with Bcrypt (cost factor 12).
+- **Role-Based Access Control (RBAC)**: Strict permission enforcement across 5 roles (`PLATFORM_ADMIN`, `PARTNER_ADMIN`, `CONSULTANT`, `CUSTOMER_ADMIN`, `CUSTOMER_USER`).
+- **Tenant Isolation & Anti-IDOR**: All database queries enforce `tenant_id == current_user.tenant_id`. Cross-tenant requests return `404 Not Found` with zero metadata leakage.
+- **Fail-Closed Production Configuration**: Server refuses to start in `ENVIRONMENT=production` if default passwords, weak JWT secrets, or insecure wildcard origins are detected.
+- **Trusted Proxy IP Resolution**: Validates upstream proxy IPs against configured CIDR blocks to prevent `X-Forwarded-For` spoofing.
+- **Rate Limiting & Abuse Defense**: In-memory sliding-window rate limiter enforcing 5 req/min on `/api/v1/auth/login` and 120 req/min general API throttling.
+- **Request Size Limiting**: `RequestSizeLimiterMiddleware` enforces a strict 10MB payload cap (`413 Request Entity Too Large`).
+- **Snapshot Immutability**: Persisted calculation snapshots are append-only; update/delete operations are permanently disabled.
+- **Audit Logging**: Security-relevant events (authentication, calculations, report generation, admin actions) are logged to the `audit_events` table.
+- **Security Headers**: Ingress and application enforce `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and `Referrer-Policy: strict-origin-when-cross-origin`.
+- **Error Sanitization**: Tracebacks and internal exceptions are redacted in responses; client receives clean error messages correlated by `X-Request-ID`.
+
+---
+
+## 10. Production Topology & Architecture
+
+The containerized deployment topology provides network-level isolation between ingress, application, and database tiers:
+
+```text
+                                 INTERNET
+                                    │
+                                    ▼ [HTTPS :443 / HTTP :80]
+                    ┌───────────────────────────────┐
+                    │      Nginx Reverse Proxy      │
+                    │   (SSL, Headers, Rate Limit)  │
+                    └───────────────┬───────────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    ▼ [meshiq_internal_net]         ▼ [meshiq_internal_net]
+        ┌───────────────────────┐       ┌───────────────────────┐
+        │   Next.js Frontend    │       │    FastAPI Backend    │
+        │   (Port 3000 / Node)  │       │  (Port 8000 / Uvicorn)│
+        └───────────────────────┘       └───────────┬───────────┘
+                                                    │
+                                                    ▼ [meshiq_db_net]
+                                        ┌───────────────────────┐
+                                        │ PostgreSQL 16 Database│
+                                        │      (Port 5432)      │
+                                        └───────────────────────┘
+```
+
+### Architecture Specifications
+- **Ingress Layer**: Nginx terminates TLS/SSL, handles static compression, and proxies `/api/` traffic to FastAPI and all other routes to Next.js.
+- **Network Isolation**: PostgreSQL resides on an isolated database network (`meshiq_db_net`) accessible only to the FastAPI backend.
+- **Non-Root Execution**: Backend and frontend containers run as dedicated non-root users (`appuser` / `nextjs`).
+
+### Implemented Configuration vs. Operator Dependencies
+
+| Component | Implemented in Repository | Operator / Cloud Infrastructure Dependency |
+| :--- | :--- | :--- |
+| **Reverse Proxy** | `nginx/default.conf`, `ssl.conf.template` | Public DNS records (A/AAAA) pointing to server |
+| **TLS/SSL** | Strict TLS 1.2/1.3 cipher config & templates | Valid CA-signed TLS certificates (e.g. Let's Encrypt) |
+| **Application Topology** | `docker-compose.prod.yml` | Container runtime host (Docker / ECS / Kube) |
+| **Secrets & Config** | Fail-closed validation logic | Production secret injection via `.env` / secret manager |
+| **Database** | SQLAlchemy async schema & Alembic migrations | Managed PostgreSQL (RDS/Cloud SQL) with backups & PITR |
+| **Admin Provisioning** | `bootstrap_admin.py` CLI script | Initial execution by system operator |
+
+---
+
+## 11. CI/CD Workflow
+
+The repository includes a comprehensive 10-job multi-stage GitHub Actions pipeline (`.github/workflows/ci.yml`):
+
+1. **`backend-tests`**: Runs full pytest suite across API, engine, and observability.
+2. **`golden-masters`**: Strict gate verifying 10/10 reference customer calculation scenarios.
+3. **`frontend-tests`**: Runs Vitest component, catalog, and workflow tests.
+4. **`frontend-typecheck`**: Strict TypeScript typechecking (`tsc --noEmit`).
+5. **`security-prod-config`**: Validates security settings, RBAC, and fail-closed controls.
+6. **`frontend-build`**: Compiles standalone Next.js production build.
+7. **`docker-build-check`**: Validates multi-service container builds and compose files.
+8. **`e2e-browser-suite`**: Full-stack Playwright browser E2E test suite.
+9. **`report-pdf-gate`**: Validates headless Chromium PDF generation.
+10. **`release-gate`**: Aggregates upstream jobs and enforces release quality standards.
+
+### Release & Publication Sequence
+- **Production Artifact Publishing**: Restricted to release tags (`refs/tags/v*`) or manual `workflow_dispatch` on `main`.
+- **Image Digest Provenance**: Docker images are built, tagged, pushed, and verified via registry manifest digests with uploaded SHA-256 provenance artifacts.
+- **Deployment Webhook**: Fail-closed deployment hook triggered only after all validation gates and image verification pass.
+
+---
+
+## 12. Branding & Enterprise Visual Identity
+
+The dashboard implements the modern **meshIQ visual identity** combined with enterprise **DATAEKO** platform branding:
+
+- **Color Palette**: meshIQ Green (`#00D26A` / `#059669`) action signals, Black/Dark Charcoal (`#0B0F17` / `#111827`) structural surfaces, and clean light neutral cards.
+- **Brand Balance**: Official meshIQ and DATAEKO logo assets prominently placed in the application header.
+- **High-Density Question Layout**: Streamlined cards prioritizing question text and context while reducing vertical whitespace.
+- **Visual Fact Differentiation**: Standardized assessment responses are clearly distinguished from exact customer facts/overrides.
+- **Engine Impact Indicators**: Compact information banners indicating baseline context vs. financial multiplier participation.
+- **Attribution**: "Powered by DATAEKO.AI" subtle application shell badge.
+
+---
+
+## 13. Important Development Boundaries
+
+To preserve architectural integrity, the following components are **FROZEN** and must not be altered during UI/UX iterations:
+
+- **Calculation Engine**: Math formulas, rounding rules, `Decimal` operations, and lookup tables.
+- **Golden Master Tests**: 10 reference scenarios in `tests/calculation_engine/test_golden_masters.py`.
+- **Question Semantics**: Q01–Q22 catalog definitions, options, weights, and mappings.
+- **Database Schema & Migrations**: Existing database models, relationships, and Alembic versions.
+- **Authentication & RBAC**: JWT cookie transport, password hashing, and role permission matrices.
+- **Tenant Isolation**: Multi-tenant database query filtering and anti-IDOR checks.
+- **CI/CD Pipeline**: GitHub Actions quality gates and release criteria.
+
+---
+
+## 14. Developer Handoff & Synchronization
+
+A new developer joining the project can immediately run the application locally by cloning the repository and following these steps:
+
+1. **Clone Repository & Switch to Branch**:
+   ```bash
+   git clone <repository_url>
+   cd DATAEKO.AI-MESHIQ-partner_dashboard-
+   git checkout dev
+   ```
+
+2. **Start Backend**:
+   ```bash
+   cd backend
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   PYTHONPATH=. .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+   ```
+
+3. **Start Frontend**:
+   ```bash
+   cd ../frontend
+   npm install
+   npm run dev
+   ```
+
+4. **Verify Health**:
+   - Access [http://localhost:3000](http://localhost:3000)
+   - Log in using `consultant@dataeko.ai` / `Consultant123!`
+
+---
+
+## 15. Known Deployment Dependencies
+
+Before production release, the following infrastructure dependencies must be provisioned by the infrastructure operator:
+
+1. **Public Domain & DNS**: Route53 / Cloudflare DNS records pointing to the ingress reverse proxy.
+2. **TLS/SSL Certificates**: Valid certificates provisioned via Let's Encrypt Certbot or AWS ACM.
+3. **Production Secrets**: Securely generated `JWT_SECRET_KEY`, `POSTGRES_PASSWORD`, and `BOOTSTRAP_ADMIN_PASSWORD`.
+4. **Managed PostgreSQL Instance**: AWS RDS / Cloud SQL PostgreSQL 16 instance with automated daily snapshots and PITR.
+5. **Container Registry**: Authenticated GHCR / ECR repository with published immutable image digests.
+6. **Deployment Webhook Target**: Automated listener or orchestration service receiving signed deployment payloads.
+
+---
+
+## 16. Licensing & Governance
 
 Confidential and proprietary to **DATAEKO.AI** and **meshIQ**. All rights reserved.

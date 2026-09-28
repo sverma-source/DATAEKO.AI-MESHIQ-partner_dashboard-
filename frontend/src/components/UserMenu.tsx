@@ -31,7 +31,7 @@ export const UserMenu: React.FC = () => {
     return (
       <button
         onClick={() => router.push("/login")}
-        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition shadow-sm"
+        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#38B449] hover:bg-[#008638] text-white text-xs font-semibold transition shadow-xs"
       >
         <LogIn className="h-3.5 w-3.5" />
         <span>Sign In</span>
@@ -42,15 +42,15 @@ export const UserMenu: React.FC = () => {
   const getRoleBadgeStyle = (role: string) => {
     switch (role) {
       case "PLATFORM_ADMIN":
-        return "bg-purple-950/80 text-purple-300 border-purple-800/60";
+        return "bg-[#FAF5FF] text-[#722F8A] border-[#E9D5FF]";
       case "PARTNER_ADMIN":
-        return "bg-indigo-950/80 text-indigo-300 border-indigo-800/60";
+        return "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]";
       case "CONSULTANT":
-        return "bg-blue-950/80 text-blue-300 border-blue-800/60";
+        return "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]";
       case "CUSTOMER_ADMIN":
-        return "bg-emerald-950/80 text-emerald-300 border-emerald-800/60";
+        return "bg-slate-100 text-slate-800 border-slate-300";
       default:
-        return "bg-slate-800 text-slate-300 border-slate-700";
+        return "bg-slate-100 text-slate-700 border-slate-200";
     }
   };
 
@@ -58,28 +58,28 @@ export const UserMenu: React.FC = () => {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-xs transition"
+        className="flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-[#F1F3F7] hover:bg-[#E2E6EE] border border-[#CBD2DE] text-[#172033] text-xs transition"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <div className="h-6 w-6 rounded-full bg-blue-600/30 border border-blue-500/40 flex items-center justify-center text-blue-300 font-semibold text-[11px]">
+        <div className="h-6 w-6 rounded-full bg-[#EEF8F0] border border-[#A8E2B5] flex items-center justify-center text-[#008638] font-bold text-[11px]">
           {user.full_name ? user.full_name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
         </div>
         <div className="text-left hidden lg:block">
-          <div className="font-medium text-slate-200 truncate max-w-[120px]">{user.full_name || user.email}</div>
+          <div className="font-semibold text-[#172033] truncate max-w-[120px]">{user.full_name || user.email}</div>
         </div>
-        <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+        <ChevronDown className="h-3.5 w-3.5 text-[#667085]" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 rounded-xl bg-slate-900 border border-slate-700 shadow-xl py-2 z-50 text-xs">
+        <div className="absolute right-0 mt-2 w-64 rounded-xl bg-white border border-[#E2E6EE] shadow-xl py-2 z-50 text-xs">
           {/* User Details */}
-          <div className="px-4 py-2 border-b border-slate-800">
-            <p className="font-semibold text-white truncate">{user.full_name || "Enterprise User"}</p>
-            <p className="text-slate-400 truncate text-[11px]">{user.email}</p>
+          <div className="px-4 py-2 border-b border-[#E2E6EE]">
+            <p className="font-bold text-[#172033] truncate">{user.full_name || "Enterprise User"}</p>
+            <p className="text-[#667085] truncate text-[11px]">{user.email}</p>
             <div className="mt-2 flex items-center justify-between">
               <span
-                className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border ${getRoleBadgeStyle(
+                className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${getRoleBadgeStyle(
                   user.role
                 )}`}
               >
@@ -90,18 +90,18 @@ export const UserMenu: React.FC = () => {
           </div>
 
           {/* Tenant Info */}
-          <div className="px-4 py-2 border-b border-slate-800 text-[11px] text-slate-400 flex items-center space-x-2">
-            <Building className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-            <span className="truncate">Tenant: <span className="font-mono text-slate-300">{user.tenant_id.slice(0, 8)}...</span></span>
+          <div className="px-4 py-2 border-b border-[#E2E6EE] text-[11px] text-[#667085] flex items-center space-x-2">
+            <Building className="h-3.5 w-3.5 text-[#667085] shrink-0" />
+            <span className="truncate">Tenant: <span className="font-mono text-[#172033]">{user.tenant_id.slice(0, 8)}...</span></span>
           </div>
 
           {/* Actions */}
           <div className="pt-1">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center space-x-2 px-4 py-2 text-rose-300 hover:bg-rose-950/40 transition text-left"
+              className="w-full flex items-center space-x-2 px-4 py-2 text-rose-600 hover:bg-rose-50 transition text-left font-medium"
             >
-              <LogOut className="h-3.5 w-3.5 text-rose-400" />
+              <LogOut className="h-3.5 w-3.5 text-rose-500" />
               <span>Sign Out</span>
             </button>
           </div>

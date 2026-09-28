@@ -7,7 +7,21 @@ import {
 } from "../types/assessment";
 import { LoginCredentials, TokenResponse, User } from "../types/auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+/**
+ * Resolves the base API URL:
+ * - If NEXT_PUBLIC_API_URL is explicitly configured (non-empty), sanitize and use it.
+ * - In production mode (NODE_ENV === "production"), defaults to same-origin relative path "/api/v1".
+ * - In development/test mode, defaults to "http://localhost:8000/api/v1".
+ */
+export function getApiBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (typeof envUrl === "string" && envUrl.trim() !== "") {
+    return envUrl.trim().replace(/\/+$/, "");
+  }
+  return process.env.NODE_ENV === "production" ? "/api/v1" : "http://localhost:8000/api/v1";
+}
+
+const API_BASE = getApiBaseUrl();
 
 interface FetchOptions extends RequestInit {
   headers?: Record<string, string>;

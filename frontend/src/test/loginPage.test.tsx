@@ -71,7 +71,7 @@ describe("LoginPage Component", () => {
     });
   });
 
-  it("fills development credentials when clicking quick role buttons", () => {
+  it("fills development credentials when clicking quick role buttons in development mode", () => {
     render(
       <AuthProvider>
         <LoginPage />
@@ -83,5 +83,23 @@ describe("LoginPage Component", () => {
 
     expect(screen.getByLabelText(/Corporate Email Address/i)).toHaveValue("consultant@dataeko.ai");
     expect(screen.getByLabelText(/Password/i)).toHaveValue("Consultant123!");
+  });
+
+  it("does not render development quick roles helper in production mode", () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    try {
+      render(
+        <AuthProvider>
+          <LoginPage />
+        </AuthProvider>
+      );
+
+      expect(screen.queryByText("Development Quick Roles")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("dev-quick-roles")).not.toBeInTheDocument();
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 });

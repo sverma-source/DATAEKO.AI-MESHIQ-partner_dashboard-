@@ -21,6 +21,9 @@ else:
     # Resilience hardening for PostgreSQL/production database connections
     engine_kwargs["pool_pre_ping"] = True
     engine_kwargs["pool_recycle"] = 1800
+    engine_kwargs["pool_size"] = settings.DB_POOL_SIZE
+    engine_kwargs["max_overflow"] = settings.DB_MAX_OVERFLOW
+    engine_kwargs["pool_timeout"] = settings.DB_POOL_TIMEOUT
 
 engine_kwargs["connect_args"] = connect_args
 

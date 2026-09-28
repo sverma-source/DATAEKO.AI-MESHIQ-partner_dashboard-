@@ -52,21 +52,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-slate-900 text-slate-100">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-[#0D1322] text-slate-100">
       {/* Background pattern */}
       <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         {/* Brand Logo Header */}
         <div className="flex justify-center items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 font-bold text-white shadow-lg text-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#38B449] font-bold text-white shadow-lg text-lg">
             DQ
           </div>
           <div className="text-left">
             <div className="flex items-center space-x-2">
               <span className="font-bold tracking-tight text-white text-xl">DATAEKO</span>
               <span className="text-slate-400 text-sm font-mono">×</span>
-              <span className="font-bold tracking-tight text-blue-400 text-xl">meshIQ</span>
+              <span className="font-bold tracking-tight text-[#38B449] text-xl">meshIQ</span>
             </div>
             <p className="text-xs text-slate-400">Enterprise MQ Economic Assessment Platform</p>
           </div>
@@ -81,7 +81,7 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
-        <div className="bg-slate-800/90 py-8 px-6 shadow-2xl rounded-2xl border border-slate-700 sm:px-10 backdrop-blur-sm">
+        <div className="bg-[#172033]/90 py-8 px-6 shadow-2xl rounded-2xl border border-[#1E293B] sm:px-10 backdrop-blur-sm">
           {localError && (
             <div
               className="mb-5 flex items-start space-x-2.5 rounded-lg bg-rose-950/80 border border-rose-800/60 p-3 text-xs text-rose-200"
@@ -110,7 +110,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
-                  className="block w-full pl-9 pr-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="block w-full pl-9 pr-3 py-2.5 bg-[#0D1322] border border-[#1E293B] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:border-transparent transition"
                 />
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="block w-full pl-9 pr-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="block w-full pl-9 pr-3 py-2.5 bg-[#0D1322] border border-[#1E293B] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:border-transparent transition"
                 />
               </div>
             </div>
@@ -141,7 +141,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || isLoading}
-                className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-[#38B449] hover:bg-[#008638] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#38B449] transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
@@ -158,31 +158,33 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Development Quick Credentials Helper */}
-          <div className="mt-6 pt-6 border-t border-slate-700/80">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center">
-              <ShieldCheck className="h-3.5 w-3.5 mr-1 text-blue-400" />
-              Development Quick Roles
-            </p>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => handleFillDevCredentials("consultant@dataeko.ai", "Consultant123!")}
-                className="text-left px-2.5 py-1.5 rounded bg-slate-900/80 hover:bg-slate-900 border border-slate-700 text-slate-300 hover:text-white transition truncate"
-              >
-                <div className="font-medium text-blue-300">Consultant</div>
-                <div className="text-[10px] text-slate-500 truncate">consultant@dataeko.ai</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFillDevCredentials("admin@dataeko.ai", "AdminPass123!")}
-                className="text-left px-2.5 py-1.5 rounded bg-slate-900/80 hover:bg-slate-900 border border-slate-700 text-slate-300 hover:text-white transition truncate"
-              >
-                <div className="font-medium text-purple-300">Platform Admin</div>
-                <div className="text-[10px] text-slate-500 truncate">admin@dataeko.ai</div>
-              </button>
+          {/* Development Quick Credentials Helper (Development Only) */}
+          {process.env.NODE_ENV !== "production" && (
+            <div className="mt-6 pt-6 border-t border-[#1E293B]" data-testid="dev-quick-roles">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center">
+                <ShieldCheck className="h-3.5 w-3.5 mr-1 text-[#38B449]" />
+                Development Quick Roles
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => handleFillDevCredentials("consultant@dataeko.ai", "Consultant123!")}
+                  className="text-left px-2.5 py-1.5 rounded bg-[#0D1322] hover:bg-[#0D1322]/80 border border-[#1E293B] text-slate-300 hover:text-white transition truncate"
+                >
+                  <div className="font-medium text-[#8CC63E]">Consultant</div>
+                  <div className="text-[10px] text-slate-500 truncate">consultant@dataeko.ai</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFillDevCredentials("admin@dataeko.ai", "AdminPass123!")}
+                  className="text-left px-2.5 py-1.5 rounded bg-[#0D1322] hover:bg-[#0D1322]/80 border border-[#1E293B] text-slate-300 hover:text-white transition truncate"
+                >
+                  <div className="font-medium text-[#8CC63E]">Platform Admin</div>
+                  <div className="text-[10px] text-slate-500 truncate">admin@dataeko.ai</div>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Security Notice */}

@@ -68,6 +68,11 @@ class Settings(BaseSettings):
     # Database URL: Supports PostgreSQL (asyncpg) or SQLite (aiosqlite)
     DATABASE_URL: str = "sqlite+aiosqlite:///./meshiq_partner.db"
     
+    # Database Connection Pool Configuration
+    DB_POOL_SIZE: int = 5
+    DB_MAX_OVERFLOW: int = 10
+    DB_POOL_TIMEOUT: int = 30
+    
     # Authentication & Security
     SECRET_KEY: str = "dev-insecure-secret-key-change-in-production-dataeko-meshiq-2026"
     JWT_SECRET: Optional[str] = None
@@ -138,6 +143,20 @@ class Settings(BaseSettings):
         if not (1 <= self.RATE_LIMIT_LOGIN_PER_MINUTE <= 30):
             raise ValueError(
                 f"RATE_LIMIT_LOGIN_PER_MINUTE must be between 1 and 30 (got {self.RATE_LIMIT_LOGIN_PER_MINUTE})."
+            )
+
+        # Database connection pool validation
+        if not (1 <= self.DB_POOL_SIZE <= 100):
+            raise ValueError(
+                f"DB_POOL_SIZE must be between 1 and 100 (got {self.DB_POOL_SIZE})."
+            )
+        if not (0 <= self.DB_MAX_OVERFLOW <= 100):
+            raise ValueError(
+                f"DB_MAX_OVERFLOW must be between 0 and 100 (got {self.DB_MAX_OVERFLOW})."
+            )
+        if not (1 <= self.DB_POOL_TIMEOUT <= 300):
+            raise ValueError(
+                f"DB_POOL_TIMEOUT must be between 1 and 300 seconds (got {self.DB_POOL_TIMEOUT})."
             )
 
         # Validate trusted proxy IP/CIDR syntax
@@ -244,6 +263,9 @@ class Settings(BaseSettings):
             "environment": self.ENVIRONMENT,
             "debug": self.DEBUG,
             "database_driver": driver,
+            "db_pool_size": self.DB_POOL_SIZE,
+            "db_max_overflow": self.DB_MAX_OVERFLOW,
+            "db_pool_timeout": self.DB_POOL_TIMEOUT,
             "auth_secret_configured": bool(self.effective_secret_key and len(self.effective_secret_key) >= 32),
             "secure_cookies": self.SECURE_COOKIES,
             "cookie_samesite": self.COOKIE_SAMESITE,

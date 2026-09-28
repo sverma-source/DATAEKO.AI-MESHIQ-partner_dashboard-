@@ -39,10 +39,10 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
   };
 
   return (
-    <nav aria-label="Assessment Sections Navigation" className="w-full bg-slate-50 border-b border-slate-200">
+    <nav aria-label="Assessment Sections Navigation" className="w-full bg-[#F1F3F7] border-b border-[#E2E6EE]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex space-x-1 sm:space-x-2 overflow-x-auto py-2.5 no-scrollbar scroll-smooth">
-          {sections.map((sec, idx) => {
+        <div className="flex space-x-1.5 sm:space-x-2 overflow-x-auto py-2.5 no-scrollbar scroll-smooth">
+          {sections.map((sec) => {
             const isActive = currentSectionId === sec.id;
             const stats = getSectionStats(sec);
 
@@ -52,28 +52,32 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                 type="button"
                 onClick={() => onSelectSection(sec.id)}
                 aria-current={isActive ? "step" : undefined}
-                className={`group flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border ${
+                className={`group flex items-center space-x-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap border ${
                   isActive
-                    ? "bg-white text-blue-900 border-blue-400 shadow-sm ring-1 ring-blue-500/20"
-                    : "text-slate-600 bg-slate-100/70 border-transparent hover:bg-slate-200/80 hover:text-slate-900"
+                    ? "bg-white text-[#172033] border-[#38B449] shadow-xs ring-2 ring-[#38B449]/20 font-bold"
+                    : stats.isComplete
+                    ? "bg-white text-[#172033] border-[#E2E6EE] hover:border-[#A8E2B5]"
+                    : stats.isPartial
+                    ? "bg-white/90 text-[#172033] border-amber-200/80 hover:bg-white"
+                    : "text-[#667085] bg-white/60 border-transparent hover:bg-white/90 hover:text-[#172033]"
                 }`}
               >
                 {/* Status Indicator Badge */}
                 <div
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold transition-colors ${
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-colors ${
                     stats.isComplete
-                      ? "bg-emerald-100 text-emerald-700"
+                      ? "bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]"
                       : stats.isPartial
-                      ? "bg-amber-100 text-amber-700"
+                      ? "bg-amber-50 text-amber-700 border border-amber-300"
                       : isActive
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-slate-200 text-slate-600"
+                      ? "bg-[#38B449] text-white"
+                      : "bg-[#E2E6EE] text-[#667085]"
                   }`}
                 >
                   {stats.isComplete ? (
-                    <Check className="h-3 w-3 stroke-[3]" />
+                    <Check className="h-3 w-3 stroke-[3] text-[#008638]" />
                   ) : stats.isPartial ? (
-                    <CircleDot className="h-3 w-3" />
+                    <CircleDot className="h-3 w-3 text-amber-600" />
                   ) : (
                     <span>{sec.id}</span>
                   )}
@@ -81,11 +85,21 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
 
                 {/* Section Name & Count */}
                 <div className="flex flex-col text-left">
-                  <span className="font-semibold leading-tight">
+                  <span className={`leading-tight ${isActive ? "font-extrabold text-[#172033]" : "font-semibold"}`}>
                     Section {sec.id}
                   </span>
-                  <span className="text-[10px] text-slate-500 leading-tight">
-                    {stats.answered}/{stats.total} Answered
+                  <span
+                    className={`text-[10px] leading-tight font-medium ${
+                      stats.isComplete
+                        ? "text-[#008638]"
+                        : stats.isPartial
+                        ? "text-amber-700 font-semibold"
+                        : "text-[#667085]"
+                    }`}
+                  >
+                    {stats.isComplete
+                      ? "Completed"
+                      : `${stats.answered}/${stats.total} Answered`}
                   </span>
                 </div>
               </button>
@@ -97,14 +111,14 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
             type="button"
             onClick={() => onSelectSection("REVIEW")}
             aria-current={currentSectionId === "REVIEW" ? "step" : undefined}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap border ${
+            className={`flex items-center space-x-2 px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap border ${
               currentSectionId === "REVIEW"
-                ? "bg-white text-blue-900 border-blue-500 shadow-sm ring-1 ring-blue-500/20"
-                : "text-slate-700 bg-slate-100 border-transparent hover:bg-slate-200/80 hover:text-slate-900"
+                ? "bg-white text-[#008638] border-[#38B449] shadow-xs ring-2 ring-[#38B449]/20"
+                : "text-[#172033] bg-[#EEF8F0] border-[#A8E2B5] hover:bg-[#E2F5E6]"
             }`}
           >
-            <FileCheck className="h-4 w-4 text-blue-600" />
-            <span>Review & Submit</span>
+            <FileCheck className="h-4 w-4 text-[#38B449]" />
+            <span>Review &amp; Submit</span>
           </button>
         </div>
       </div>

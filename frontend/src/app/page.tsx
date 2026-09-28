@@ -288,7 +288,7 @@ export default function AssessmentWizardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-slate-100 flex flex-col font-sans antialiased text-slate-900">
+      <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033]">
         {/* Top Navigation */}
         <Navbar
           customerName={currentCustomer?.name}
@@ -350,9 +350,9 @@ export default function AssessmentWizardPage() {
           <div className="space-y-6 max-w-4xl mx-auto">
             {/* Session Actions Banner */}
             {!currentAssessment && (
-              <div className="flex items-center justify-between rounded-xl bg-blue-50 p-4 border border-blue-200/80 text-xs">
-                <div className="flex items-center space-x-2 text-blue-900">
-                  <Building2 className="h-4 w-4 text-blue-600 shrink-0" />
+              <div className="flex items-center justify-between rounded-xl bg-[#EEF8F0] p-4 border border-[#A8E2B5] text-xs">
+                <div className="flex items-center space-x-2 text-[#172033]">
+                  <Building2 className="h-4 w-4 text-[#38B449] shrink-0" />
                   <span>
                     Working in draft mode. Click{" "}
                     <strong>Select/Create Customer</strong> to link this session to a verified enterprise account.
@@ -361,7 +361,7 @@ export default function AssessmentWizardPage() {
                 <button
                   type="button"
                   onClick={() => setIsCustomerModalOpen(true)}
-                  className="px-3 py-1.5 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors shrink-0"
+                  className="px-3 py-1.5 rounded-md bg-[#38B449] text-white font-semibold hover:bg-[#008638] transition-colors shrink-0 shadow-xs"
                 >
                   Select Customer
                 </button>
@@ -478,12 +478,12 @@ export default function AssessmentWizardPage() {
             </div>
 
             {/* Bottom Section Step Navigation Buttons */}
-            <div className="flex items-center justify-between pt-6 border-t border-slate-200">
+            <div className="flex items-center justify-between pt-6 border-t border-[#E2E6EE]">
               <button
                 type="button"
                 onClick={handlePrevSection}
                 disabled={currentSectionIndex === 0}
-                className="inline-flex items-center space-x-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-40"
+                className="inline-flex items-center space-x-2 rounded-lg border border-[#CBD2DE] bg-white px-4 py-2.5 text-xs font-semibold text-[#172033] shadow-xs hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#38B449] disabled:opacity-40 transition"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span>Previous Section</span>
@@ -494,16 +494,16 @@ export default function AssessmentWizardPage() {
                   type="button"
                   onClick={handleSaveProgress}
                   disabled={isSaving}
-                  className="hidden sm:inline-flex items-center space-x-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 shadow-xs"
+                  className="hidden sm:inline-flex items-center space-x-1.5 rounded-lg border border-[#CBD2DE] bg-white px-3.5 py-2.5 text-xs font-medium text-[#172033] hover:bg-[#F1F3F7] shadow-xs transition"
                 >
-                  <Save className="h-3.5 w-3.5 text-slate-500" />
+                  <Save className="h-3.5 w-3.5 text-[#667085]" />
                   <span>Save Draft</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleNextSection}
-                  className="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  className="inline-flex items-center space-x-2 rounded-lg bg-[#38B449] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#008638] focus:outline-none focus:ring-2 focus:ring-[#38B449] transition"
                 >
                   <span>
                     {currentSectionIndex === SECTIONS.length - 1
@@ -546,6 +546,16 @@ export default function AssessmentWizardPage() {
           />
         )}
       </main>
+
+      {/* Attribution Footer */}
+      <footer className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full border-t border-[#E2E6EE] flex flex-col sm:flex-row items-center justify-between text-xs text-[#667085] gap-2">
+        <div className="flex items-center space-x-2 text-[11px]">
+          <span>meshIQ Enterprise Economic Cost &amp; Efficiency Assessment</span>
+        </div>
+        <div className="text-right text-[11px] font-semibold text-[#667085] tracking-tight">
+          Powered by DATAEKO.AI
+        </div>
+      </footer>
 
       {/* Customer / Assessment Initialization Modal */}
       <CustomerModal

@@ -229,3 +229,46 @@ def test_trusted_proxy_fails_closed_on_wildcard_or_malformed():
         Settings(TRUSTED_PROXY_IPS=["invalid.ip.string"])
 
 
+# 8. Database Connection Pool Settings Validation
+def test_db_pool_defaults_and_custom_configuration():
+    # Default settings
+    default_settings = Settings()
+    assert default_settings.DB_POOL_SIZE == 5
+    assert default_settings.DB_MAX_OVERFLOW == 10
+    assert default_settings.DB_POOL_TIMEOUT == 30
+
+    # Custom valid configuration
+    custom_settings = Settings(
+        DB_POOL_SIZE=20,
+        DB_MAX_OVERFLOW=15,
+        DB_POOL_TIMEOUT=60,
+    )
+    assert custom_settings.DB_POOL_SIZE == 20
+    assert custom_settings.DB_MAX_OVERFLOW == 15
+    assert custom_settings.DB_POOL_TIMEOUT == 60
+
+    # Safe diagnostics should include pool parameters
+    diag = custom_settings.get_safe_diagnostics()
+    assert diag["db_pool_size"] == 20
+    assert diag["db_max_overflow"] == 15
+    assert diag["db_pool_timeout"] == 60
+
+
+def test_db_pool_validation_rejects_invalid_bounds():
+    # Invalid DB_POOL_SIZE (< 1 or > 100)
+    for bad_size in [0, -1, 101]:
+        with pytest.raises(ValueError, match="DB_POOL_SIZE must be between 1 and 100"):
+            Settings(DB_POOL_SIZE=bad_size)
+
+    # Invalid DB_MAX_OVERFLOW (< 0 or > 100)
+    for bad_overflow in [-1, 101]:
+        with pytest.raises(ValueError, match="DB_MAX_OVERFLOW must be between 0 and 100"):
+            Settings(DB_MAX_OVERFLOW=bad_overflow)
+
+    # Invalid DB_POOL_TIMEOUT (< 1 or > 300)
+    for bad_timeout in [0, -5, 301]:
+        with pytest.raises(ValueError, match="DB_POOL_TIMEOUT must be between 1 and 300 seconds"):
+            Settings(DB_POOL_TIMEOUT=bad_timeout)
+
+
+

@@ -43,18 +43,18 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   );
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm transition-all hover:border-slate-300">
+    <div className="rounded-xl border border-[#E2E6EE] bg-white p-4 sm:p-5 shadow-xs transition-all hover:border-[#CBD2DE]">
       {/* Top Header: Code, Title, Feeds Calculation Tag */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center space-x-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-50 font-mono text-xs font-bold text-blue-700 border border-blue-200/60">
+        <div className="flex items-start space-x-2.5">
+          <span className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-md bg-[#EEF8F0] font-mono text-xs font-bold text-[#008638] border border-[#A8E2B5] mt-0.5">
             {question.code}
           </span>
           <div>
-            <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+            <h2 className="text-sm sm:text-base font-bold text-[#172033] tracking-tight leading-snug">
               {question.title}
             </h2>
-            <span className="text-[11px] text-slate-500 font-medium">
+            <span className="text-[11px] text-[#667085] font-medium block mt-0.5">
               Theme: {question.theme}
             </span>
           </div>
@@ -63,28 +63,28 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         {/* Calculation Badge */}
         {question.feedsCalculation && (
           <div
-            className="flex items-center space-x-1 rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 border border-indigo-200/60"
+            className="flex items-center space-x-1.5 rounded-full bg-[#EEF8F0] px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-[#008638] border border-[#A8E2B5] shrink-0"
             title={question.calculationNote || "Directly feeds economic engine"}
           >
-            <Calculator className="h-3 w-3" />
+            <Calculator className="h-3 w-3 text-[#38B449]" />
             <span className="hidden sm:inline">Feeds Calculation</span>
           </div>
         )}
       </div>
 
       {/* Question Prompt */}
-      <p className="mt-3 text-sm font-medium text-slate-800 leading-relaxed">
+      <p className="mt-2.5 text-xs sm:text-sm font-medium text-[#172033] leading-relaxed">
         {question.questionText}
       </p>
 
       {/* Input / Control Body */}
-      <div className="mt-4 space-y-4">
+      <div className="mt-3.5 space-y-3">
         {/* Type A: Controlled Dropdown Options */}
         {question.options && question.options.length > 0 && (
           <div>
             <label
               htmlFor={`select-${question.id}`}
-              className="block text-xs font-medium text-slate-600 mb-1.5"
+              className="block text-xs font-semibold text-[#667085] mb-1"
             >
               Select Approved Response
             </label>
@@ -93,10 +93,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 id={`select-${question.id}`}
                 value={selectedValue || ""}
                 onChange={(e) => onSelectOption(e.target.value)}
-                className={`w-full appearance-none rounded-lg border bg-white px-3.5 py-2.5 pr-10 text-sm font-medium text-slate-900 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 sm:py-2.5 pr-10 text-xs sm:text-sm font-medium text-[#172033] shadow-xs transition-colors focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:border-[#38B449] ${
                   error
                     ? "border-rose-400 focus:border-rose-500 focus:ring-rose-200"
-                    : "border-slate-300 hover:border-slate-400"
+                    : "border-[#CBD2DE] hover:border-slate-400"
                 }`}
               >
                 <option value="">-- Choose an assessment response --</option>
@@ -106,26 +106,26 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#667085]">
                 <ChevronDown className="h-4 w-4" />
               </div>
             </div>
           </div>
         )}
 
-        {/* Type B: Numeric Override / Exact Value Toggle */}
+        {/* Type B: Numeric Override / Exact Customer Fact */}
         {question.allowNumericOverride && (
-          <div className="pt-2 border-t border-slate-100">
+          <div className="pt-1.5 border-t border-[#E2E6EE]">
             <div className="flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setUseOverrideMode(!useOverrideMode)}
-                className="text-xs font-medium text-blue-700 hover:text-blue-800 flex items-center space-x-1"
+                className="text-xs font-semibold text-[#008638] hover:text-[#38B449] flex items-center space-x-1.5 transition-colors"
               >
-                <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                <Sparkles className="h-3.5 w-3.5 text-[#38B449]" />
                 <span>
                   {useOverrideMode
-                    ? "Hide exact numeric input"
+                    ? "Hide exact numeric customer fact"
                     : `Provide exact customer fact (${question.overrideLabel || "Exact Number"})`}
                 </span>
               </button>
@@ -134,10 +134,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 <button
                   type="button"
                   onClick={() => onDefaultToggle(!useDefault)}
-                  className={`text-xs px-2 py-0.5 rounded border font-medium ${
+                  className={`text-[11px] px-2.5 py-0.5 rounded-md border font-semibold transition-colors ${
                     useDefault
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-                      : "bg-slate-100 text-slate-600 border-slate-200"
+                      ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]"
+                      : "bg-[#F1F3F7] text-[#667085] border-[#CBD2DE]"
                   }`}
                 >
                   {useDefault ? "Using Model Default ($180k/yr)" : "Using Custom Salary"}
@@ -146,13 +146,18 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             </div>
 
             {useOverrideMode && (
-              <div className="mt-2.5 rounded-lg bg-slate-50 p-3.5 border border-slate-200">
-                <label
-                  htmlFor={`override-${question.id}`}
-                  className="block text-xs font-semibold text-slate-700 mb-1"
-                >
-                  {question.overrideLabel || "Exact Numeric Override"}
-                </label>
+              <div className="mt-2 rounded-lg bg-[#F8FAFC] p-3 border border-[#E2E6EE] space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor={`override-${question.id}`}
+                    className="block text-xs font-bold text-[#172033]"
+                  >
+                    {question.overrideLabel || "Exact Numeric Override"}
+                  </label>
+                  <span className="text-[10px] font-semibold text-[#008638] bg-[#EEF8F0] px-2 py-0.5 rounded border border-[#A8E2B5]">
+                    Customer Fact Override
+                  </span>
+                </div>
                 <div className="relative flex items-center">
                   <input
                     id={`override-${question.id}`}
@@ -164,15 +169,15 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                       const val = e.target.value === "" ? undefined : parseFloat(e.target.value);
                       onOverrideChange(val);
                     }}
-                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#172033] shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
                   />
                   {question.overrideUnit && (
-                    <span className="absolute right-3 text-xs font-medium text-slate-500 pointer-events-none">
+                    <span className="absolute right-3 text-xs font-semibold text-[#667085] pointer-events-none">
                       {question.overrideUnit}
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">
+                <p className="text-[11px] text-[#667085]">
                   Customer verified figure overrides categorical estimate in calculation engine.
                 </p>
               </div>
@@ -182,33 +187,35 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
         {/* Validation Error */}
         {error && (
-          <div className="flex items-center space-x-1.5 text-xs text-rose-600 font-medium pt-1">
+          <div className="flex items-center space-x-1.5 text-xs text-rose-600 font-medium pt-0.5">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Calculation Note Banner */}
+        {/* Compact Engine Impact Banner */}
         {question.calculationNote && (
-          <div className="flex items-start space-x-2 rounded-md bg-slate-50 px-3 py-2 border border-slate-200 text-xs text-slate-600">
-            <Info className="h-4 w-4 shrink-0 text-blue-600 mt-0.5" />
-            <div>
-              <span className="font-semibold text-slate-700">Calculation Engine Impact: </span>
-              <span>{question.calculationNote}</span>
+          <div className="rounded-lg bg-[#F8FAFC] px-3 py-2 border border-[#E2E6EE] text-xs">
+            <div className="flex items-center space-x-1.5 text-[10px] font-bold uppercase tracking-wider text-[#008638]">
+              <Info className="h-3.5 w-3.5 shrink-0 text-[#38B449]" />
+              <span>ENGINE IMPACT</span>
             </div>
+            <p className="text-xs text-[#172033] mt-0.5 leading-normal">
+              {question.calculationNote}
+            </p>
           </div>
         )}
 
         {/* Seller Guidance Accordion */}
         {question.sellerGuidance && (
-          <div className="pt-2">
+          <div className="pt-1">
             <button
               type="button"
               onClick={() => setShowSellerNotes(!showSellerNotes)}
-              className="flex items-center space-x-1 text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors"
+              className="flex items-center space-x-1 text-xs font-semibold text-[#667085] hover:text-[#172033] transition-colors"
             >
               <HelpCircle className="h-3.5 w-3.5" />
-              <span>Consultant Probing & Seller Guidance</span>
+              <span>Consultant Probing &amp; Seller Guidance</span>
               {showSellerNotes ? (
                 <ChevronUp className="h-3 w-3" />
               ) : (
@@ -216,8 +223,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               )}
             </button>
             {showSellerNotes && (
-              <div className="mt-2 rounded-lg bg-amber-50/70 p-3 border border-amber-200/80 text-xs text-amber-900 leading-relaxed">
-                <span className="font-semibold block mb-0.5">Discovery Probe:</span>
+              <div className="mt-2 rounded-lg bg-amber-50/80 p-3 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+                <span className="font-bold block mb-0.5">Discovery Probe:</span>
                 {question.sellerGuidance}
               </div>
             )}

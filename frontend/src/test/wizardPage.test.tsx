@@ -74,8 +74,8 @@ describe("AssessmentWizardPage Full Integration", () => {
     render(<AssessmentWizardPage />);
 
     // Header & Section info
-    expect(screen.getByText("DATAEKO")).toBeInTheDocument();
-    expect(screen.getByText("meshIQ")).toBeInTheDocument();
+    expect(screen.getByAltText("DATAEKO")).toBeInTheDocument();
+    expect(screen.getByAltText("meshIQ")).toBeInTheDocument();
     expect(screen.getByText("A. Environment & Cost Baseline")).toBeInTheDocument();
 
     // Section A questions rendered

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { api } from "../services/api";
 import { Activity, Building2, CheckCircle2, ShieldAlert } from "lucide-react";
 import { UserMenu } from "./UserMenu";
@@ -36,70 +37,97 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-slate-900 text-white shadow-sm">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        {/* Brand & Platform */}
-        <div className="flex items-center space-x-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 font-bold text-white shadow-inner">
-            DQ
-          </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-semibold tracking-tight text-white text-base">DATAEKO</span>
-              <span className="text-slate-400 text-xs font-mono">×</span>
-              <span className="font-semibold tracking-tight text-blue-400 text-base">meshIQ</span>
-            </div>
-            <p className="text-[11px] text-slate-400">IBM MQ Economic Cost & Efficiency Assessment</p>
+    <header className="sticky top-0 z-40 w-full border-b border-[#E2E6EE] bg-white text-[#172033] shadow-xs">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8 gap-3">
+        {/* Top-Left: Official meshIQ Logo & Subtitle */}
+        <div className="flex items-center space-x-3 shrink-0">
+          <Image
+            src="/meshiq-logo.png"
+            alt="meshIQ"
+            width={708}
+            height={135}
+            unoptimized
+            priority
+            className="h-6 sm:h-7 w-auto object-contain shrink-0"
+          />
+          <div className="hidden lg:block border-l border-[#E2E6EE] pl-3">
+            <span className="text-xs font-bold text-[#172033] block leading-tight">
+              Economic Assessment Platform
+            </span>
+            <span className="text-[10px] text-[#667085] block leading-tight font-medium">
+              Enterprise Middleware Analytics
+            </span>
           </div>
         </div>
 
-        {/* Active Context */}
-        {(customerName || assessmentTitle) && (
-          <div className="hidden md:flex items-center space-x-3 bg-slate-800/80 px-3 py-1.5 rounded-md border border-slate-700 text-xs">
-            <Building2 className="h-4 w-4 text-blue-400" />
-            <div className="flex items-center space-x-2">
-              <span className="font-medium text-slate-200">{customerName || "Customer Intake"}</span>
-              <span className="text-slate-500">•</span>
-              <span className="text-slate-400 truncate max-w-[200px]">{assessmentTitle || "Discovery Session"}</span>
+        {/* Center: Dominant Customer & Workspace Context */}
+        <div className="flex-1 max-w-xl mx-2 flex justify-center">
+          {customerName ? (
+            <div className="flex items-center space-x-2.5 bg-[#F8FAFC] px-3.5 py-1.5 rounded-lg border border-[#E2E6EE] shadow-2xs w-full sm:w-auto">
+              <Building2 className="h-4 w-4 text-[#008638] shrink-0" />
+              <div className="flex items-baseline space-x-2 min-w-0">
+                <span className="text-xs sm:text-sm font-bold text-[#172033] truncate">
+                  {customerName}
+                </span>
+                <span className="text-[#CBD2DE] text-xs">•</span>
+                <span className="text-[11px] text-[#667085] truncate max-w-[200px] font-medium">
+                  {assessmentTitle || "IBM MQ Discovery"}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="hidden md:flex items-center space-x-2 text-xs text-[#667085]">
+              <span className="font-semibold text-[#172033]">IBM MQ Economic Cost &amp; Efficiency Assessment</span>
+            </div>
+          )}
+        </div>
 
-        {/* Engine & Health Status */}
-        <div className="flex items-center space-x-4 text-xs">
-          <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300">
-            <span className="text-slate-400">Engine:</span>
-            <span className="font-mono text-blue-300 font-semibold">v{engineVersion}</span>
+        {/* Top-Right: Subtle Metadata, User Profile & DATAEKO Logo */}
+        <div className="flex items-center space-x-2.5 sm:space-x-3.5 text-xs shrink-0">
+          {/* Subtle Technical Metadata Cluster */}
+          <div className="hidden sm:flex items-center space-x-2 pl-2 text-[11px] text-[#667085]">
+            <span className="font-mono text-[10px] text-[#667085] bg-[#F1F3F7] px-2 py-0.5 rounded border border-[#E2E6EE]">
+              Engine v{engineVersion}
+            </span>
+            <span
+              className={`inline-flex items-center space-x-1 font-medium ${
+                backendHealth === "healthy"
+                  ? "text-[#008638]"
+                  : backendHealth === "checking"
+                  ? "text-amber-600"
+                  : "text-rose-600"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  backendHealth === "healthy"
+                    ? "bg-[#38B449]"
+                    : backendHealth === "checking"
+                    ? "bg-amber-500 animate-pulse"
+                    : "bg-rose-500"
+                }`}
+              />
+              <span className="text-[10px]">
+                {backendHealth === "healthy" ? "Connected" : backendHealth === "checking" ? "Connecting" : "Offline"}
+              </span>
+            </span>
           </div>
 
-          <div
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-              backendHealth === "healthy"
-                ? "bg-emerald-950/80 text-emerald-300 border border-emerald-800/60"
-                : backendHealth === "checking"
-                ? "bg-amber-950/80 text-amber-300 border border-amber-800/60"
-                : "bg-rose-950/80 text-rose-300 border border-rose-800/60"
-            }`}
-          >
-            {backendHealth === "healthy" ? (
-              <>
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                <span>Backend Connected</span>
-              </>
-            ) : backendHealth === "checking" ? (
-              <>
-                <Activity className="h-3.5 w-3.5 text-amber-400 animate-spin" />
-                <span>Connecting...</span>
-              </>
-            ) : (
-              <>
-                <ShieldAlert className="h-3.5 w-3.5 text-rose-400" />
-                <span>Offline Mode</span>
-              </>
-            )}
-          </div>
-          {/* User Menu & Session */}
+          {/* User Menu */}
           <UserMenu />
+
+          {/* Official DATAEKO Partner Logo */}
+          <div className="flex items-center pl-2 sm:pl-3 border-l border-[#E2E6EE]">
+            <Image
+              src="/dataeko-logo.png"
+              alt="DATAEKO"
+              width={638}
+              height={106}
+              unoptimized
+              priority
+              className="h-3.5 sm:h-4.5 w-auto object-contain shrink-0 opacity-90 hover:opacity-100 transition-opacity"
+            />
+          </div>
         </div>
       </div>
     </header>

@@ -1,0 +1,145 @@
+# ==============================================================================
+# DATAEKO × meshIQ Partner Dashboard — Hardened Production Docker Compose Topology
+# ==============================================================================
+# Ingress Architecture:
+# - Internet / Ingress Traffic -> Reverse Proxy (Port 80 / 443)
+# - Reverse Proxy /           -> Frontend (Internal meshiq_prod_network:3000)
+# - Reverse Proxy /api/v1     -> Backend  (Internal meshiq_prod_network:8000)
+# - Backend                   -> PostgreSQL (Internal meshiq_prod_network:5432)
+#
+# Production Security Invariants:
+# 1. Zero host port exposure for Database, Backend, and Frontend.
+# 2. Only Nginx reverse proxy binds to host ports (80 / 443).
+# 3. Fail-closed: Required production secrets must be provided via environment.
+# ==============================================================================
+
+services:
+  # ==============================================================================
+  # 1. Production Ingress & Reverse Proxy (Nginx)
+  # ==============================================================================
+  proxy:
+    image: nginx:1.25-alpine
+    container_name: meshiq_prod_proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # Uncomment for TLS termination with certificates:
+      # - ./nginx/ssl.conf.template:/etc/nginx/conf.d/default.conf:ro
+      # - /etc/ssl/certs/meshiq:/etc/nginx/certs:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:80/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - meshiq_prod_network
+
+  # ==============================================================================
+  # 2. Next.js Frontend Application (Internal only)
+  # ==============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
+    container_name: meshiq_prod_frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    expose:
+      - "3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - meshiq_prod_network
+
+  # ==============================================================================
+  # 3. FastAPI Backend Application (Internal only)
+  # ==============================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: meshiq_prod_backend
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["https://partner.meshiq.com"]}
+      SECURE_COOKIES: "true"
+      COOKIE_SAMESITE: "strict"
+      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-["127.0.0.1","172.16.0.0/12","10.0.0.0/8"]}
+      DEBUG: "false"
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-20}
+      DB_POOL_TIMEOUT: ${DB_POOL_TIMEOUT:-30}
+    expose:
+      - "8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - meshiq_prod_network
+
+  # ==============================================================================
+  # 4. PostgreSQL Database (Internal only)
+  # ==============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: meshiq_prod_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-meshiq}
+      POSTGRES_USER: ${POSTGRES_USER:-meshiq_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - meshiq_prod_postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-meshiq_user} -d $${POSTGRES_DB:-meshiq}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - meshiq_prod_network
+
+# ==============================================================================
+# Persistent Volumes & Isolated Production Network
+# ==============================================================================
+volumes:
+  meshiq_prod_postgres_data:
+    name: meshiq_prod_postgres_data
+
+networks:
+  meshiq_prod_network:
+    name: meshiq_prod_network
+    driver: bridge

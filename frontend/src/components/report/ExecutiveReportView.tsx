@@ -48,16 +48,16 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
   const getProvenanceBadgeClass = (provenance: ReportProvenanceTier) => {
     switch (provenance) {
       case "CUSTOMER_FACT":
-        return "bg-emerald-50 text-emerald-800 border-emerald-300";
+        return "bg-slate-100 text-slate-800 border-slate-300";
       case "CALCULATED_RESULT":
-        return "bg-blue-50 text-blue-800 border-blue-300";
+        return "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]";
       case "INDUSTRY_BENCHMARK":
       case "BENCHMARK_FALLBACK":
-        return "bg-amber-50 text-amber-800 border-amber-300";
+        return "bg-[#FAF5FF] text-[#722F8A] border-[#E9D5FF]";
       case "MODEL_ASSUMPTION":
-        return "bg-indigo-50 text-indigo-800 border-indigo-300";
+        return "bg-slate-100 text-slate-700 border-slate-300";
       case "SCENARIO_PROJECTION":
-        return "bg-purple-50 text-purple-800 border-purple-300";
+        return "bg-amber-50 text-amber-800 border-amber-300";
       default:
         return "bg-slate-50 text-slate-700 border-slate-300";
     }
@@ -67,9 +67,9 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
     switch (state) {
       case "VALID":
       case "VALID_WITH_DEFAULTS":
-        return "text-emerald-700 bg-emerald-50 border-emerald-200";
+        return "text-[#008638] bg-[#EEF8F0] border-[#A8E2B5]";
       case "INDUSTRY_BENCHMARK":
-        return "text-amber-700 bg-amber-50 border-amber-200";
+        return "text-[#722F8A] bg-[#FAF5FF] border-[#E9D5FF]";
       case "INSUFFICIENT_DATA":
       case "NOT_MODELED":
       case "NOT_APPLICABLE":
@@ -119,7 +119,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                 type="checkbox"
                 checked={showConsultantAppendix}
                 onChange={(e) => setShowConsultantAppendix(e.target.checked)}
-                className="rounded text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
+                className="rounded text-[#38B449] focus:ring-[#38B449] h-3.5 w-3.5"
               />
               <span>Include Consultant Appendix</span>
             </label>
@@ -127,7 +127,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
             <button
               type="button"
               onClick={handlePrint}
-              className="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center space-x-2 rounded-lg bg-[#38B449] px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-[#008638] transition-colors"
             >
               <Printer className="h-4 w-4" />
               <span>Print / Save as PDF</span>
@@ -146,9 +146,9 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xl font-black tracking-tight text-blue-600">DATAEKO</span>
+                <span className="text-xl font-black tracking-tight text-[#172033]">DATAEKO</span>
                 <span className="text-slate-400 font-light">×</span>
-                <span className="text-xl font-extrabold tracking-tight text-slate-900">meshIQ</span>
+                <span className="text-xl font-extrabold tracking-tight text-[#38B449]">meshIQ</span>
               </div>
               <p className="text-xs uppercase tracking-widest text-slate-500 font-semibold mt-1">
                 Enterprise Messaging Economic Assessment
@@ -156,7 +156,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
             </div>
 
             <div className="text-right">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white">
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#0D1322] text-white">
                 Executive Customer Report
               </span>
               <p className="text-xs text-slate-500 mt-1 font-mono">
@@ -169,7 +169,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
             <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
               {report.metadata.title}
             </h1>
-            <p className="text-lg font-medium text-blue-700 mt-1">
+            <p className="text-lg font-semibold text-[#008638] mt-1">
               {report.metadata.subtitle}
             </p>
           </div>
@@ -204,7 +204,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
         {/* SECTION 2: EXECUTIVE SUMMARY */}
         {/* ========================================================================= */}
         <section className="space-y-6 break-inside-avoid">
-          <div className="border-l-4 border-blue-600 pl-4">
+          <div className="border-l-4 border-[#38B449] pl-4">
             <h2 className="text-xl font-bold text-slate-900">1. Executive Summary</h2>
             <p className="text-xs text-slate-500">
               Concise summary of quantified economic findings, baseline burden, and improvement potential.
@@ -223,7 +223,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
               </div>
               <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-200">
                 <span>{report.operationalEffort.consolidated.totalAnnualHours.formattedValue} hrs/yr</span>
-                <span className="font-semibold text-blue-700">
+                <span className="font-semibold text-[#008638]">
                   {report.executiveSummary.operationalFteBurden.formattedValue} FTE
                 </span>
               </div>
@@ -255,23 +255,23 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
               </div>
               <div className="text-[11px] text-slate-600 pt-1 border-t border-slate-200 flex items-center justify-between">
                 <span>Isolated Fact (Q21)</span>
-                <span className="text-[10px] font-semibold uppercase text-emerald-700">
+                <span className="text-[10px] font-semibold uppercase text-[#008638]">
                   {report.executiveSummary.customerReportedAnnualMqSpend.provenanceLabel}
                 </span>
               </div>
             </div>
 
             {/* Illustrative Economic Value (Scenario) */}
-            <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-200 space-y-1.5">
-              <span className="text-[11px] font-semibold text-indigo-900 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#EEF8F0]/70 border border-[#A8E2B5] space-y-1.5">
+              <span className="text-[11px] font-semibold text-[#008638] uppercase tracking-wider block">
                 Illustrative Economic Value
               </span>
-              <div className="text-2xl font-black text-indigo-900">
+              <div className="text-2xl font-black text-[#0D1322]">
                 {report.executiveSummary.illustrativeAnnualLaborSavings.formattedValue}
               </div>
-              <div className="text-[11px] text-indigo-800 pt-1 border-t border-indigo-200 flex items-center justify-between">
+              <div className="text-[11px] text-[#008638] pt-1 border-t border-[#A8E2B5] flex items-center justify-between">
                 <span>{report.improvementScenario.totalRecoverableHours.formattedValue} hrs recovered</span>
-                <span className="text-[10px] font-semibold uppercase text-purple-700">
+                <span className="text-[10px] font-semibold uppercase text-[#008638]">
                   Scenario
                 </span>
               </div>
@@ -289,7 +289,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
         {/* SECTION 3: ASSESSMENT SCOPE & ENVIRONMENT */}
         {/* ========================================================================= */}
         <section className="space-y-4 break-inside-avoid">
-          <div className="border-l-4 border-blue-600 pl-4">
+          <div className="border-l-4 border-[#38B449] pl-4">
             <h2 className="text-xl font-bold text-slate-900">2. Assessment Scope & Environment</h2>
             <p className="text-xs text-slate-500">
               Infrastructure profile, team capacity, and architectural context reported during the assessment.
@@ -301,7 +301,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
               <div key={idx} className="p-3.5 rounded-lg border border-slate-200 bg-white">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-slate-500 font-mono">{item.questionCode}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded font-semibold border bg-emerald-50 text-emerald-800 border-emerald-300">
+                  <span className="text-[10px] px-2 py-0.5 rounded font-semibold border bg-slate-100 text-slate-800 border-slate-300">
                     Customer Fact
                   </span>
                 </div>
@@ -316,7 +316,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
         {/* SECTION 4 & 5: OPERATIONAL EFFORT & LABOR COST BREAKDOWN */}
         {/* ========================================================================= */}
         <section className="space-y-4 break-inside-avoid">
-          <div className="border-l-4 border-blue-600 pl-4">
+          <div className="border-l-4 border-[#38B449] pl-4">
             <h2 className="text-xl font-bold text-slate-900">3. Operational Effort & Labor Cost Breakdown</h2>
             <p className="text-xs text-slate-500">
               Decomposition of routine administration versus diagnostic troubleshooting based on the approved standard.

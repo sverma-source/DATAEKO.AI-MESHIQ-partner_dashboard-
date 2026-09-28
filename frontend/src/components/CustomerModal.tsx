@@ -71,19 +71,19 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0D1322]/70 backdrop-blur-xs p-4">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E6EE] animate-in fade-in zoom-in-95 duration-150">
+        <div className="flex items-center justify-between pb-4 border-b border-[#E2E6EE]">
           <div className="flex items-center space-x-2">
-            <Building2 className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-bold text-slate-900">
+            <Building2 className="h-5 w-5 text-[#38B449]" />
+            <h3 className="text-lg font-bold text-[#172033]">
               Start Assessment Discovery Session
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-[#667085] hover:text-[#172033] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -97,14 +97,14 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
           )}
 
           {/* Mode Switcher */}
-          <div className="flex rounded-lg bg-slate-100 p-1 text-xs font-semibold">
+          <div className="flex rounded-lg bg-[#F1F3F7] p-1 text-xs font-semibold border border-[#E2E6EE]">
             <button
               type="button"
               onClick={() => setMode("select")}
               className={`flex-1 py-1.5 rounded-md transition-colors ${
                 mode === "select"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
+                  : "text-[#667085] hover:text-[#172033]"
               }`}
             >
               Existing Customer ({customers.length})
@@ -114,8 +114,8 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
               onClick={() => setMode("create")}
               className={`flex-1 py-1.5 rounded-md transition-colors ${
                 mode === "create"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
+                  : "text-[#667085] hover:text-[#172033]"
               }`}
             >
               + Create New Customer
@@ -124,14 +124,14 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
 
           {mode === "select" ? (
             <div>
-              <label htmlFor="customer-select" className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="customer-select" className="block text-xs font-semibold text-[#172033] mb-1">
                 Select Customer Account
               </label>
               <select
                 id="customer-select"
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
               >
                 {customers.length === 0 && <option value="">No customers found — create one</option>}
                 {customers.map((c) => (
@@ -144,7 +144,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
           ) : (
             <div className="space-y-3">
               <div>
-                <label htmlFor="company-name" className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="company-name" className="block text-xs font-semibold text-[#172033] mb-1">
                   Company / Organization Name *
                 </label>
                 <input
@@ -154,19 +154,19 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   placeholder="e.g. Global Freight Logistics Corp"
                   value={newCustName}
                   onChange={(e) => setNewCustName(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] placeholder-[#667085]/60 shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
                 />
               </div>
 
               <div>
-                <label htmlFor="industry-select" className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="industry-select" className="block text-xs font-semibold text-[#172033] mb-1">
                   Industry Sector
                 </label>
                 <select
                   id="industry-select"
                   value={newCustIndustry}
                   onChange={(e) => setNewCustIndustry(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
                 >
                   <option value="Financial Services & Banking">Financial Services & Banking</option>
                   <option value="Healthcare & Life Sciences">Healthcare & Life Sciences</option>
@@ -182,7 +182,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
               </div>
 
               <div>
-                <label htmlFor="contact-email" className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="contact-email" className="block text-xs font-semibold text-[#172033] mb-1">
                   Primary Contact Email (Optional)
                 </label>
                 <input
@@ -191,15 +191,15 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   placeholder="middleware-lead@company.example.com"
                   value={newCustEmail}
                   onChange={(e) => setNewCustEmail(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] placeholder-[#667085]/60 shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
                 />
               </div>
             </div>
           )}
 
           {/* Assessment Title */}
-          <div className="pt-2 border-t border-slate-100">
-            <label htmlFor="assessment-title" className="block text-xs font-semibold text-slate-700 mb-1">
+          <div className="pt-2 border-t border-[#E2E6EE]">
+            <label htmlFor="assessment-title" className="block text-xs font-semibold text-[#172033] mb-1">
               Assessment Session Title
             </label>
             <div className="relative flex items-center">
@@ -209,25 +209,25 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 required
                 value={assessmentTitle}
                 onChange={(e) => setAssessmentTitle(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
               />
-              <FileText className="absolute right-3 h-4 w-4 text-slate-400 pointer-events-none" />
+              <FileText className="absolute right-3 h-4 w-4 text-[#667085] pointer-events-none" />
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-[#E2E6EE]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-[#667085] hover:text-[#172033] rounded-lg hover:bg-[#F1F3F7] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
+              className="inline-flex items-center space-x-2 rounded-lg bg-[#38B449] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#008638] focus:outline-none focus:ring-2 focus:ring-[#38B449] transition-colors disabled:opacity-50"
             >
               {isLoading ? (
                 <>
