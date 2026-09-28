@@ -23,25 +23,37 @@ By replacing complex, error-prone spreadsheets with a secure, auditable, and det
 
 ## 2. Current Project Status
 
-The project has completed extensive architectural implementation, core engineering, security hardening, and interface refinement:
+The project is under active development on the **`dev`** branch. Core calculation engine engineering, security hardening, full-stack API integration, and four targeted UX/accessibility refinement batches have been completed and checkpointed:
 
-- [x] **Architecture & Specification**: Standardized Q01–Q22 discovery catalog, mathematical formulas, and data contracts.
-- [x] **Calculation Engine**: Standalone, deterministic in-memory calculation engine with full `Decimal` precision.
-- [x] **Golden Master Validation**: 10/10 authoritative reference customer profiles verified against audited baseline data.
-- [x] **Persistence & REST API**: FastAPI backend with async SQLAlchemy 2.0 ORM, PostgreSQL support, and transactional snapshots.
-- [x] **Assessment Wizard**: Multi-section intake wizard with save/resume, progress tracking, and validation safeguards.
-- [x] **Executive Dashboard & Scenario Sandbox**: Real-time visualization, dual-perspective views (Executive / Consultant), and sensitivity modeling.
-- [x] **Executive Report & PDF Export**: Boardroom-ready layout with automated headless Playwright Chromium PDF generation.
-- [x] **Authentication & RBAC**: Stateless JWT auth with `HttpOnly` / `SameSite=Strict` cookies and 5-tier role-based permissions.
-- [x] **Production Security Hardening**: Strict fail-closed configuration, secure proxy IP resolution, error sanitization, and security headers.
-- [x] **Observability & Probes**: Structured JSON logging, `X-Request-ID` correlation, and `/health/liveness` + `/health/readiness` endpoints.
-- [x] **Rate Limiting & Abuse Prevention**: Sliding-window rate limiting (login protection and general API throttling) and request size limiting (10MB).
-- [x] **Production Topology**: Multi-container Docker Compose architecture with Nginx reverse proxy and isolated internal networks.
-- [x] **CI/CD Pipeline**: 10-job multi-stage GitHub Actions workflow with release gating, image digest provenance, and deployment webhooks.
-- [x] **Enterprise UI & Brand Alignment**: Polished meshIQ green-led visual identity, high-density question cards, and distinct customer fact indicators.
+### Completed Refinement Batches
+1. **Batch 1 — Session Isolation** (`1ca1182`):
+   - Active customer switching isolation with confirmation dialog.
+   - Distinct handling of anonymous draft adoption vs. active customer switching.
+   - Comprehensive multi-tenant session isolation safeguards.
+2. **Batch 2 — Branding & Accessibility** (`995a3ea`):
+   - Official DATAEKO and meshIQ brand assets on Login and Main Shell.
+   - Persistent "Powered by DATAEKO.AI" shell attribution.
+   - WCAG AA-compliant primary action button contrast treatment (`#008638`).
+   - Visual styling alignment between Executive Dashboard, Executive Report, and PDF export.
+3. **Batch 3 — Assessment Interaction & State Clarity** (`26846c1`):
+   - Save-state lifecycle clarity ("Draft initialized" → "Unsaved changes" → "Progress saved").
+   - CustomerModal dialog ergonomics, autofocus, and Esc/backdrop dismiss.
+   - QuestionCard layout density, helper text accessibility, and numeric scroll-wheel input safeguards.
+   - SectionNavigation responsive keyboard accessibility.
+4. **Batch 4 — Calculation & Results Accessibility UX** (`2fe74d7`):
+   - Replaced browser `alert()` on calculation failure with accessible in-page error state (`role="alert"`, `aria-live="assertive"`) and explicit "Retry Calculation" flow.
+   - Accessible in-progress calculation status feedback (`aria-live="polite"`, `aria-busy="true"`).
+   - Removed unused `CalculationStatusView` import from `page.tsx` while keeping canonical dashboard views.
+   - Accessible ExecutiveDashboard tabs (`role="tablist"`, `role="tab"`, `role="tabpanel"`, ArrowLeft/ArrowRight/Home/End keyboard navigation).
+   - Accessible ScenarioSandbox sliders (`role="slider"`, `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, `aria-valuetext`, and `#008638` focus rings).
+
+### Current Checkpoint & Phase
+- **Current Git Checkpoint**: `2fe74d7` (`feat: refine calculation and results accessibility UX`)
+- **Development Branch**: `dev`
+- **Validation Status**: All 73 frontend unit/integration tests pass, 102 backend tests pass (10/10 Golden Masters), TypeScript compiles with 0 errors, production build succeeds, and 39/39 automated browser QA assertions pass across mobile (`390 × 844`), tablet (`768 × 1024`), and desktop (`1280 × 800`).
 
 > [!IMPORTANT]
-> **Deployment Status**: Production deployment is intentionally **deferred**. The application is currently in a pre-deployment refinement stage focused on live UI polish and stakeholder/panel review. Cloud infrastructure and production environments have not yet been provisioned.
+> **Pre-Deployment Development Phase**: The application is currently in an active local development and pre-deployment review phase on the `dev` branch. Production deployment is intentionally **deferred**, cloud infrastructure has not yet been provisioned, and GitHub push of the latest local batch commits has not yet occurred.
 
 ---
 
@@ -275,16 +287,21 @@ npm run generate:pdf
 2. Frontend Test Suite (Vitest 5.0):
    • 10/10 Question Catalog & Discovery Tests                            PASSED
    • 5/5 Comprehensive 7-Section Intake Workflow Tests                   PASSED
-   • 6/6 Wizard Components & Navigation Tests                            PASSED
-   • 9/9 Executive Dashboard & Scenario Sandbox Tests                    PASSED
+   • 18/18 Wizard Components & ReviewSummary Accessibility Tests         PASSED
+   • 9/9 Executive Dashboard Tabs & Scenario Sandbox Slider Tests        PASSED
    • 7/7 Report Data Adapter & Executive Report Tests                    PASSED
    • 12/12 AuthContext, LoginPage & ProtectedRoute Tests                 PASSED
    • 5/5 API Service Layer Tests                                         PASSED
-   • 4/4 Executive Report View Component Tests                           PASSED
+   • 5/5 Full AssessmentWizardPage Integration Tests                     PASSED
+   • 2/2 Executive Report View Component Tests                           PASSED
    -----------------------------------------------------------------------------
-   Total Frontend Suite: 58/58 PASSED (11 test files)
+   Total Frontend Suite: 73/73 PASSED (11 test files)
 
-3. Static Analysis & Build:
+3. Automated Browser QA Suite (Playwright Chromium):
+   • 39/39 End-to-End QA Assertions across Mobile, Tablet, & Desktop     PASSED
+   • Real-browser flow (Review → Error → Retry → Dashboard → Sandbox)    PASSED
+
+4. Static Analysis & Build:
    • TypeScript Static Typecheck (`tsc --noEmit`):                       0 ERRORS
    • Next.js Production Turbopack Build (`next build`):                  PASSED
 ================================================================================
@@ -408,11 +425,12 @@ To preserve architectural integrity, the following components are **FROZEN** and
 
 A new developer joining the project can immediately run the application locally by cloning the repository and following these steps:
 
-1. **Clone Repository & Switch to Branch**:
+1. **Clone Repository & Switch to Development Branch**:
    ```bash
    git clone <repository_url>
    cd DATAEKO.AI-MESHIQ-partner_dashboard-
    git checkout dev
+   # Current local checkpoint: 2fe74d7 (feat: refine calculation and results accessibility UX)
    ```
 
 2. **Start Backend**:
