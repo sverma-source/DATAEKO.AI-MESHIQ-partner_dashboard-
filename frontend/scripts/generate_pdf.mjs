@@ -260,7 +260,7 @@ function generateReportHtml(snapshot, customer, assessment) {
       letter-spacing: -0.5px;
     }
     .brand-accent {
-      color: #2563eb;
+      color: #008638;
     }
     .brand-sub {
       font-size: 8.5pt;
@@ -307,7 +307,7 @@ function generateReportHtml(snapshot, customer, assessment) {
       font-size: 13pt;
       font-weight: 800;
       color: #0f172a;
-      border-left: 4px solid #2563eb;
+      border-left: 4px solid #008638;
       padding-left: 10px;
       margin-top: 22px;
       margin-bottom: 12px;
@@ -325,8 +325,8 @@ function generateReportHtml(snapshot, customer, assessment) {
       padding: 12px;
     }
     .metric-card.highlight {
-      background: #eef2ff;
-      border-color: #c7d2fe;
+      background: #eef8f0;
+      border-color: #a8e2b5;
     }
     .metric-title {
       font-size: 7.5pt;
@@ -337,7 +337,7 @@ function generateReportHtml(snapshot, customer, assessment) {
       margin-bottom: 4px;
     }
     .metric-card.highlight .metric-title {
-      color: #4338ca;
+      color: #008638;
     }
     .metric-val {
       font-size: 16pt;
@@ -346,7 +346,7 @@ function generateReportHtml(snapshot, customer, assessment) {
       font-feature-settings: "tnum";
     }
     .metric-card.highlight .metric-val {
-      color: #312e81;
+      color: #0d1322;
     }
     .metric-sub {
       font-size: 7.5pt;
@@ -418,10 +418,10 @@ function generateReportHtml(snapshot, customer, assessment) {
       border: 1px solid transparent;
     }
     .badge-fact { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
-    .badge-calc { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+    .badge-calc { background: #eef8f0; color: #008638; border-color: #a8e2b5; }
     .badge-bench { background: #fffbeb; color: #92400e; border-color: #fde68a; }
-    .badge-base { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
-    .badge-scen { background: #faf5ff; color: #6b21a8; border-color: #e9d5ff; }
+    .badge-base { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+    .badge-scen { background: #eef8f0; color: #008638; border-color: #a8e2b5; }
 
     .two-col-cards {
       display: grid;
@@ -436,7 +436,8 @@ function generateReportHtml(snapshot, customer, assessment) {
       background: #ffffff;
     }
     .card-box.amber { background: #fffdfa; border-color: #fde68a; }
-    .card-box.blue { background: #f8faff; border-color: #bfdbfe; }
+    .card-box.neutral { background: #f8fafc; border-color: #e2e8f0; }
+    .card-box.green { background: #eef8f0; border-color: #a8e2b5; }
     .card-box.indigo { background: #fafaff; border-color: #c7d2fe; }
 
     .card-head {
@@ -493,7 +494,7 @@ function generateReportHtml(snapshot, customer, assessment) {
       <h1 style="font-size: 18pt; font-weight: 900; color: #0f172a; line-height: 1.2;">
         IBM MQ Economic Cost & Efficiency Assessment
       </h1>
-      <p style="font-size: 10pt; color: #2563eb; font-weight: 600; margin-top: 2px;">
+      <p style="font-size: 10pt; color: #008638; font-weight: 600; margin-top: 2px;">
         Executive Assessment Report & Economic Baseline
       </p>
     </div>
@@ -525,7 +526,7 @@ function generateReportHtml(snapshot, customer, assessment) {
         <div class="metric-val">${totalLaborCost}</div>
         <div class="metric-sub">
           <span>${totalHours} hrs/yr</span>
-          <span style="font-weight: 700; color: #2563eb;">${fteBurden} FTE</span>
+          <span style="font-weight: 700; color: #008638;">${fteBurden} FTE</span>
         </div>
       </div>
 
@@ -608,13 +609,18 @@ function generateReportHtml(snapshot, customer, assessment) {
         <tr class="total-row">
           <td>Total Quantified Operational Labor</td>
           <td style="font-size: 7.5pt; color: #64748b;">Loaded Rate: $86.54/hr ($180k/2,080h)</td>
-          <td class="text-right font-mono text-blue-900" style="font-size: 10pt;">${totalHours}</td>
-          <td class="text-right font-mono text-blue-900" style="font-size: 10pt;">${fteBurden}</td>
-          <td class="text-right font-mono text-blue-900" style="font-size: 10pt;">${totalLaborCost}</td>
+          <td class="text-right font-mono text-slate-900" style="font-size: 10pt; font-weight: 800;">${totalHours}</td>
+          <td class="text-right font-mono text-slate-900" style="font-size: 10pt; font-weight: 800;">${fteBurden}</td>
+          <td class="text-right font-mono text-slate-900" style="font-size: 10pt; font-weight: 800;">${totalLaborCost}</td>
           <td class="text-center"><span class="badge badge-calc">Calculated</span></td>
         </tr>
       </tbody>
     </table>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 7.5pt; color: #64748b; margin-top: 20px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+      <span>DATAEKO × meshIQ Assessment</span>
+      <span style="font-weight: 600; color: #475467;">Powered by DATAEKO.AI</span>
+    </div>
   </div>
 
   <!-- PAGE 2: BUSINESS EXPOSURE, SCENARIO & METHODOLOGY -->
@@ -638,7 +644,7 @@ function generateReportHtml(snapshot, customer, assessment) {
         </div>
       </div>
 
-      <div class="card-box blue">
+      <div class="card-box neutral">
         <div class="card-head">
           <h4>Customer-Reported Annual MQ Spend</h4>
           <span class="badge badge-fact">Customer Fact</span>
@@ -646,9 +652,9 @@ function generateReportHtml(snapshot, customer, assessment) {
         <div style="font-size: 16pt; font-weight: 900; color: #0f172a; margin: 4px 0;">
           ${mqSpend}
         </div>
-        <div style="font-size: 8pt; color: #1e3a8a; line-height: 1.4;">
+        <div style="font-size: 8pt; color: #334155; line-height: 1.4;">
           <strong>Direct Customer Input:</strong> Provided in Discovery Question Q21.
-          <div style="margin-top: 6px; padding: 6px; background: rgba(255,255,255,0.7); border-radius: 4px; border: 1px solid #bfdbfe;">
+          <div style="margin-top: 6px; padding: 6px; background: rgba(255,255,255,0.7); border-radius: 4px; border: 1px solid #e2e8f0;">
             <strong>Isolation Rule:</strong> Customer-Reported Spend is preserved in strict isolation and is never added to operational labor or used to derive ROI metrics.
           </div>
         </div>
@@ -658,12 +664,12 @@ function generateReportHtml(snapshot, customer, assessment) {
     <div class="section-heading">4. Improvement Scenarios & Productivity Opportunity</div>
     
     <div class="two-col-cards">
-      <div class="card-box blue">
+      <div class="card-box green">
         <div class="card-head">
           <h4>Troubleshooting Productivity Opportunity (10%)</h4>
           <span class="badge badge-calc">Calculated</span>
         </div>
-        <div style="font-size: 15pt; font-weight: 900; color: #1e40af; margin: 4px 0;">
+        <div style="font-size: 15pt; font-weight: 900; color: #008638; margin: 4px 0;">
           ${trbOppCost}
         </div>
         <p style="font-size: 8pt; color: #334155;">
@@ -730,6 +736,11 @@ function generateReportHtml(snapshot, customer, assessment) {
         <li><strong>Illustrative Economic Value ≠ Guaranteed Savings:</strong> Improvement scenario outcomes represent capacity recovery models and do not constitute guaranteed savings or committed ROI.</li>
         <li><strong>Deterministic Presentation:</strong> All values are rendered directly from the immutable calculation snapshot (ID: ${snapshot.id}) without independent presentation-layer recomputation.</li>
       </ul>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 7.5pt; color: #64748b; margin-top: 20px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+      <span>DATAEKO × meshIQ Assessment</span>
+      <span style="font-weight: 600; color: #475467;">Powered by DATAEKO.AI</span>
     </div>
   </div>
 

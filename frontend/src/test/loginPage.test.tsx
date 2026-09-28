@@ -25,9 +25,10 @@ describe("LoginPage Component", () => {
       </AuthProvider>
     );
 
-    expect(screen.getByText("DATAEKO")).toBeInTheDocument();
-    expect(screen.getByText("meshIQ")).toBeInTheDocument();
+    expect(screen.getByAltText("DATAEKO")).toBeInTheDocument();
+    expect(screen.getByAltText("meshIQ")).toBeInTheDocument();
     expect(screen.getByText("Sign in to your account")).toBeInTheDocument();
+    expect(screen.getByText("Powered by DATAEKO.AI")).toBeInTheDocument();
     expect(screen.getByLabelText(/Corporate Email Address/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
   });

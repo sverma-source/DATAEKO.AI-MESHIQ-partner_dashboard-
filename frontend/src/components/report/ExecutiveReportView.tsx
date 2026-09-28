@@ -119,7 +119,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                 type="checkbox"
                 checked={showConsultantAppendix}
                 onChange={(e) => setShowConsultantAppendix(e.target.checked)}
-                className="rounded text-[#38B449] focus:ring-[#38B449] h-3.5 w-3.5"
+                className="rounded text-[#008638] focus:ring-[#008638] h-3.5 w-3.5 cursor-pointer"
               />
               <span>Include Consultant Appendix</span>
             </label>
@@ -127,7 +127,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
             <button
               type="button"
               onClick={handlePrint}
-              className="inline-flex items-center space-x-2 rounded-lg bg-[#38B449] px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-[#008638] transition-colors"
+              className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-[#006B2D] focus:outline-none focus:ring-2 focus:ring-[#008638] transition-colors cursor-pointer"
             >
               <Printer className="h-4 w-4" />
               <span>Print / Save as PDF</span>
@@ -357,7 +357,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                     {report.operationalEffort.routineAdmin.annualCost.formattedValue}
                   </td>
                   <td className="py-2.5 px-3 text-center">
-                    <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]">
                       Calculated
                     </span>
                   </td>
@@ -384,7 +384,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                     {report.operationalEffort.incidentTroubleshooting.annualCost.formattedValue}
                   </td>
                   <td className="py-2.5 px-3 text-center">
-                    <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]">
                       Calculated
                     </span>
                   </td>
@@ -398,17 +398,17 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                   <td className="py-2.5 px-3 text-slate-600 text-[11px]">
                     Loaded Rate: {report.operationalEffort.consolidated.loadedHourlyRate.formattedValue}/hr ($180k / 2,080h)
                   </td>
-                  <td className="py-2.5 px-3 text-right font-mono text-blue-900 text-sm">
+                  <td className="py-2.5 px-3 text-right font-mono text-slate-900 text-sm">
                     {report.operationalEffort.consolidated.totalAnnualHours.formattedValue}
                   </td>
-                  <td className="py-2.5 px-3 text-right font-mono text-blue-900 text-sm">
+                  <td className="py-2.5 px-3 text-right font-mono text-slate-900 text-sm">
                     {report.operationalEffort.consolidated.fteBurden.formattedValue}
                   </td>
-                  <td className="py-2.5 px-3 text-right font-mono text-blue-900 text-sm">
+                  <td className="py-2.5 px-3 text-right font-mono text-slate-900 text-sm">
                     {report.operationalEffort.consolidated.totalAnnualCost.formattedValue}
                   </td>
                   <td className="py-2.5 px-3 text-center">
-                    <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-blue-100 text-blue-800 border border-blue-300">
+                    <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]">
                       Calculated
                     </span>
                   </td>
@@ -512,17 +512,17 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Troubleshooting Productivity Opportunity (10% Rule) */}
-            <div className="p-5 rounded-xl border border-blue-200 bg-blue-50/30 space-y-3">
+            <div className="p-5 rounded-xl border border-[#A8E2B5] bg-[#EEF8F0]/30 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Troubleshooting Productivity Opportunity (10%)
                 </h3>
-                <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-blue-100 text-blue-800 border border-blue-300">
+                <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]">
                   Calculated Metric
                 </span>
               </div>
 
-              <div className="text-2xl font-black text-blue-900">
+              <div className="text-2xl font-black text-slate-900">
                 {report.troubleshootingOpportunity.opportunityMetric.formattedValue}
               </div>
 
@@ -530,7 +530,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                 Represents a 10% direct productivity recovery on quantified annual troubleshooting labor cost ({report.operationalEffort.incidentTroubleshooting.annualCost.formattedValue}).
               </p>
 
-              <div className="p-2.5 rounded-lg bg-white/90 border border-blue-200 text-[11px] text-blue-900">
+              <div className="p-2.5 rounded-lg bg-white/90 border border-[#A8E2B5] text-[11px] text-slate-800">
                 <strong>Governance Rule:</strong> {report.troubleshootingOpportunity.interpretationNote}
               </div>
             </div>
@@ -598,7 +598,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                           : row.category === "Industry Benchmark"
                           ? "bg-amber-50 text-amber-800 border-amber-300"
                           : row.category === "Calculated Result"
-                          ? "bg-blue-50 text-blue-800 border-blue-300"
+                          ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]"
                           : row.category === "Model Assumption"
                           ? "bg-indigo-50 text-indigo-800 border-indigo-300"
                           : "bg-purple-50 text-purple-800 border-purple-300"
@@ -623,7 +623,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
         {/* SECTION 11: OPERATIONAL & GOVERNANCE FINDINGS */}
         {/* ========================================================================= */}
         <section className="space-y-4 break-inside-avoid">
-          <div className="border-l-4 border-blue-600 pl-4">
+          <div className="border-l-4 border-[#008638] pl-4">
             <h2 className="text-xl font-bold text-slate-900">6. Operational & Governance Findings</h2>
             <p className="text-xs text-slate-500">
               Qualitative assessment observations across architectural complexity, tooling friction, and governance obligations.
@@ -641,7 +641,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                     {f.sourceQuestions.join(", ")}
                   </span>
                 </div>
-                <div className="text-xs font-semibold text-blue-900">
+                <div className="text-xs font-semibold text-slate-900">
                   {f.findingTitle}
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
@@ -706,7 +706,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
             {report.methodology.map((m, idx) => (
               <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
                 <span className="font-bold text-slate-900 block">{m.title}</span>
-                <code className="text-[11px] text-blue-700 bg-white px-2 py-1 rounded block border border-slate-200 font-mono">
+                <code className="text-[11px] text-slate-800 bg-white px-2 py-1 rounded block border border-slate-200 font-mono">
                   {m.formulaCode}
                 </code>
                 <p className="text-[10px] text-slate-500 mt-1">{m.description}</p>
@@ -791,6 +791,13 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
           </section>
         )}
 
+        {/* Report Footer Attribution */}
+        <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+          <span>DATAEKO × meshIQ Enterprise Economic Assessment</span>
+          <span className="font-semibold text-slate-600 tracking-tight">
+            Powered by DATAEKO.AI
+          </span>
+        </div>
       </div>
     </div>
   );

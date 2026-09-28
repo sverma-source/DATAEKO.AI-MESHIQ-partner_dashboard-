@@ -425,7 +425,7 @@ export default function AssessmentWizardPage() {
                 <button
                   type="button"
                   onClick={() => setIsCustomerModalOpen(true)}
-                  className="px-3 py-1.5 rounded-md bg-[#38B449] text-white font-semibold hover:bg-[#008638] transition-colors shrink-0 shadow-xs"
+                  className="px-3 py-1.5 rounded-md bg-[#008638] text-white font-semibold hover:bg-[#006B2D] transition-colors shrink-0 shadow-xs cursor-pointer"
                 >
                   Select Customer
                 </button>
@@ -568,7 +568,7 @@ export default function AssessmentWizardPage() {
                 type="button"
                 onClick={handlePrevSection}
                 disabled={currentSectionIndex === 0}
-                className="inline-flex items-center space-x-2 rounded-lg border border-[#CBD2DE] bg-white px-4 py-2.5 text-xs font-semibold text-[#172033] shadow-xs hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#38B449] disabled:opacity-40 transition"
+                className="inline-flex items-center space-x-2 rounded-lg border border-[#CBD2DE] bg-white px-4 py-2.5 text-xs font-semibold text-[#172033] shadow-xs hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#008638] disabled:opacity-40 transition cursor-pointer disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span>Previous Section</span>
@@ -579,7 +579,7 @@ export default function AssessmentWizardPage() {
                   type="button"
                   onClick={handleSaveProgress}
                   disabled={isSaving}
-                  className="hidden sm:inline-flex items-center space-x-1.5 rounded-lg border border-[#CBD2DE] bg-white px-3.5 py-2.5 text-xs font-medium text-[#172033] hover:bg-[#F1F3F7] shadow-xs transition"
+                  className="hidden sm:inline-flex items-center space-x-1.5 rounded-lg border border-[#CBD2DE] bg-white px-3.5 py-2.5 text-xs font-medium text-[#172033] hover:bg-[#F1F3F7] shadow-xs transition cursor-pointer disabled:cursor-not-allowed"
                 >
                   <Save className="h-3.5 w-3.5 text-[#667085]" />
                   <span>Save Draft</span>
@@ -588,7 +588,7 @@ export default function AssessmentWizardPage() {
                 <button
                   type="button"
                   onClick={handleNextSection}
-                  className="inline-flex items-center space-x-2 rounded-lg bg-[#38B449] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#008638] focus:outline-none focus:ring-2 focus:ring-[#38B449] transition"
+                  className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#006B2D] focus:outline-none focus:ring-2 focus:ring-[#008638] transition cursor-pointer"
                 >
                   <span>
                     {currentSectionIndex === SECTIONS.length - 1

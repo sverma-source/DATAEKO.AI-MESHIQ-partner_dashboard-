@@ -188,7 +188,7 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
               type="button"
               onClick={onSubmitCalculation}
               disabled={isCalculating}
-              className="inline-flex items-center justify-center space-x-2.5 rounded-xl bg-[#38B449] px-7 py-4 text-sm font-extrabold text-white shadow-lg hover:bg-[#008638] focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:ring-offset-2 focus:ring-offset-[#0D1322] transition-all disabled:opacity-50"
+              className="inline-flex items-center justify-center space-x-2.5 rounded-xl bg-[#008638] px-7 py-4 text-sm font-extrabold text-white shadow-lg hover:bg-[#006B2D] focus:outline-none focus:ring-2 focus:ring-[#008638] focus:ring-offset-2 focus:ring-offset-[#0D1322] transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <Play className="h-4 w-4 fill-white" />
               <span>{isCalculating ? "Executing Calculation Engine..." : "Submit for Calculation"}</span>
@@ -301,7 +301,7 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
           type="button"
           onClick={onSubmitCalculation}
           disabled={isCalculating}
-          className="inline-flex items-center space-x-2 rounded-lg bg-[#38B449] px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-[#008638] focus:outline-none focus:ring-2 focus:ring-[#38B449] focus:ring-offset-2 transition-all disabled:opacity-50"
+          className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-[#006B2D] focus:outline-none focus:ring-2 focus:ring-[#008638] focus:ring-offset-2 transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
         >
           <span>{isCalculating ? "Calculating Snapshot..." : "Calculate Assessment"}</span>
           <ArrowRight className="h-4 w-4" />
