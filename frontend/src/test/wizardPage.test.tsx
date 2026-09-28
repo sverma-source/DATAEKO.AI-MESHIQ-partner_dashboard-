@@ -139,6 +139,56 @@ describe("AssessmentWizardPage Full Integration", () => {
     });
   });
 
+  it("handles calculation failure with accessible in-page alert, preserving responses and supporting retry", async () => {
+    // Make calculation fail on first attempt
+    (api.calculateAssessment as any).mockRejectedValueOnce(new Error("Engine calculation timeout"));
+
+    render(<AssessmentWizardPage />);
+
+    // Wait for customer data
+    await waitFor(() => {
+      expect(screen.getByText("Apex Financial")).toBeInTheDocument();
+    });
+
+    // 1. Answer Q01
+    const q01Select = screen.getByLabelText("Select Approved Response", { selector: "#select-Q01" });
+    fireEvent.change(q01Select, { target: { value: "51–100" } });
+
+    // 2. Go to Review Section
+    const reviewTab = screen.getByRole("button", { name: /review & submit/i });
+    fireEvent.click(reviewTab);
+
+    await waitFor(() => {
+      expect(screen.getByText("Ready for Engine Calculation")).toBeInTheDocument();
+    });
+
+    // 3. Click Submit for calculation
+    const calcSubmitBtn = screen.getByRole("button", { name: /submit for calculation/i });
+    fireEvent.click(calcSubmitBtn);
+
+    // 4. Verify calculation error is rendered with role="alert" and aria-live="assertive"
+    const alertElement = await screen.findByRole("alert");
+    expect(alertElement).toBeInTheDocument();
+    expect(alertElement).toHaveAttribute("aria-live", "assertive");
+    expect(screen.getByText(/Engine calculation timeout/i)).toBeInTheDocument();
+
+    // 5. Verify responses were NOT destroyed
+    expect(q01Select).toHaveValue("51–100");
+
+    // 6. Verify Retry button is present and functional
+    const retryBtn = screen.getByRole("button", { name: /retry calculation/i });
+    expect(retryBtn).toBeInTheDocument();
+
+    // 7. Click Retry Calculation
+    fireEvent.click(retryBtn);
+
+    // 8. Calculation succeeds on retry and transitions to Executive Dashboard
+    await waitFor(() => {
+      expect(screen.getByText("Assessment Economic Baseline & Scenario Results")).toBeInTheDocument();
+      expect(screen.getByText("$45,692")).toBeInTheDocument();
+    });
+  });
+
   it("preserves responses when associating an anonymous draft with a customer", async () => {
     render(<AssessmentWizardPage />);
 

@@ -104,6 +104,36 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
     answers.q15_is_unknown ||
     !answers.q15_hourly_cost_override;
 
+  const TABS = [
+    { id: "overview", label: "Executive Overview", icon: LayoutDashboard },
+    { id: "effort-cost", label: "Effort & Operational Cost", icon: Clock },
+    { id: "exposure", label: "Single-Event Exposure", icon: ShieldAlert },
+    { id: "sandbox", label: "Scenario Sandbox", icon: Sliders },
+    { id: "findings", label: "Contextual Findings", icon: Layers },
+    { id: "provenance", label: "Calculation Provenance", icon: Calculator },
+  ] as const;
+
+  const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    let nextIndex: number | null = null;
+    if (e.key === "ArrowRight") {
+      nextIndex = (index + 1) % TABS.length;
+    } else if (e.key === "ArrowLeft") {
+      nextIndex = (index - 1 + TABS.length) % TABS.length;
+    } else if (e.key === "Home") {
+      nextIndex = 0;
+    } else if (e.key === "End") {
+      nextIndex = TABS.length - 1;
+    }
+
+    if (nextIndex !== null) {
+      e.preventDefault();
+      const targetTab = TABS[nextIndex];
+      setActiveTab(targetTab.id);
+      const nextTabEl = document.getElementById(`tab-${targetTab.id}`);
+      nextTabEl?.focus();
+    }
+  };
+
   if (isReportViewOpen) {
     return (
       <ExecutiveReportView
@@ -211,90 +241,48 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
       {/* 2. Navigation Tabs */}
       <div className="border border-[#E2E6EE] bg-white rounded-xl shadow-xs px-2 sm:px-4">
-        <nav className="flex space-x-2 sm:space-x-6 overflow-x-auto py-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab("overview")}
-            className={`flex items-center space-x-2 py-3 px-2 border-b-2 text-xs font-bold whitespace-nowrap transition-colors ${
-              activeTab === "overview"
-                ? "border-[#38B449] text-[#008638]"
-                : "border-transparent text-[#667085] hover:text-[#172033]"
-            }`}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            <span>Executive Overview</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("effort-cost")}
-            className={`flex items-center space-x-2 py-3 px-2 border-b-2 text-xs font-bold whitespace-nowrap transition-colors ${
-              activeTab === "effort-cost"
-                ? "border-[#38B449] text-[#008638]"
-                : "border-transparent text-[#667085] hover:text-[#172033]"
-            }`}
-          >
-            <Clock className="h-4 w-4" />
-            <span>Effort &amp; Operational Cost</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("exposure")}
-            className={`flex items-center space-x-2 py-3 px-2 border-b-2 text-xs font-bold whitespace-nowrap transition-colors ${
-              activeTab === "exposure"
-                ? "border-[#38B449] text-[#008638]"
-                : "border-transparent text-[#667085] hover:text-[#172033]"
-            }`}
-          >
-            <ShieldAlert className="h-4 w-4" />
-            <span>Single-Event Exposure</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("sandbox")}
-            className={`flex items-center space-x-2 py-3 px-2 border-b-2 text-xs font-bold whitespace-nowrap transition-colors ${
-              activeTab === "sandbox"
-                ? "border-[#38B449] text-[#008638]"
-                : "border-transparent text-[#667085] hover:text-[#172033]"
-            }`}
-          >
-            <Sliders className="h-4 w-4" />
-            <span>Scenario Sandbox</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("findings")}
-            className={`flex items-center space-x-2 py-3 px-2 border-b-2 text-xs font-bold whitespace-nowrap transition-colors ${
-              activeTab === "findings"
-                ? "border-[#38B449] text-[#008638]"
-                : "border-transparent text-[#667085] hover:text-[#172033]"
-            }`}
-          >
-            <Layers className="h-4 w-4" />
-            <span>Contextual Findings</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("provenance")}
-            className={`flex items-center space-x-2 py-3 px-2 border-b-2 text-xs font-bold whitespace-nowrap transition-colors ${
-              activeTab === "provenance"
-                ? "border-[#38B449] text-[#008638]"
-                : "border-transparent text-[#667085] hover:text-[#172033]"
-            }`}
-          >
-            <Calculator className="h-4 w-4" />
-            <span>Calculation Provenance</span>
-          </button>
-        </nav>
+        <div
+          role="tablist"
+          aria-label="Executive Dashboard navigation"
+          className="flex space-x-2 sm:space-x-6 overflow-x-auto py-2 no-scrollbar"
+        >
+          {TABS.map((tab, idx) => {
+            const Icon = tab.icon;
+            const isSelected = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                id={`tab-${tab.id}`}
+                role="tab"
+                type="button"
+                aria-selected={isSelected}
+                aria-controls={`panel-${tab.id}`}
+                tabIndex={isSelected ? 0 : -1}
+                onClick={() => setActiveTab(tab.id)}
+                onKeyDown={(e) => handleTabKeyDown(e, idx)}
+                className={`flex items-center space-x-2 py-3 px-2 border-b-2 text-xs font-bold whitespace-nowrap transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#008638] rounded-t-sm cursor-pointer ${
+                  isSelected
+                    ? "border-[#008638] text-[#008638]"
+                    : "border-transparent text-[#667085] hover:text-[#172033]"
+                }`}
+              >
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* 3. TAB CONTENT: 1. Executive Overview */}
       {activeTab === "overview" && (
-        <div className="space-y-8">
+        <div
+          id="panel-overview"
+          role="tabpanel"
+          aria-labelledby="tab-overview"
+          tabIndex={0}
+          className="space-y-8 focus:outline-hidden"
+        >
           {/* Top KPI Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* KPI 1: Total Quantified Operational Labor Cost */}
@@ -495,7 +483,13 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
       {/* 3. TAB CONTENT: 2. Effort & Operational Cost Breakdown */}
       {activeTab === "effort-cost" && (
-        <div className="space-y-8">
+        <div
+          id="panel-effort-cost"
+          role="tabpanel"
+          aria-labelledby="tab-effort-cost"
+          tabIndex={0}
+          className="space-y-8 focus:outline-hidden"
+        >
           <div className="rounded-xl border border-[#E2E6EE] bg-white p-6 shadow-xs space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-[#E2E6EE]">
               <div>
@@ -627,7 +621,13 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
       {/* 3. TAB CONTENT: 3. Business Consequence & Exposure */}
       {activeTab === "exposure" && (
-        <div className="space-y-8">
+        <div
+          id="panel-exposure"
+          role="tabpanel"
+          aria-labelledby="tab-exposure"
+          tabIndex={0}
+          className="space-y-8 focus:outline-hidden"
+        >
           <div className="rounded-xl border border-[#E2E6EE] bg-white p-6 shadow-xs space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-[#E2E6EE]">
               <div>
@@ -699,12 +699,26 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
       {/* 3. TAB CONTENT: 4. Scenario Sandbox */}
       {activeTab === "sandbox" && (
-        <ScenarioSandbox calculation={calculation} />
+        <div
+          id="panel-sandbox"
+          role="tabpanel"
+          aria-labelledby="tab-sandbox"
+          tabIndex={0}
+          className="focus:outline-hidden"
+        >
+          <ScenarioSandbox calculation={calculation} />
+        </div>
       )}
 
       {/* 3. TAB CONTENT: 5. Contextual Findings & Risk Matrix */}
       {activeTab === "findings" && (
-        <div className="space-y-8">
+        <div
+          id="panel-findings"
+          role="tabpanel"
+          aria-labelledby="tab-findings"
+          tabIndex={0}
+          className="space-y-8 focus:outline-hidden"
+        >
           <div className="rounded-xl border border-[#E2E6EE] bg-white p-6 shadow-xs space-y-6">
             <div className="pb-4 border-b border-[#E2E6EE]">
               <h2 className="text-lg font-bold text-[#172033]">
@@ -786,7 +800,13 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
       {/* 3. TAB CONTENT: 6. Calculation Engine Metric Inventory & Provenance */}
       {activeTab === "provenance" && (
-        <div className="space-y-8">
+        <div
+          id="panel-provenance"
+          role="tabpanel"
+          aria-labelledby="tab-provenance"
+          tabIndex={0}
+          className="space-y-8 focus:outline-hidden"
+        >
           <div className="rounded-xl border border-[#E2E6EE] bg-white p-6 shadow-xs space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-[#E2E6EE]">
               <div>

@@ -176,8 +176,13 @@ export const ScenarioSandbox: React.FC<ScenarioSandboxProps> = ({ calculation })
                 max="90"
                 step="5"
                 value={addressableAdminPct}
+                aria-valuemin={10}
+                aria-valuemax={90}
+                aria-valuenow={addressableAdminPct}
+                aria-valuetext={`${addressableAdminPct}%`}
+                aria-label="Addressable Admin Share percentage"
                 onChange={(e) => setAddressableAdminPct(Number(e.target.value))}
-                className="w-full h-2 bg-[#F1F3F7] rounded-lg appearance-none cursor-pointer accent-[#38B449]"
+                className="w-full h-2 bg-[#F1F3F7] rounded-lg appearance-none cursor-pointer accent-[#008638] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#008638]"
               />
               <div className="flex justify-between text-[11px] text-[#667085]">
                 <span>Conservative (10%)</span>
@@ -206,8 +211,13 @@ export const ScenarioSandbox: React.FC<ScenarioSandboxProps> = ({ calculation })
                 max="90"
                 step="5"
                 value={adminEfficiencyPct}
+                aria-valuemin={10}
+                aria-valuemax={90}
+                aria-valuenow={adminEfficiencyPct}
+                aria-valuetext={`${adminEfficiencyPct}%`}
+                aria-label="Admin Efficiency Improvement Rate percentage"
                 onChange={(e) => setAdminEfficiencyPct(Number(e.target.value))}
-                className="w-full h-2 bg-[#F1F3F7] rounded-lg appearance-none cursor-pointer accent-[#38B449]"
+                className="w-full h-2 bg-[#F1F3F7] rounded-lg appearance-none cursor-pointer accent-[#008638] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#008638]"
               />
               <div className="flex justify-between text-[11px] text-[#667085]">
                 <span>Conservative (10%)</span>
@@ -236,8 +246,13 @@ export const ScenarioSandbox: React.FC<ScenarioSandboxProps> = ({ calculation })
                 max="60"
                 step="5"
                 value={investigationImprovementPct}
+                aria-valuemin={5}
+                aria-valuemax={60}
+                aria-valuenow={investigationImprovementPct}
+                aria-valuetext={`${investigationImprovementPct}%`}
+                aria-label="Investigation Improvement percentage"
                 onChange={(e) => setInvestigationImprovementPct(Number(e.target.value))}
-                className="w-full h-2 bg-[#F1F3F7] rounded-lg appearance-none cursor-pointer accent-[#38B449]"
+                className="w-full h-2 bg-[#F1F3F7] rounded-lg appearance-none cursor-pointer accent-[#008638] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#008638]"
               />
               <div className="flex justify-between text-[11px] text-[#667085]">
                 <span>Conservative (5%)</span>

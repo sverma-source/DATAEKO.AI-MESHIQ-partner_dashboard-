@@ -168,7 +168,7 @@ describe("Phase 6 Executive KPI Dashboard & Scenario Sandbox", () => {
     expect(screen.getByText("C_TOTAL = C_ADMIN + C_TRB")).toBeInTheDocument();
   });
 
-  it("navigates across all 6 dashboard tabs seamlessly", () => {
+  it("navigates across all 6 dashboard tabs seamlessly with accessible tab semantics and keyboard support", () => {
     render(
       <ExecutiveDashboard
         calculation={mockCalculation}
@@ -178,34 +178,69 @@ describe("Phase 6 Executive KPI Dashboard & Scenario Sandbox", () => {
       />
     );
 
-    // Tab 2: Effort & Operational Cost
-    fireEvent.click(screen.getByRole("button", { name: /effort & operational cost/i }));
+    // Tablist check
+    const tablist = screen.getByRole("tablist", { name: /executive dashboard navigation/i });
+    expect(tablist).toBeInTheDocument();
+
+    const overviewTab = screen.getByRole("tab", { name: /executive overview/i });
+    const effortTab = screen.getByRole("tab", { name: /effort & operational cost/i });
+    const exposureTab = screen.getByRole("tab", { name: /single-event exposure/i });
+    const sandboxTab = screen.getByRole("tab", { name: /scenario sandbox/i });
+    const findingsTab = screen.getByRole("tab", { name: /contextual findings/i });
+    const provenanceTab = screen.getByRole("tab", { name: /calculation provenance/i });
+
+    // Initial state: overview is selected
+    expect(overviewTab).toHaveAttribute("aria-selected", "true");
+    expect(effortTab).toHaveAttribute("aria-selected", "false");
+    expect(overviewTab).toHaveAttribute("aria-controls", "panel-overview");
+    expect(screen.getByRole("tabpanel", { name: /executive overview/i })).toBeInTheDocument();
+
+    // Tab 2: Effort & Operational Cost (Click)
+    fireEvent.click(effortTab);
+    expect(effortTab).toHaveAttribute("aria-selected", "true");
+    expect(overviewTab).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tabpanel", { name: /effort & operational cost/i })).toBeInTheDocument();
     expect(screen.getByText("Operational Effort & Cost Decomposition")).toBeInTheDocument();
     expect(screen.getByText("Routine Administration Stream")).toBeInTheDocument();
     expect(screen.getByText("Incident Troubleshooting Stream")).toBeInTheDocument();
 
-    // Tab 3: Single-Event Exposure
-    fireEvent.click(screen.getByRole("button", { name: /single-event exposure/i }));
+    // Keyboard navigation: ArrowRight from effortTab goes to exposureTab
+    fireEvent.keyDown(effortTab, { key: "ArrowRight" });
+    expect(exposureTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel", { name: /single-event exposure/i })).toBeInTheDocument();
     expect(screen.getByText("Representative Single-Event Business Exposure")).toBeInTheDocument();
     expect(screen.getByText("Governance Note on Exposure Metric:")).toBeInTheDocument();
 
-    // Tab 4: Scenario Sandbox
-    fireEvent.click(screen.getByRole("button", { name: /scenario sandbox/i }));
+    // Keyboard navigation: ArrowLeft from exposureTab goes back to effortTab
+    fireEvent.keyDown(exposureTab, { key: "ArrowLeft" });
+    expect(effortTab).toHaveAttribute("aria-selected", "true");
+
+    // Keyboard navigation: End key goes to last tab (provenanceTab)
+    fireEvent.keyDown(effortTab, { key: "End" });
+    expect(provenanceTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel", { name: /calculation provenance/i })).toBeInTheDocument();
+    expect(screen.getByText("Calculation Engine Provenance & Metric Inventory")).toBeInTheDocument();
+
+    // Keyboard navigation: Home key goes to first tab (overviewTab)
+    fireEvent.keyDown(provenanceTab, { key: "Home" });
+    expect(overviewTab).toHaveAttribute("aria-selected", "true");
+
+    // Tab 4: Scenario Sandbox (Click)
+    fireEvent.click(sandboxTab);
+    expect(sandboxTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel", { name: /scenario sandbox/i })).toBeInTheDocument();
     expect(screen.getByText("meshIQ Efficiency Scenario Modeler")).toBeInTheDocument();
     expect(screen.getByText("Troubleshooting Productivity Opportunity (Separate 10% Rule)")).toBeInTheDocument();
 
-    // Tab 5: Contextual Findings
-    fireEvent.click(screen.getByRole("button", { name: /contextual findings/i }));
+    // Tab 5: Contextual Findings (Click)
+    fireEvent.click(findingsTab);
+    expect(findingsTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel", { name: /contextual findings/i })).toBeInTheDocument();
     expect(screen.getByText("Assessment Strategic Findings & Risk Matrix")).toBeInTheDocument();
     expect(screen.getByText("Estate Scale & Technical Debt (Q01, Q05)")).toBeInTheDocument();
-
-    // Tab 6: Provenance Inventory
-    fireEvent.click(screen.getByRole("button", { name: /calculation provenance/i }));
-    expect(screen.getByText("Calculation Engine Provenance & Metric Inventory")).toBeInTheDocument();
-    expect(screen.getByText("Rule Version: calc-rules-v1.0.0")).toBeInTheDocument();
   });
 
-  it("operates the Scenario Sandbox with interactive adjustments, delta tracking, and baseline reset", () => {
+  it("operates the Scenario Sandbox with interactive adjustments, delta tracking, slider ARIA semantics, and baseline reset", () => {
     render(<ScenarioSandbox calculation={mockCalculation} />);
 
     // Check baseline model values
@@ -213,13 +248,33 @@ describe("Phase 6 Executive KPI Dashboard & Scenario Sandbox", () => {
     expect(screen.getByText("$11,423")).toBeInTheDocument();
     expect(screen.getAllByText(/132 hrs/)[0]).toBeInTheDocument();
 
+    // Check slider ARIA semantics for all 3 sliders
+    const adminShareSlider = screen.getByLabelText(/Addressable Admin Share/i);
+    expect(adminShareSlider).toHaveAttribute("aria-valuemin", "10");
+    expect(adminShareSlider).toHaveAttribute("aria-valuemax", "90");
+    expect(adminShareSlider).toHaveAttribute("aria-valuenow", "50");
+    expect(adminShareSlider).toHaveAttribute("aria-valuetext", "50%");
+
+    const adminRateSlider = screen.getByLabelText(/Admin Efficiency Improvement Rate/i);
+    expect(adminRateSlider).toHaveAttribute("aria-valuemin", "10");
+    expect(adminRateSlider).toHaveAttribute("aria-valuemax", "90");
+    expect(adminRateSlider).toHaveAttribute("aria-valuenow", "50");
+    expect(adminRateSlider).toHaveAttribute("aria-valuetext", "50%");
+
+    const investigationSlider = screen.getByLabelText(/Investigation Improvement/i);
+    expect(investigationSlider).toHaveAttribute("aria-valuemin", "5");
+    expect(investigationSlider).toHaveAttribute("aria-valuemax", "60");
+    expect(investigationSlider).toHaveAttribute("aria-valuenow", "25");
+    expect(investigationSlider).toHaveAttribute("aria-valuetext", "25%");
+
     // Separate 10% troubleshooting opportunity check: $18,000 * 0.1 = $1,800
     expect(screen.getByText("$1,800")).toBeInTheDocument();
     expect(screen.getByText(/Separate 10% Rule/i)).toBeInTheDocument();
 
     // Modify Investigation Improvement slider
-    const investigationInput = screen.getByLabelText(/Investigation Improvement/i);
-    fireEvent.change(investigationInput, { target: { value: "50" } });
+    fireEvent.change(investigationSlider, { target: { value: "50" } });
+    expect(investigationSlider).toHaveAttribute("aria-valuenow", "50");
+    expect(investigationSlider).toHaveAttribute("aria-valuetext", "50%");
 
     // Verify User-Defined status and delta tracking
     expect(screen.getByText("User-Defined")).toBeInTheDocument();
@@ -230,6 +285,7 @@ describe("Phase 6 Executive KPI Dashboard & Scenario Sandbox", () => {
     fireEvent.click(resetBtn);
 
     expect(screen.getByText("Approved Baseline")).toBeInTheDocument();
+    expect(investigationSlider).toHaveAttribute("aria-valuenow", "25");
   });
 
   it("renders structured provenance badges with appropriate tiers and evaluation states", () => {

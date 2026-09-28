@@ -2,11 +2,14 @@
 
 import React from "react";
 import {
+  AlertCircle,
   ArrowRight,
   CheckCircle2,
   Edit3,
   HelpCircle,
+  Loader2,
   Play,
+  RotateCcw,
   Sparkles,
 } from "lucide-react";
 import {
@@ -22,6 +25,8 @@ interface ReviewSummaryProps {
   onEditSection: (sectionId: string) => void;
   onSubmitCalculation: () => void;
   isCalculating: boolean;
+  calculationError?: string | null;
+  onRetryCalculation?: () => void;
 }
 
 export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
@@ -31,6 +36,8 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
   onEditSection,
   onSubmitCalculation,
   isCalculating,
+  calculationError,
+  onRetryCalculation,
 }) => {
   // Helper to format response representation
   const formatAnswerDisplay = (q: QuestionDefinition) => {
@@ -132,7 +139,51 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
   const isAllAnswered = answeredCount === totalQuestions;
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-12">
+    <div className="space-y-8 max-w-5xl mx-auto pb-12" aria-busy={isCalculating}>
+      {/* Accessible Calculation In-Progress Status */}
+      {isCalculating && (
+        <div
+          aria-live="polite"
+          className="rounded-xl bg-[#EEF8F0] border border-[#A8E2B5] p-4 flex items-center space-x-3 text-xs font-semibold text-[#008638] shadow-xs"
+        >
+          <Loader2 className="h-4 w-4 animate-spin text-[#008638] shrink-0" aria-hidden="true" />
+          <span>Executing calculation engine... Generating cryptographically verified snapshot.</span>
+        </div>
+      )}
+
+      {/* Accessible Calculation Error Alert with Retry Action */}
+      {calculationError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="rounded-xl bg-rose-50 border border-rose-200 p-4 sm:p-5 text-rose-900 shadow-xs"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-rose-800 uppercase tracking-wide">
+                  Calculation Failed
+                </div>
+                <p className="text-xs font-medium text-rose-900 leading-relaxed">
+                  {calculationError}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onRetryCalculation || onSubmitCalculation}
+              disabled={isCalculating}
+              aria-label="Retry Calculation"
+              className="inline-flex items-center justify-center space-x-1.5 px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 shrink-0 cursor-pointer disabled:opacity-50"
+            >
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Retry Calculation</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Review Header Hero Card */}
       <div className="rounded-2xl bg-[#0D1322] border border-[#1E293B] p-6 sm:p-8 text-white shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">

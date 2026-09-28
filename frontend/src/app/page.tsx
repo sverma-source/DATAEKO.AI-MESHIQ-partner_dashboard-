@@ -18,7 +18,6 @@ import { WizardHeader } from "../components/WizardHeader";
 import { SectionNavigation } from "../components/SectionNavigation";
 import { QuestionCard } from "../components/QuestionCard";
 import { ReviewSummary } from "../components/ReviewSummary";
-import { CalculationStatusView } from "../components/CalculationStatusView";
 import { ExecutiveDashboard } from "../components/ExecutiveDashboard";
 import { CustomerModal } from "../components/CustomerModal";
 import { QUESTIONS, SECTIONS } from "../data/questionCatalog";
@@ -59,6 +58,7 @@ export default function AssessmentWizardPage() {
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
   const [calculationResult, setCalculationResult] = useState<CalculationRunResponse | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [calculationError, setCalculationError] = useState<string | null>(null);
   const [resumeError, setResumeError] = useState<string | null>(null);
   const [isLoadingAssessment, setIsLoadingAssessment] = useState<boolean>(false);
 
@@ -231,6 +231,7 @@ export default function AssessmentWizardPage() {
   // Execute Calculation Engine
   const handleSubmitCalculation = async () => {
     setIsCalculating(true);
+    setCalculationError(null);
     try {
       // Ensure assessment exists
       let assessmentId = currentAssessment?.id;
@@ -261,7 +262,7 @@ export default function AssessmentWizardPage() {
       setCurrentSectionId("CALCULATED");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
-      alert(`Calculation error: ${err.message}`);
+      setCalculationError(err.message || "Failed to execute calculation engine.");
     } finally {
       setIsCalculating(false);
     }
@@ -615,6 +616,8 @@ export default function AssessmentWizardPage() {
             }}
             onSubmitCalculation={handleSubmitCalculation}
             isCalculating={isCalculating}
+            calculationError={calculationError}
+            onRetryCalculation={handleSubmitCalculation}
           />
         )}
 

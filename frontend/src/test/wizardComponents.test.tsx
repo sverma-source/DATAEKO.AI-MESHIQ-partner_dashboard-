@@ -331,6 +331,47 @@ describe("ReviewSummary Component", () => {
     fireEvent.click(submitBtns[0]);
     expect(handleSubmit).toHaveBeenCalled();
   });
+
+  it("renders in-progress status with aria-live and aria-busy when calculation is executing", () => {
+    const { container } = render(
+      <ReviewSummary
+        sections={SECTIONS}
+        questionsMap={QUESTIONS}
+        answers={{}}
+        onEditSection={vi.fn()}
+        onSubmitCalculation={vi.fn()}
+        isCalculating={true}
+      />
+    );
+
+    expect(container.firstChild).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByText("Executing calculation engine... Generating cryptographically verified snapshot.")).toBeInTheDocument();
+  });
+
+  it("renders accessible error banner with role='alert' and triggers retry action", () => {
+    const handleRetry = vi.fn();
+    render(
+      <ReviewSummary
+        sections={SECTIONS}
+        questionsMap={QUESTIONS}
+        answers={{}}
+        onEditSection={vi.fn()}
+        onSubmitCalculation={vi.fn()}
+        isCalculating={false}
+        calculationError="Network timeout during calculation execution."
+        onRetryCalculation={handleRetry}
+      />
+    );
+
+    const alertEl = screen.getByRole("alert");
+    expect(alertEl).toBeInTheDocument();
+    expect(alertEl).toHaveAttribute("aria-live", "assertive");
+    expect(screen.getByText("Network timeout during calculation execution.")).toBeInTheDocument();
+
+    const retryBtn = screen.getByRole("button", { name: /retry calculation/i });
+    fireEvent.click(retryBtn);
+    expect(handleRetry).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("CalculationStatusView Component", () => {
