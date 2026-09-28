@@ -210,7 +210,7 @@ The codebase is validated across unit, integration, Golden Master, security, bro
 
 ### Prerequisites
 * Python 3.11+ (Python 3.14 supported)
-* Node.js 20+ and npm
+* Node.js 22+ (LTS) and npm
 * Chromium (for Playwright PDF export)
 
 ### Backend Setup
