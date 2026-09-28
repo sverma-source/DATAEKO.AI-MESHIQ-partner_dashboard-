@@ -280,6 +280,8 @@ jobs:
           CORS_ORIGINS='["http://localhost:3000","http://127.0.0.1:3000"]' \
           TRUSTED_PROXIES='["127.0.0.1"]' \
           SECURE_COOKIES=false \
+          RATE_LIMIT_ENABLED=true \
+          RATE_LIMIT_LOGIN_PER_MINUTE=100 \
           PYTHONPATH=backend nohup python3 -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 > /tmp/backend.log 2>&1 &
 
       - name: Await Backend Health Probe Readiness
