@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Building2,
@@ -38,6 +39,11 @@ export default function AssessmentWizardPage() {
   const [currentCustomer, setCurrentCustomer] = useState<Customer | null>(null);
   const [currentAssessment, setCurrentAssessment] = useState<Assessment | null>(null);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState<boolean>(false);
+  const [pendingCustomerSwitch, setPendingCustomerSwitch] = useState<{
+    customerId: string;
+    title: string;
+    targetCustomerName: string;
+  } | null>(null);
 
   // Wizard Navigation State
   const [currentSectionId, setCurrentSectionId] = useState<string>("A"); // "A".."G" or "REVIEW" or "CALCULATED"
@@ -261,10 +267,35 @@ export default function AssessmentWizardPage() {
     }
   };
 
+  // Close confirmation modal on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && pendingCustomerSwitch) {
+        setPendingCustomerSwitch(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [pendingCustomerSwitch]);
+
   // Customer / Assessment Setup
   const handleSelectCustomerAndAssessment = async (customerId: string, title: string) => {
-    const cust = customers.find((c) => c.id === customerId);
-    if (cust) setCurrentCustomer(cust);
+    const targetCust = customers.find((c) => c.id === customerId);
+    const targetCustomerName = targetCust?.name || "Selected Customer";
+
+    // Business Rule: If an active assessment already exists, require explicit confirmation
+    // before switching customer context to prevent responses from carrying over.
+    if (currentAssessment !== null) {
+      setPendingCustomerSwitch({
+        customerId,
+        title,
+        targetCustomerName,
+      });
+      return;
+    }
+
+    // Anonymous Draft flow: Link current draft responses to the newly selected/created customer
+    if (targetCust) setCurrentCustomer(targetCust);
 
     const ass = await api.createAssessment({
       customer_id: customerId,
@@ -277,6 +308,39 @@ export default function AssessmentWizardPage() {
       window.history.replaceState({}, "", url.toString());
     }
     setCurrentSectionId("A");
+  };
+
+  const handleConfirmCustomerSwitch = async () => {
+    if (!pendingCustomerSwitch) return;
+    const { customerId, title } = pendingCustomerSwitch;
+
+    // 1. Reset in-memory response state to initial baseline
+    setAnswers({
+      q20_use_default: true,
+    });
+
+    // 2. Reset session status indicators
+    setSaveStatus("saved");
+    setCalculationResult(null);
+    setValidationErrors({});
+    setResumeError(null);
+
+    // 3. Bind new customer and create fresh assessment
+    const targetCust = customers.find((c) => c.id === customerId);
+    if (targetCust) setCurrentCustomer(targetCust);
+
+    const ass = await api.createAssessment({
+      customer_id: customerId,
+      title: title,
+    });
+    setCurrentAssessment(ass);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("assessment_id", ass.id);
+      window.history.replaceState({}, "", url.toString());
+    }
+    setCurrentSectionId("A");
+    setPendingCustomerSwitch(null);
   };
 
   const handleCreateCustomer = async (data: { name: string; industry: string; primary_contact_email?: string }) => {
@@ -349,7 +413,7 @@ export default function AssessmentWizardPage() {
         {currentSectionId !== "REVIEW" && currentSectionId !== "CALCULATED" && (
           <div className="space-y-6 max-w-4xl mx-auto">
             {/* Session Actions Banner */}
-            {!currentAssessment && (
+            {!currentAssessment ? (
               <div className="flex items-center justify-between rounded-xl bg-[#EEF8F0] p-4 border border-[#A8E2B5] text-xs">
                 <div className="flex items-center space-x-2 text-[#172033]">
                   <Building2 className="h-4 w-4 text-[#38B449] shrink-0" />
@@ -364,6 +428,27 @@ export default function AssessmentWizardPage() {
                   className="px-3 py-1.5 rounded-md bg-[#38B449] text-white font-semibold hover:bg-[#008638] transition-colors shrink-0 shadow-xs"
                 >
                   Select Customer
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between rounded-xl bg-white p-3.5 border border-[#E2E6EE] text-xs shadow-xs">
+                <div className="flex items-center space-x-2 text-[#172033]">
+                  <Building2 className="h-4 w-4 text-[#008638] shrink-0" />
+                  <span>
+                    Active Customer: <strong className="text-[#172033]">{currentCustomer?.name || "Enterprise Customer"}</strong>
+                    {currentAssessment?.title && (
+                      <span className="text-[#667085] ml-1.5 font-normal">
+                        ({currentAssessment.title})
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomerModalOpen(true)}
+                  className="px-3 py-1.5 rounded-md border border-[#CBD2DE] text-[#172033] font-medium hover:bg-[#F1F3F7] transition-colors shrink-0 text-xs"
+                >
+                  Switch Customer / Assessment
                 </button>
               </div>
             )}
@@ -565,6 +650,67 @@ export default function AssessmentWizardPage() {
         onSelectCustomerAndAssessment={handleSelectCustomerAndAssessment}
         onCreateCustomer={handleCreateCustomer}
       />
+
+      {/* Session Isolation Switch Confirmation Modal */}
+      {pendingCustomerSwitch && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="session-switch-title"
+          aria-describedby="session-switch-desc"
+        >
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E6EE] space-y-5">
+            <div className="flex items-start space-x-3.5">
+              <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600 border border-amber-200 shrink-0">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div className="space-y-1.5 flex-1">
+                <h3 id="session-switch-title" className="text-base font-bold text-[#172033]">
+                  Switch Customer Context &amp; Reset Workspace?
+                </h3>
+                <p id="session-switch-desc" className="text-xs text-[#667085] leading-relaxed">
+                  You are currently working on an assessment for{" "}
+                  <strong className="text-[#172033] font-semibold">
+                    {currentCustomer?.name || "the active customer"}
+                  </strong>
+                  . Switching to{" "}
+                  <strong className="text-[#172033] font-semibold">
+                    {pendingCustomerSwitch.targetCustomerName}
+                  </strong>{" "}
+                  will isolate the new session and discard all current in-memory assessment responses unless already saved.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-[#F7F8FA] rounded-xl border border-[#E2E6EE] text-xs text-[#475467] space-y-1">
+              <div className="font-semibold text-[#172033]">Target Assessment:</div>
+              <div>Customer: <span className="font-medium text-[#172033]">{pendingCustomerSwitch.targetCustomerName}</span></div>
+              <div>Assessment: <span className="font-medium text-[#172033]">{pendingCustomerSwitch.title}</span></div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setPendingCustomerSwitch(null)}
+                className="px-4 py-2 text-xs font-semibold text-[#475467] hover:bg-[#F1F3F7] rounded-lg transition-colors"
+                aria-label="Cancel customer switch and keep current assessment"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmCustomerSwitch}
+                className="px-4 py-2 text-xs font-bold text-white bg-[#008638] hover:bg-[#006b2d] rounded-lg transition-colors shadow-xs"
+                aria-label="Switch Customer & Start Fresh"
+                autoFocus
+              >
+                Switch Customer &amp; Start Fresh
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </ProtectedRoute>
   );

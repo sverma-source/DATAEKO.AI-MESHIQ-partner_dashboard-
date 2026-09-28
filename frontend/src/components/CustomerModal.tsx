@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Building2, FileText, Loader2, Plus, X } from "lucide-react";
 import { Customer } from "../types/assessment";
 
@@ -31,6 +31,24 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && !isLoading) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isLoading, onClose]);
+
+  // Keep selectedCustomerId in sync when customers list updates or modal opens
+  useEffect(() => {
+    if (isOpen && customers.length > 0 && (!selectedCustomerId || !customers.some((c) => c.id === selectedCustomerId))) {
+      setSelectedCustomerId(customers[0].id);
+    }
+  }, [isOpen, customers, selectedCustomerId]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,7 +57,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
     setError(null);
 
     try {
-      let targetCustId = selectedCustomerId;
+      let targetCustId = selectedCustomerId || (customers.length > 0 ? customers[0].id : "");
 
       if (mode === "create") {
         if (!newCustName.trim()) {
@@ -71,19 +89,31 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0D1322]/70 backdrop-blur-xs p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E6EE] animate-in fade-in zoom-in-95 duration-150">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0D1322]/70 backdrop-blur-xs p-4"
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isLoading) onClose();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="customer-modal-title"
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E6EE] animate-in fade-in zoom-in-95 duration-150"
+      >
         <div className="flex items-center justify-between pb-4 border-b border-[#E2E6EE]">
           <div className="flex items-center space-x-2">
-            <Building2 className="h-5 w-5 text-[#38B449]" />
-            <h3 className="text-lg font-bold text-[#172033]">
+            <Building2 className="h-5 w-5 text-[#008638]" />
+            <h3 id="customer-modal-title" className="text-lg font-bold text-[#172033]">
               Start Assessment Discovery Session
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#667085] hover:text-[#172033] transition-colors"
+            aria-label="Close customer dialog"
+            className="text-[#667085] hover:text-[#172033] transition-colors rounded-lg p-1 hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#008638]"
           >
             <X className="h-5 w-5" />
           </button>
@@ -91,7 +121,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           {error && (
-            <div className="rounded-lg bg-rose-50 p-3 text-xs text-rose-700 border border-rose-200 font-medium">
+            <div className="rounded-lg bg-rose-50 p-3 text-xs text-rose-700 border border-rose-200 font-medium" role="alert">
               {error}
             </div>
           )}
@@ -131,7 +161,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 id="customer-select"
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
+                className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
               >
                 {customers.length === 0 && <option value="">No customers found — create one</option>}
                 {customers.map((c) => (
@@ -154,7 +184,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   placeholder="e.g. Global Freight Logistics Corp"
                   value={newCustName}
                   onChange={(e) => setNewCustName(e.target.value)}
-                  className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] placeholder-[#667085]/60 shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
+                  className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] placeholder-[#667085]/60 shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
                 />
               </div>
 
@@ -166,7 +196,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   id="industry-select"
                   value={newCustIndustry}
                   onChange={(e) => setNewCustIndustry(e.target.value)}
-                  className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
+                  className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
                 >
                   <option value="Financial Services & Banking">Financial Services & Banking</option>
                   <option value="Healthcare & Life Sciences">Healthcare & Life Sciences</option>
@@ -191,7 +221,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   placeholder="middleware-lead@company.example.com"
                   value={newCustEmail}
                   onChange={(e) => setNewCustEmail(e.target.value)}
-                  className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] placeholder-[#667085]/60 shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
+                  className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] placeholder-[#667085]/60 shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
                 />
               </div>
             </div>
@@ -209,7 +239,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 required
                 value={assessmentTitle}
                 onChange={(e) => setAssessmentTitle(e.target.value)}
-                className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#38B449] focus:outline-none focus:ring-2 focus:ring-[#38B449]/20"
+                className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
               />
               <FileText className="absolute right-3 h-4 w-4 text-[#667085] pointer-events-none" />
             </div>
@@ -220,14 +250,15 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-[#667085] hover:text-[#172033] rounded-lg hover:bg-[#F1F3F7] transition-colors"
+              disabled={isLoading}
+              className="px-4 py-2 text-xs font-semibold text-[#667085] hover:text-[#172033] rounded-lg hover:bg-[#F1F3F7] transition-colors focus:outline-none focus:ring-2 focus:ring-[#CBD2DE]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="inline-flex items-center space-x-2 rounded-lg bg-[#38B449] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#008638] focus:outline-none focus:ring-2 focus:ring-[#38B449] transition-colors disabled:opacity-50"
+              className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] hover:bg-[#006b2d] px-5 py-2.5 text-xs font-bold text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008638] transition-colors disabled:opacity-50"
             >
               {isLoading ? (
                 <>
@@ -244,3 +275,4 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
     </div>
   );
 };
+

@@ -14,6 +14,7 @@ vi.mock("../services/api", () => ({
     }),
     listCustomers: vi.fn().mockResolvedValue([
       { id: "cust-1", name: "Apex Financial", industry: "Banking" },
+      { id: "cust-2", name: "Beta Corp", industry: "Technology" },
     ]),
     createCustomer: vi.fn().mockResolvedValue({
       id: "cust-new",
@@ -136,5 +137,118 @@ describe("AssessmentWizardPage Full Integration", () => {
       expect(screen.getByText("Assessment Economic Baseline & Scenario Results")).toBeInTheDocument();
       expect(screen.getByText("$45,692")).toBeInTheDocument();
     });
+  });
+
+  it("preserves responses when associating an anonymous draft with a customer", async () => {
+    render(<AssessmentWizardPage />);
+
+    // Wait for customer data to load
+    await waitFor(() => {
+      expect(screen.getByText("Apex Financial")).toBeInTheDocument();
+    });
+
+    // 1. Answer Q01 in anonymous draft mode (before any assessment is active)
+    const q01Select = screen.getByLabelText("Select Approved Response", { selector: "#select-Q01" });
+    fireEvent.change(q01Select, { target: { value: "51–100" } });
+    expect(q01Select).toHaveValue("51–100");
+
+    // 2. Open Customer modal and select customer
+    const selectCustBtn = screen.getByRole("button", { name: /select customer/i });
+    fireEvent.click(selectCustBtn);
+
+    // Modal is open
+    expect(screen.getByRole("dialog", { name: /start assessment discovery session/i })).toBeInTheDocument();
+
+    // Confirm selection
+    const confirmBtn = screen.getByRole("button", { name: /launch intake wizard/i });
+    fireEvent.click(confirmBtn);
+
+    // Assessment is created and Q01 value remains preserved
+    await waitFor(() => {
+      expect(api.createAssessment).toHaveBeenCalledWith({
+        customer_id: "cust-1",
+        title: expect.stringContaining("Assessment"),
+      });
+    });
+    expect(screen.getByLabelText("Select Approved Response", { selector: "#select-Q01" })).toHaveValue("51–100");
+  });
+
+  it("prompts confirmation and resets responses when switching customer from an active assessment", async () => {
+    (api.listCustomers as any).mockResolvedValue([
+      { id: "cust-1", name: "Apex Financial", industry: "Banking" },
+      { id: "cust-2", name: "Beta Corp", industry: "Technology" },
+    ]);
+
+    render(<AssessmentWizardPage />);
+
+    // Wait for customer data to load
+    await waitFor(() => {
+      expect(screen.getByText("Apex Financial")).toBeInTheDocument();
+    });
+
+    // 1. Associate first customer
+    const selectCustBtn = screen.getByRole("button", { name: /select customer/i });
+    fireEvent.click(selectCustBtn);
+    const confirmBtn = screen.getByRole("button", { name: /launch intake wizard/i });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /switch customer \/ assessment/i })).toBeInTheDocument();
+    });
+    expect(screen.getByText(/Active Customer:/i)).toBeInTheDocument();
+
+    // 2. Enter response for Q01 under Active Customer A
+    const q01Select = screen.getByLabelText("Select Approved Response", { selector: "#select-Q01" });
+    fireEvent.change(q01Select, { target: { value: "101–250" } });
+    expect(q01Select).toHaveValue("101–250");
+
+    // 3. Click Switch Customer / Assessment
+    const switchBtn = screen.getByRole("button", { name: /switch customer \/ assessment/i });
+    fireEvent.click(switchBtn);
+
+    // 4. Select Customer B in modal
+    const custSelect = screen.getByLabelText(/select customer account/i);
+    fireEvent.change(custSelect, { target: { value: "cust-2" } });
+    const modalConfirmBtn = screen.getByRole("button", { name: /launch intake wizard/i });
+    fireEvent.click(modalConfirmBtn);
+
+    // 5. Verify confirmation dialog appears with accessible title and explanation
+    await waitFor(() => {
+      expect(screen.getByRole("dialog", { name: /switch customer context & reset workspace\?/i })).toBeInTheDocument();
+    });
+    expect(screen.getByText(/will isolate the new session and discard all current in-memory assessment responses/i)).toBeInTheDocument();
+
+    // 6. Test Cancel button retains current assessment
+    const cancelBtn = screen.getByRole("button", { name: /cancel customer switch/i });
+    fireEvent.click(cancelBtn);
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: /switch customer context & reset workspace\?/i })).not.toBeInTheDocument();
+    });
+    expect(screen.getByLabelText("Select Approved Response", { selector: "#select-Q01" })).toHaveValue("101–250");
+
+    // 7. Open switch dialog again and confirm switch
+    const switchBtnAgain = screen.getByRole("button", { name: /switch customer \/ assessment/i });
+    fireEvent.click(switchBtnAgain);
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog", { name: /start assessment discovery session/i })).toBeInTheDocument();
+    });
+    const custSelectAgain = screen.getByLabelText(/select customer account/i);
+    fireEvent.change(custSelectAgain, { target: { value: "cust-2" } });
+
+    const modalConfirmBtnAgain = screen.getByRole("button", { name: /launch intake wizard/i });
+    fireEvent.click(modalConfirmBtnAgain);
+
+    const confirmSwitchBtn = await screen.findByRole("button", { name: /switch customer & start fresh/i });
+    fireEvent.click(confirmSwitchBtn);
+
+    // 8. Verify answers were reset for the fresh session
+    await waitFor(() => {
+      expect(api.createAssessment).toHaveBeenCalledWith({
+        customer_id: "cust-2",
+        title: expect.stringContaining("Assessment"),
+      });
+    });
+    expect(screen.getByLabelText("Select Approved Response", { selector: "#select-Q01" })).toHaveValue("");
   });
 });
