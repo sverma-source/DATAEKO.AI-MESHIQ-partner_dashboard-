@@ -23,9 +23,9 @@ By replacing complex, error-prone spreadsheets with a secure, auditable, and det
 
 ## 2. Current Project Status
 
-The project is under active development on the **`dev`** branch. Core calculation engine engineering, security hardening, full-stack API integration, and four targeted UX/accessibility refinement batches have been completed and checkpointed:
+The project is under active development on the **`dev`** branch. Core calculation engine engineering, security hardening, full-stack API integration, and five targeted UX/branding/accessibility refinement batches have been completed and checkpointed:
 
-### Completed Refinement Batches
+### Completed Refinements
 1. **Batch 1 — Session Isolation** (`1ca1182`):
    - Active customer switching isolation with confirmation dialog.
    - Distinct handling of anonymous draft adoption vs. active customer switching.
@@ -46,14 +46,29 @@ The project is under active development on the **`dev`** branch. Core calculatio
    - Removed unused `CalculationStatusView` import from `page.tsx` while keeping canonical dashboard views.
    - Accessible ExecutiveDashboard tabs (`role="tablist"`, `role="tab"`, `role="tabpanel"`, ArrowLeft/ArrowRight/Home/End keyboard navigation).
    - Accessible ScenarioSandbox sliders (`role="slider"`, `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, `aria-valuetext`, and `#008638` focus rings).
+5. **Branding Refinement** (`de43fe9`):
+   - Enhanced DATAEKO logo visibility in application header with exact asset scaling.
+   - Official DATAEKO wordmark attribution in footer and Executive Report view.
+6. **Section Navigation Refinement** (`cdb4114`):
+   - Replaced generic "Section A/B/C/D/E/F/G" labels with canonical section titles sourced dynamically from the question catalog (`sec.title`):
+     - **A. Environment & Cost Baseline**
+     - **B. Troubleshooting Economics**
+     - **C. Operational Complexity & Productivity**
+     - **D. Business Consequence & Financial Exposure**
+     - **E. Cost Reduction & Organizational Pressure**
+     - **F. Cybersecurity & Remediation**
+     - **G. Economic Inputs & Timing**
+   - Preserved responsive horizontal navigation across mobile (`390 × 844`), tablet (`768 × 1024`), and desktop (`1280 × 800`) without page-level horizontal overflow.
+   - Maintained full accessibility semantics (`role="tablist"`, `role="tab"`, `aria-current`, visible `#008638` focus rings, keyboard navigation, and descriptive `aria-label`s with completion status).
+   - Strict architectural isolation: zero modifications to backend calculation engine, database migrations, REST API contracts, security/auth, or question-catalog semantics.
 
 ### Current Checkpoint & Phase
-- **Current Git Checkpoint**: `2fe74d7` (`feat: refine calculation and results accessibility UX`)
+- **Current Git Checkpoint**: `cdb4114` (`feat: show canonical section names in assessment navigation`)
 - **Development Branch**: `dev`
-- **Validation Status**: All 73 frontend unit/integration tests pass, 102 backend tests pass (10/10 Golden Masters), TypeScript compiles with 0 errors, production build succeeds, and 39/39 automated browser QA assertions pass across mobile (`390 × 844`), tablet (`768 × 1024`), and desktop (`1280 × 800`).
+- **Validation Status**: All 73 frontend unit/integration tests pass, 102 backend tests pass (10/10 Golden Masters), TypeScript compiles with 0 errors, production build succeeds, and browser QA passed across mobile (`390 × 844`), tablet (`768 × 1024`), and desktop (`1280 × 800`).
 
 > [!IMPORTANT]
-> **Pre-Deployment Development Phase**: The application is currently in an active local development and pre-deployment review phase on the `dev` branch. Production deployment is intentionally **deferred**, cloud infrastructure has not yet been provisioned, and GitHub push of the latest local batch commits has not yet occurred.
+> **Pre-Deployment Development Phase**: The application is currently in an active local development and pre-deployment review phase on the `dev` branch. Production deployment is intentionally **deferred**, cloud infrastructure has not yet been provisioned, and all validation remains in local pre-deployment state.
 
 ---
 
@@ -430,7 +445,7 @@ A new developer joining the project can immediately run the application locally 
    git clone <repository_url>
    cd DATAEKO.AI-MESHIQ-partner_dashboard-
    git checkout dev
-   # Current local checkpoint: 2fe74d7 (feat: refine calculation and results accessibility UX)
+   # Current local checkpoint: cdb4114 (feat: show canonical section names in assessment navigation)
    ```
 
 2. **Start Backend**:
