@@ -77,7 +77,7 @@ describe("AssessmentWizardPage Full Integration", () => {
     // Header & Section info
     expect(screen.getAllByAltText("DATAEKO.AI")[0]).toBeInTheDocument();
     expect(screen.getByAltText("meshIQ")).toBeInTheDocument();
-    expect(screen.getByText("A. Environment & Cost Baseline")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "A. Environment & Cost Baseline" })).toBeInTheDocument();
 
     // Section A questions rendered
     expect(screen.getByText("Queue Manager Estate Scale")).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe("AssessmentWizardPage Full Integration", () => {
     fireEvent.click(nextBtn);
 
     await waitFor(() => {
-      expect(screen.getByText("B. Troubleshooting Economics")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "B. Troubleshooting Economics" })).toBeInTheDocument();
     });
     expect(screen.getByText("Troubleshooting & Incident Frequency")).toBeInTheDocument();
 

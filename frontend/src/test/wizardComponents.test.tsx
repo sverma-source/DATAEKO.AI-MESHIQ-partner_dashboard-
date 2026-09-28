@@ -90,7 +90,7 @@ describe("WizardHeader Component", () => {
 });
 
 describe("SectionNavigation Component", () => {
-  it("renders all 7 sections plus review tab and triggers section selection", () => {
+  it("renders all 7 canonical section titles plus review tab and triggers section selection", () => {
     const handleSelect = vi.fn();
     render(
       <SectionNavigation
@@ -102,11 +102,16 @@ describe("SectionNavigation Component", () => {
       />
     );
 
-    expect(screen.getByText("Section A")).toBeInTheDocument();
-    expect(screen.getByText("Section G")).toBeInTheDocument();
+    expect(screen.getByText("A. Environment & Cost Baseline")).toBeInTheDocument();
+    expect(screen.getByText("B. Troubleshooting Economics")).toBeInTheDocument();
+    expect(screen.getByText("C. Operational Complexity & Productivity")).toBeInTheDocument();
+    expect(screen.getByText("D. Business Consequence & Financial Exposure")).toBeInTheDocument();
+    expect(screen.getByText("E. Cost Reduction & Organizational Pressure")).toBeInTheDocument();
+    expect(screen.getByText("F. Cybersecurity & Remediation")).toBeInTheDocument();
+    expect(screen.getByText("G. Economic Inputs & Timing")).toBeInTheDocument();
     expect(screen.getByText("Review & Submit")).toBeInTheDocument();
 
-    const secBBtn = screen.getByRole("button", { name: /section b/i });
+    const secBBtn = screen.getByRole("button", { name: /b\. troubleshooting economics/i });
     fireEvent.click(secBBtn);
     expect(handleSelect).toHaveBeenCalledWith("B");
   });
@@ -122,10 +127,10 @@ describe("SectionNavigation Component", () => {
       />
     );
 
-    const activeSecB = screen.getByRole("button", { name: /section b:/i });
+    const activeSecB = screen.getByRole("button", { name: /b\. troubleshooting economics/i });
     expect(activeSecB).toHaveAttribute("aria-current", "step");
 
-    const secA = screen.getByRole("button", { name: /section a:/i });
+    const secA = screen.getByRole("button", { name: /a\. environment & cost baseline/i });
     expect(secA).not.toHaveAttribute("aria-current");
     expect(secA).toHaveAttribute("aria-label", expect.stringContaining("questions answered"));
   });

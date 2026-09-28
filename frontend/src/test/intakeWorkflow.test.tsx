@@ -113,20 +113,20 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     });
 
     // Section A
-    expect(screen.getByText("A. Environment & Cost Baseline")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "A. Environment & Cost Baseline" })).toBeInTheDocument();
     expect(screen.getByText("Queue Manager Estate Scale")).toBeInTheDocument();
 
     // Move to Section B
     fireEvent.click(screen.getByRole("button", { name: /next: section b/i }));
     await waitFor(() => {
-      expect(screen.getByText("B. Troubleshooting Economics")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "B. Troubleshooting Economics" })).toBeInTheDocument();
     });
     expect(screen.getByText("Troubleshooting & Incident Frequency")).toBeInTheDocument();
 
     // Move to Section C
     fireEvent.click(screen.getByRole("button", { name: /next: section c/i }));
     await waitFor(() => {
-      expect(screen.getByText("C. Operational Complexity & Productivity")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "C. Operational Complexity & Productivity" })).toBeInTheDocument();
     });
     expect(screen.getByText("Monitoring Tools & Management Consoles")).toBeInTheDocument();
     expect(screen.getByText("Cross-Technology Manual Correlation Friction")).toBeInTheDocument();
@@ -135,7 +135,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     // Move to Section D
     fireEvent.click(screen.getByRole("button", { name: /next: section d/i }));
     await waitFor(() => {
-      expect(screen.getByText("D. Business Consequence & Financial Exposure")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "D. Business Consequence & Financial Exposure" })).toBeInTheDocument();
     });
     expect(screen.getByText("Severity of Business Impact")).toBeInTheDocument();
     expect(screen.getByText("Recent Disruption Experience")).toBeInTheDocument();
@@ -143,7 +143,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     // Move to Section E
     fireEvent.click(screen.getByRole("button", { name: /next: section e/i }));
     await waitFor(() => {
-      expect(screen.getByText("E. Cost Reduction & Organizational Pressure")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "E. Cost Reduction & Organizational Pressure" })).toBeInTheDocument();
     });
     expect(screen.getByText("Cost-Reduction Mandate")).toBeInTheDocument();
     expect(screen.getByText("Target OpEx Reduction Percentage")).toBeInTheDocument();
@@ -151,7 +151,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     // Move to Section F
     fireEvent.click(screen.getByRole("button", { name: /next: section f/i }));
     await waitFor(() => {
-      expect(screen.getByText("F. Cybersecurity & Remediation")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "F. Cybersecurity & Remediation" })).toBeInTheDocument();
     });
     expect(screen.getByText("Cybersecurity & Audit Pressure")).toBeInTheDocument();
     expect(screen.getByText("Vulnerability Remediation & Configuration Friction")).toBeInTheDocument();
@@ -159,7 +159,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     // Move to Section G
     fireEvent.click(screen.getByRole("button", { name: /next: section g/i }));
     await waitFor(() => {
-      expect(screen.getByText("G. Economic Inputs & Timing")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "G. Economic Inputs & Timing" })).toBeInTheDocument();
     });
     expect(screen.getByText("Fully Loaded Annual Labor Cost Override")).toBeInTheDocument();
     expect(screen.getByText("Customer-Reported Total Annual IBM MQ Spend")).toBeInTheDocument();
@@ -182,7 +182,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     // Navigate to Section B (Q07)
     fireEvent.click(screen.getByRole("button", { name: /next: section b/i }));
     await waitFor(() => {
-      expect(screen.getByText("B. Troubleshooting Economics")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "B. Troubleshooting Economics" })).toBeInTheDocument();
     });
 
     // Select "Not sure" for Q07
@@ -193,11 +193,11 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     // Navigate to Section D (Q15)
     fireEvent.click(screen.getByRole("button", { name: /next: section c/i }));
     await waitFor(() => {
-      expect(screen.getByText("C. Operational Complexity & Productivity")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "C. Operational Complexity & Productivity" })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByRole("button", { name: /next: section d/i }));
     await waitFor(() => {
-      expect(screen.getByText("D. Business Consequence & Financial Exposure")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "D. Business Consequence & Financial Exposure" })).toBeInTheDocument();
     });
 
     // Select "Unknown / Use Industry Benchmark if applicable" for Q15
@@ -222,7 +222,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     fireEvent.click(screen.getByRole("button", { name: /next: section g/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("G. Economic Inputs & Timing")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "G. Economic Inputs & Timing" })).toBeInTheDocument();
     });
 
     // Expand override for Q20

@@ -51,8 +51,9 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                 key={sec.id}
                 type="button"
                 onClick={() => onSelectSection(sec.id)}
+                title={sec.title}
                 aria-current={isActive ? "step" : undefined}
-                aria-label={`Section ${sec.id}: ${sec.title} - ${
+                aria-label={`${sec.title} - ${
                   stats.isComplete
                     ? "Completed"
                     : `${stats.answered} of ${stats.total} questions answered`
@@ -90,14 +91,22 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                 </div>
 
                 {/* Section Name & Count */}
-                <div className="flex flex-col text-left">
-                  <span className={`leading-tight ${isActive ? "font-extrabold text-[#172033]" : "font-semibold"}`}>
-                    Section {sec.id}
+                <div className="flex flex-col text-left min-w-0">
+                  <span
+                    className={`leading-tight ${
+                      isActive
+                        ? "font-extrabold text-[#172033]"
+                        : stats.isComplete || stats.isPartial
+                        ? "font-bold text-[#172033]"
+                        : "font-semibold text-[#475467] group-hover:text-[#172033]"
+                    }`}
+                  >
+                    {sec.title}
                   </span>
                   <span
                     className={`text-[10px] leading-tight font-medium ${
                       stats.isComplete
-                        ? "text-[#008638]"
+                        ? "text-[#008638] font-semibold"
                         : stats.isPartial
                         ? "text-amber-700 font-semibold"
                         : "text-[#667085]"
