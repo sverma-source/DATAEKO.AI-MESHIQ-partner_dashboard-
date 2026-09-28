@@ -117,15 +117,15 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
           <UserMenu />
 
           {/* Official DATAEKO Partner Logo */}
-          <div className="flex items-center pl-2 sm:pl-3 border-l border-[#E2E6EE]">
+          <div className="flex items-center pl-3 sm:pl-4 border-l border-[#E2E6EE]">
             <Image
               src="/dataeko-logo.png"
-              alt="DATAEKO"
+              alt="DATAEKO.AI"
               width={638}
               height={106}
               unoptimized
               priority
-              className="h-3.5 sm:h-4.5 w-auto object-contain shrink-0 opacity-90 hover:opacity-100 transition-opacity"
+              className="h-6 sm:h-7 w-auto object-contain shrink-0"
             />
           </div>
         </div>

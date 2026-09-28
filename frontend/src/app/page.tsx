@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -637,12 +638,20 @@ export default function AssessmentWizardPage() {
       </main>
 
       {/* Attribution Footer */}
-      <footer className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full border-t border-[#E2E6EE] flex flex-col sm:flex-row items-center justify-between text-xs text-[#667085] gap-2">
-        <div className="flex items-center space-x-2 text-[11px]">
+      <footer className="py-5 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full border-t border-[#E2E6EE] flex flex-col sm:flex-row items-center justify-between text-xs text-[#667085] gap-3">
+        <div className="flex items-center space-x-2 text-xs">
           <span>meshIQ Enterprise Economic Cost &amp; Efficiency Assessment</span>
         </div>
-        <div className="text-right text-[11px] font-semibold text-[#667085] tracking-tight">
-          Powered by DATAEKO.AI
+        <div className="flex items-center space-x-2 text-xs font-medium text-[#667085] tracking-tight">
+          <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
+          <Image
+            src="/dataeko-logo.png"
+            alt="DATAEKO.AI"
+            width={638}
+            height={106}
+            unoptimized
+            className="h-5 sm:h-6 w-auto object-contain shrink-0"
+          />
         </div>
       </footer>
 

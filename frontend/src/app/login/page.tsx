@@ -206,9 +206,17 @@ export default function LoginPage() {
           <p className="text-[11px] text-slate-500">
             Protected by signed JSON Web Tokens (HTTP-only SameSite cookies) and Multi-Tenant RBAC isolation.
           </p>
-          <p className="text-[11px] font-semibold text-slate-400 tracking-tight">
-            Powered by DATAEKO.AI
-          </p>
+          <div className="flex items-center justify-center space-x-2 text-xs font-medium text-slate-400 tracking-tight pt-1">
+            <span className="text-[11px] uppercase tracking-wider text-slate-500">Powered by</span>
+            <Image
+              src="/dataeko-logo.png"
+              alt="DATAEKO.AI"
+              width={638}
+              height={106}
+              unoptimized
+              className="h-5 sm:h-5.5 w-auto object-contain shrink-0"
+            />
+          </div>
         </div>
       </div>
     </div>

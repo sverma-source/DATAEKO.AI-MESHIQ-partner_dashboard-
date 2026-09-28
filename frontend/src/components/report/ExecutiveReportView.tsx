@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -792,11 +793,19 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
         )}
 
         {/* Report Footer Attribution */}
-        <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+        <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
           <span>DATAEKO × meshIQ Enterprise Economic Assessment</span>
-          <span className="font-semibold text-slate-600 tracking-tight">
-            Powered by DATAEKO.AI
-          </span>
+          <div className="flex items-center space-x-2 font-medium text-slate-600 tracking-tight">
+            <span className="text-[11px] uppercase tracking-wider text-slate-500">Powered by</span>
+            <Image
+              src="/dataeko-logo.png"
+              alt="DATAEKO.AI"
+              width={638}
+              height={106}
+              unoptimized
+              className="h-5 sm:h-5.5 w-auto object-contain shrink-0"
+            />
+          </div>
         </div>
       </div>
     </div>
