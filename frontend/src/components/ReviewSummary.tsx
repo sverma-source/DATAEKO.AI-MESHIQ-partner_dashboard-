@@ -475,7 +475,7 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
                 type="button"
                 ref={cancelBtnRef}
                 onClick={() => setIsConfirmModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-[#475467] hover:bg-[#F1F3F7] rounded-lg transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-[#475467] hover:bg-[#F1F3F7] rounded-lg transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1"
                 aria-label="Go back and continue reviewing responses"
               >
                 Go Back
@@ -484,7 +484,7 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
                 type="button"
                 onClick={handleConfirmSubmit}
                 disabled={submitting}
-                className="px-5 py-2 text-xs font-bold text-white bg-[#008638] hover:bg-[#006B2D] rounded-lg transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 text-xs font-bold text-white bg-[#008638] hover:bg-[#006B2D] rounded-lg transition-colors duration-150 shadow-xs cursor-pointer disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1"
                 aria-label="Confirm & Submit"
               >
                 {submitting ? "Submitting..." : "Confirm & Submit"}

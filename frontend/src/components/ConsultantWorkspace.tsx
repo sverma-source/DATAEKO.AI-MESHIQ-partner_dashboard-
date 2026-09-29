@@ -24,6 +24,7 @@ import {
   Shield,
   ShieldCheck,
   Sparkles,
+  X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
@@ -140,6 +141,17 @@ export const ConsultantWorkspace: React.FC = () => {
     setSnapshotError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // Keyboard Escape listener to return from detail view to portfolio
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedAssessmentId) {
+        handleBackToPortfolio();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedAssessmentId]);
 
   // Helper to map customer name by ID
   const getCustomerName = (customerId: string, assessmentCustomer?: Customer) => {
@@ -347,7 +359,7 @@ export const ConsultantWorkspace: React.FC = () => {
             <button
               type="button"
               onClick={handleBackToPortfolio}
-              className="inline-flex items-center space-x-2 text-xs font-bold text-[#172033] hover:text-[#008638] bg-white border border-[#CBD2DE] hover:border-[#008638] px-3.5 py-2 rounded-lg transition-colors shadow-2xs cursor-pointer"
+              className="inline-flex items-center space-x-2 text-xs font-bold text-[#172033] hover:text-[#008638] bg-white border border-[#CBD2DE] hover:border-[#008638] px-3.5 py-2 rounded-lg transition-colors duration-150 shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1"
               aria-label="Back to Assessment Portfolio"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -359,10 +371,10 @@ export const ConsultantWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveDetailTab("summary")}
-                className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+                className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   activeDetailTab === "summary"
                     ? "bg-[#008638] text-white"
-                    : "text-[#667085] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033]"
                 }`}
               >
                 <Calculator className="h-3.5 w-3.5" />
@@ -372,10 +384,10 @@ export const ConsultantWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveDetailTab("responses")}
-                className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+                className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   activeDetailTab === "responses"
                     ? "bg-[#008638] text-white"
-                    : "text-[#667085] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033]"
                 }`}
               >
                 <FileCheck2 className="h-3.5 w-3.5" />
@@ -386,10 +398,10 @@ export const ConsultantWorkspace: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveDetailTab("dashboard")}
-                  className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+                  className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                     activeDetailTab === "dashboard"
                       ? "bg-[#008638] text-white"
-                      : "text-[#667085] hover:text-[#172033]"
+                      : "text-[#5B6579] hover:text-[#172033]"
                   }`}
                 >
                   <Layers className="h-3.5 w-3.5" />
@@ -665,8 +677,18 @@ export const ConsultantWorkspace: React.FC = () => {
               placeholder="Search customer or assessment..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-white border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] placeholder-[#8A94A6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors duration-150"
+              className="w-full pl-9 pr-8 py-2 bg-white border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] placeholder-[#8A94A6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors duration-150"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search input"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8A94A6] hover:text-[#172033] p-0.5 rounded cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            )}
           </div>
 
           <div className="flex items-center space-x-2 self-start sm:self-auto w-full sm:w-auto justify-between sm:justify-end">
@@ -764,6 +786,15 @@ export const ConsultantWorkspace: React.FC = () => {
                   ? "Try adjusting your search terms or filter selection."
                   : "When client assessments are created or submitted within your partner tenant scope, they will appear here for advisory review."}
               </p>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="mt-3 inline-flex items-center px-3 py-1.5 rounded-lg border border-[#CBD2DE] bg-white text-xs font-semibold text-[#172033] hover:bg-[#F1F3F7] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors duration-150"
+                >
+                  Clear Search
+                </button>
+              )}
             </div>
           </div>
         )}

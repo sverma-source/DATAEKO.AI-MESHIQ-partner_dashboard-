@@ -418,7 +418,7 @@ export default function AssessmentWizardPage() {
   if (isConsultant) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033]">
+        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033] w-full overflow-x-hidden">
           <Navbar />
           <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
             <ConsultantWorkspace />
@@ -447,7 +447,7 @@ export default function AssessmentWizardPage() {
   if (isAdmin) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033]">
+        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033] w-full overflow-x-hidden">
           <Navbar />
           <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
             <AdminWorkspace />
@@ -475,7 +475,7 @@ export default function AssessmentWizardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033]">
+      <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033] w-full overflow-x-hidden">
         {/* Top Navigation */}
         <Navbar
           customerName={currentCustomer?.name}

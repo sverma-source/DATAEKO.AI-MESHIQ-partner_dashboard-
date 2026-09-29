@@ -89,12 +89,15 @@
   --accent-blue: #0074c8;
 }
 
+html,
 body {
   background-color: #f7f8fa;
   color: #172033;
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* Custom subtle scrollbar */

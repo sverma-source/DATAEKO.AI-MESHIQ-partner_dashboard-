@@ -208,6 +208,23 @@ export const AdminWorkspace: React.FC = () => {
     }
   }, [successMessage]);
 
+  // Keyboard Escape listener to dismiss open modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isProvisionUserOpen) setIsProvisionUserOpen(false);
+        if (isCreateCustomerOpen) {
+          setIsCreateCustomerOpen(false);
+          setEditingCustomer(null);
+        }
+        if (inspectingCustomer) setInspectingCustomer(null);
+        if (inspectingAssessment) setInspectingAssessment(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isProvisionUserOpen, isCreateCustomerOpen, inspectingCustomer, inspectingAssessment]);
+
   // Assessment Count Helpers
   const submittedAssessmentsCount = assessments.filter(
     (a) => a.status === "SUBMITTED" || a.status === "CALCULATED" || a.status === "COMPLETED"
@@ -614,21 +631,31 @@ export const AdminWorkspace: React.FC = () => {
             <div className="p-4 sm:p-5 border-b border-[#E2E6EE] bg-white flex flex-col md:flex-row items-center justify-between gap-3">
               <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
                 <div className="relative w-full sm:w-72">
-                  <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#667085]" />
+                  <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#5B6579]" aria-hidden="true" />
                   <input
                     type="text"
                     placeholder="Search users by name or email..."
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-[#F7F8FA] border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] placeholder-[#8A94A6] focus:outline-none focus:ring-2 focus:ring-[#008638]"
+                    className="w-full pl-9 pr-8 py-2 bg-[#F7F8FA] border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] placeholder-[#8A94A6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors duration-150"
                   />
+                  {userSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setUserSearch("")}
+                      aria-label="Clear user search"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8A94A6] hover:text-[#172033] p-0.5 rounded cursor-pointer"
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Role Filter */}
                 <select
                   value={userRoleFilter}
                   onChange={(e) => setUserRoleFilter(e.target.value)}
-                  className="w-full sm:w-auto px-3 py-2 bg-white border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] focus:outline-none focus:ring-2 focus:ring-[#008638]"
+                  className="w-full sm:w-auto px-3 py-2 bg-white border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors duration-150 cursor-pointer"
                 >
                   <option value="ALL">All Roles ({usersList.length})</option>
                   <option value="PLATFORM_ADMIN">Platform Admin</option>
@@ -642,7 +669,7 @@ export const AdminWorkspace: React.FC = () => {
                 <select
                   value={userStatusFilter}
                   onChange={(e) => setUserStatusFilter(e.target.value as any)}
-                  className="w-full sm:w-auto px-3 py-2 bg-white border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] focus:outline-none focus:ring-2 focus:ring-[#008638]"
+                  className="w-full sm:w-auto px-3 py-2 bg-white border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors duration-150 cursor-pointer"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="ACTIVE">Active Accounts</option>
@@ -658,7 +685,7 @@ export const AdminWorkspace: React.FC = () => {
                     setProvisionForm({ full_name: "", email: "", role: assignableRoles[0] || "CUSTOMER_USER", customer_id: user?.customer_id || "" });
                     setIsProvisionUserOpen(true);
                   }}
-                  className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-[#008638] text-white font-bold text-xs hover:bg-[#006B2D] transition shadow-xs cursor-pointer shrink-0"
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-[#008638] text-white font-bold text-xs hover:bg-[#006B2D] transition-colors duration-150 shadow-xs cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1"
                 >
                   <UserPlus className="h-4 w-4" />
                   <span>Provision User</span>
@@ -681,6 +708,19 @@ export const AdminWorkspace: React.FC = () => {
                       ? "Check your search query or reset the role and status filters."
                       : "User accounts provisioned for your organization will appear here."}
                   </p>
+                  {(userSearch || userRoleFilter !== "ALL" || userStatusFilter !== "ALL") && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserSearch("");
+                        setUserRoleFilter("ALL");
+                        setUserStatusFilter("ALL");
+                      }}
+                      className="mt-3 inline-flex items-center px-3 py-1.5 rounded-lg border border-[#CBD2DE] bg-white text-xs font-semibold text-[#172033] hover:bg-[#F1F3F7] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors duration-150"
+                    >
+                      Clear Filters
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
