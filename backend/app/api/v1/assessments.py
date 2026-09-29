@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_tenant_id, get_current_user_optional, get_db
 from app.core.audit import log_audit_event
@@ -22,6 +22,7 @@ from app.schemas.calculation import (
 )
 from app.services.assessment_service import AssessmentService
 from app.services.calculation_service import CalculationService
+from app.services.deliverable_service import DeliverableService
 
 router = APIRouter()
 
@@ -308,3 +309,54 @@ async def delete_assessment(
         status="SUCCESS",
     )
     await db.commit()
+
+
+@router.get(
+    "/{assessment_id}/deliverables/csv",
+    summary="Download finalized Q01-Q22 responses export in CSV format",
+    response_class=Response,
+)
+async def download_assessment_csv(
+    assessment_id: str,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+):
+    assessment = await DeliverableService.get_assessment_for_deliverable(
+        db, tenant_id, assessment_id
+    )
+    if not assessment.response:
+        raise EntityNotFoundError("AssessmentResponse", f"for assessment {assessment_id}")
+    csv_content = DeliverableService.generate_csv(assessment)
+    filename = f"assessment_{assessment_id}_responses.csv"
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )
+
+
+@router.get(
+    "/{assessment_id}/deliverables/pdf",
+    summary="Download Executive Customer Assessment Report in PDF format",
+    response_class=Response,
+)
+async def download_assessment_pdf(
+    assessment_id: str,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+):
+    assessment = await DeliverableService.get_assessment_for_deliverable(
+        db, tenant_id, assessment_id
+    )
+    pdf_bytes = DeliverableService.generate_pdf(assessment)
+    filename = f"DATAEKO_meshIQ_Executive_Report_{assessment_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )
+

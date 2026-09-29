@@ -176,6 +176,10 @@ export const api = {
 
   getCurrentUser: () => request<TokenResponse>("/auth/me"),
 
+  // Deliverables
+  getAssessmentCsvUrl: (assessmentId: string) => `${API_BASE}/assessments/${assessmentId}/deliverables/csv`,
+  getAssessmentPdfUrl: (assessmentId: string) => `${API_BASE}/assessments/${assessmentId}/deliverables/pdf`,
+
   // Audit Events
   listAuditEvents: (params?: { limit?: number; event_type?: string; resource_type?: string }) => {
     const query = new URLSearchParams();
