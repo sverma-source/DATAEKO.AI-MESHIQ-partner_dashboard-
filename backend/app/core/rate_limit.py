@@ -225,3 +225,60 @@ async def rate_limit_calculation(
             window_seconds=60,
         )
 
+
+async def rate_limit_forgot_password(request: Request) -> None:
+    """
+    Rate limiting dependency for POST /auth/forgot-password.
+    Enforces maximum 5 attempts per minute per resolved client IP to prevent abuse/enumeration.
+    """
+    if not settings.RATE_LIMIT_ENABLED:
+        return
+
+    client_ip = get_trusted_client_ip(request)
+    key = f"auth:forgot-password:ip:{client_ip}"
+    limit = settings.RATE_LIMIT_LOGIN_PER_MINUTE
+
+    is_limited, remaining, retry_after = await limiter.check_rate_limit(
+        key=key, limit=limit, window_seconds=60
+    )
+
+    if is_limited:
+        logger.warning(
+            f"Rate limit exceeded on forgot-password for IP {client_ip}. Retry after {retry_after}s."
+        )
+        raise RateLimitExceededError(
+            message=f"Rate limit exceeded. Too many password reset requests. Please retry in {retry_after} seconds.",
+            retry_after_seconds=retry_after,
+            limit=limit,
+            window_seconds=60,
+        )
+
+
+async def rate_limit_credential_redemption(request: Request) -> None:
+    """
+    Rate limiting dependency for POST /auth/accept-invitation and POST /auth/reset-password.
+    Enforces maximum 10 attempts per minute per resolved client IP to protect against token brute forcing.
+    """
+    if not settings.RATE_LIMIT_ENABLED:
+        return
+
+    client_ip = get_trusted_client_ip(request)
+    key = f"auth:redemption:ip:{client_ip}"
+    limit = 10
+
+    is_limited, remaining, retry_after = await limiter.check_rate_limit(
+        key=key, limit=limit, window_seconds=60
+    )
+
+    if is_limited:
+        logger.warning(
+            f"Rate limit exceeded on credential redemption for IP {client_ip}. Retry after {retry_after}s."
+        )
+        raise RateLimitExceededError(
+            message=f"Rate limit exceeded. Too many redemption attempts. Please retry in {retry_after} seconds.",
+            retry_after_seconds=retry_after,
+            limit=limit,
+            window_seconds=60,
+        )
+
+

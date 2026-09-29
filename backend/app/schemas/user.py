@@ -14,11 +14,11 @@ class UserBase(BaseModel):
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str
     full_name: str
     role: str = "CUSTOMER_USER"
     tenant_id: Optional[str] = None
     customer_id: Optional[str] = None
+    password: Optional[str] = None
 
 
 class UserUpdate(BaseModel):

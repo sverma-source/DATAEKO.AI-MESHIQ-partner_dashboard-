@@ -205,7 +205,7 @@ describe("AdminWorkspace Component (Batch 4B User & Customer Governance Mutation
       email: "new.user@acme.com",
       full_name: "New User",
       role: "CUSTOMER_USER",
-      is_active: true,
+      is_active: false,
     });
 
     renderWithRole("PARTNER_ADMIN");
@@ -219,11 +219,11 @@ describe("AdminWorkspace Component (Batch 4B User & Customer Governance Mutation
     fireEvent.click(provisionBtn);
 
     expect(screen.getByText("Provision New User Account")).toBeInTheDocument();
+    expect(screen.getByText(/Secure Invitation Lifecycle/i)).toBeInTheDocument();
 
     // Fill form
     fireEvent.change(screen.getByPlaceholderText("e.g. Jane Doe"), { target: { value: "New User" } });
     fireEvent.change(screen.getByPlaceholderText("jane@company.com"), { target: { value: "new.user@acme.com" } });
-    fireEvent.change(screen.getByPlaceholderText("••••••••••••"), { target: { value: "SecurePass123!" } });
 
     // Select role
     const roleSelects = screen.getAllByRole("combobox");
@@ -240,7 +240,6 @@ describe("AdminWorkspace Component (Batch 4B User & Customer Governance Mutation
         full_name: "New User",
         email: "new.user@acme.com",
         role: "CUSTOMER_USER",
-        password: "SecurePass123!",
       });
     });
   });
@@ -260,7 +259,6 @@ describe("AdminWorkspace Component (Batch 4B User & Customer Governance Mutation
     fireEvent.click(screen.getByRole("button", { name: /Provision User/i }));
     fireEvent.change(screen.getByPlaceholderText("e.g. Jane Doe"), { target: { value: "Existing User" } });
     fireEvent.change(screen.getByPlaceholderText("jane@company.com"), { target: { value: "admin@enterprise.com" } });
-    fireEvent.change(screen.getByPlaceholderText("••••••••••••"), { target: { value: "SecurePass123!" } });
 
     fireEvent.click(screen.getByRole("button", { name: "Provision Account" }));
 

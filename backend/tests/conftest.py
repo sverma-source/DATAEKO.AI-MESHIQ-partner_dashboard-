@@ -12,12 +12,20 @@ from sqlalchemy.ext.asyncio import (
 from app.api.deps import DEFAULT_TENANT_ID, get_db
 from app.core.rbac import Role
 from app.core.security import get_password_hash
+from app.core.rate_limit import limiter
 from app.main import app
 from app.models.base import Base
 from app.models.tenant import Tenant
 from app.models.user import User
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+
+@pytest.fixture(autouse=True)
+def reset_global_rate_limiter():
+    limiter.reset()
+    yield
+    limiter.reset()
 
 test_engine: AsyncEngine = create_async_engine(
     TEST_DATABASE_URL,

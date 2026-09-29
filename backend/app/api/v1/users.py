@@ -1,3 +1,4 @@
+import secrets
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select, or_, desc
@@ -11,6 +12,7 @@ from app.core.security import get_password_hash
 from app.models.customer import Customer
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.services.credential_service import CredentialService
 
 router = APIRouter()
 
@@ -139,28 +141,23 @@ async def create_user(
             detail="A user with this email already exists.",
         )
 
-    # 5. Password validation
-    if len(payload.password) < 8:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Password must be at least 8 characters in length.",
-        )
+    # 5. Initialize user entity in INACTIVE state with random unusable initial hash
+    initial_hash = get_password_hash(payload.password) if (payload.password and len(payload.password) >= 8) else get_password_hash(secrets.token_hex(32))
 
-    # 6. Create new user entity with bcrypt hashed password
     new_user = User(
         email=payload.email.strip().lower(),
-        hashed_password=get_password_hash(payload.password),
+        hashed_password=initial_hash,
         full_name=payload.full_name.strip(),
         role=payload.role,
         tenant_id=target_tenant_id,
         customer_id=target_customer_id,
-        is_active=True,
+        is_active=False,
     )
     db.add(new_user)
     await db.flush()
     await db.refresh(new_user)
 
-    # 7. Append-only audit logging
+    # 6. Append-only audit logging
     audit_details = {
         "email": new_user.email,
         "role": new_user.role,
@@ -196,9 +193,56 @@ async def create_user(
             },
         )
 
+    # 7. Generate and send invitation token via EmailService
+    await CredentialService.create_invitation(
+        db=db,
+        user=new_user,
+        actor_id=current_user.id,
+    )
+
     await db.commit()
 
     return UserResponse.model_validate(new_user)
+
+
+@router.post(
+    "/{user_id}/resend-invitation",
+    summary="Resend an invitation email to an invited user",
+)
+async def resend_invitation(
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    tenant_id: str = Depends(get_current_tenant_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Resends an invitation email for an inactive user, invalidating prior invitation tokens.
+    """
+    if current_user.role in [Role.CUSTOMER_USER.value, Role.CONSULTANT.value]:
+        raise PermissionDeniedError("You do not have permission to resend invitations.")
+
+    stmt = select(User).where(User.id == user_id)
+    if current_user.role != Role.PLATFORM_ADMIN.value:
+        stmt = stmt.where(User.tenant_id == current_user.tenant_id)
+    if current_user.role == Role.CUSTOMER_ADMIN.value:
+        if not current_user.customer_id:
+            raise PermissionDeniedError("Customer administrator has no assigned customer organization scope.")
+        stmt = stmt.where(User.customer_id == current_user.customer_id)
+
+    target_user = (await db.execute(stmt)).scalar_one_or_none()
+    if not target_user:
+        raise EntityNotFoundError("User", user_id)
+
+    if target_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User account is already active and cannot be reinvited.",
+        )
+
+    await CredentialService.create_invitation(db=db, user=target_user, actor_id=current_user.id)
+    await db.commit()
+
+    return {"message": f"Invitation resent successfully to {target_user.email}."}
 
 
 @router.put(

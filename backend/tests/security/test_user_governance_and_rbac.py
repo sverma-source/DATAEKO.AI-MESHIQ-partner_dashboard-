@@ -188,6 +188,13 @@ async def test_user_governance_and_rbac_boundaries(client: AsyncClient, db_sessi
     # -------------------------------------------------------------
     # 9. USER DEACTIVATION & AUTHENTICATION BLOCK
     # -------------------------------------------------------------
+    # Activate user first (since Batch 4D provisions as invited/inactive)
+    await client.put(
+        f"/api/v1/users/{new_user_id}",
+        json={"is_active": True},
+        headers=headers_partner_a,
+    )
+
     # Deactivate user
     deact_res = await client.put(
         f"/api/v1/users/{new_user_id}",

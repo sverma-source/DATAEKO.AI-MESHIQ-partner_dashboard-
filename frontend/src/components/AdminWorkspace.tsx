@@ -94,7 +94,6 @@ export const AdminWorkspace: React.FC = () => {
     full_name: "",
     email: "",
     role: "CUSTOMER_USER" as Role,
-    password: "",
     customer_id: "",
   });
   const [isSubmittingUser, setIsSubmittingUser] = useState<boolean>(false);
@@ -360,10 +359,6 @@ export const AdminWorkspace: React.FC = () => {
       setUserFormError("Please enter a valid corporate email address.");
       return;
     }
-    if (!provisionForm.password || provisionForm.password.length < 8) {
-      setUserFormError("Password must be at least 8 characters long.");
-      return;
-    }
 
     try {
       setIsSubmittingUser(true);
@@ -371,7 +366,6 @@ export const AdminWorkspace: React.FC = () => {
         full_name: provisionForm.full_name.trim(),
         email: provisionForm.email.trim(),
         role: user?.role === "CUSTOMER_ADMIN" ? "CUSTOMER_USER" : provisionForm.role,
-        password: provisionForm.password,
       };
       if (user?.role === "CUSTOMER_ADMIN") {
         payload.customer_id = user.customer_id;
@@ -381,9 +375,9 @@ export const AdminWorkspace: React.FC = () => {
 
       await api.createUser(payload);
 
-      setSuccessMessage(`User account for ${provisionForm.email} provisioned successfully.`);
+      setSuccessMessage(`Invitation email sent to ${provisionForm.email}. The user will set their initial password upon acceptance.`);
       setIsProvisionUserOpen(false);
-      setProvisionForm({ full_name: "", email: "", role: "CUSTOMER_USER", password: "", customer_id: "" });
+      setProvisionForm({ full_name: "", email: "", role: assignableRoles[0] || "CUSTOMER_USER", customer_id: user?.customer_id || "" });
       await fetchGovernanceData();
     } catch (err: any) {
       if (err.status === 409 || err.message?.includes("already exists")) {
@@ -657,7 +651,7 @@ export const AdminWorkspace: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setUserFormError(null);
-                    setProvisionForm({ full_name: "", email: "", role: assignableRoles[0] || "CUSTOMER_USER", password: "", customer_id: user?.customer_id || "" });
+                    setProvisionForm({ full_name: "", email: "", role: assignableRoles[0] || "CUSTOMER_USER", customer_id: user?.customer_id || "" });
                     setIsProvisionUserOpen(true);
                   }}
                   className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-[#008638] text-white font-bold text-xs hover:bg-[#006B2D] transition shadow-xs cursor-pointer shrink-0"
@@ -757,6 +751,25 @@ export const AdminWorkspace: React.FC = () => {
                                   <Edit2 className="h-3 w-3" />
                                   <span>Role</span>
                                 </button>
+
+                                {!u.is_active && (
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      try {
+                                        await api.resendInvitation(u.id);
+                                        setSuccessMessage(`Invitation email resent successfully to ${u.email}.`);
+                                      } catch (err: any) {
+                                        setError(err.message || "Failed to resend invitation.");
+                                      }
+                                    }}
+                                    className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-md bg-white border border-[#CBD2DE] text-[#008638] font-semibold text-xs hover:border-[#008638] hover:bg-[#EEF8F0] transition cursor-pointer"
+                                    title="Resend Invitation"
+                                  >
+                                    <Mail className="h-3 w-3" />
+                                    <span>Resend</span>
+                                  </button>
+                                )}
 
                                 <button
                                   type="button"
@@ -1296,19 +1309,11 @@ export const AdminWorkspace: React.FC = () => {
                 </div>
               ) : null}
 
-              <div>
-                <label className="block text-[11px] font-bold text-[#172033] uppercase mb-1">
-                  Initial Password (Min 8 Characters) *
-                </label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={provisionForm.password}
-                  onChange={(e) => setProvisionForm({ ...provisionForm, password: e.target.value })}
-                  placeholder="••••••••••••"
-                  className="w-full px-3 py-2 bg-[#F7F8FA] border border-[#CBD2DE] rounded-lg font-medium text-[#172033] focus:outline-none focus:ring-2 focus:ring-[#008638]"
-                />
+              <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg text-emerald-900 text-xs flex items-start space-x-2">
+                <Mail className="h-4 w-4 text-[#008638] shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  <strong>Secure Invitation Lifecycle:</strong> An invitation email with a single-use, 24-hour activation link will be sent to the user&apos;s email address. The invited user will set their initial password upon accepting the invitation.
+                </div>
               </div>
 
               <div className="pt-2 flex items-center justify-end space-x-2">

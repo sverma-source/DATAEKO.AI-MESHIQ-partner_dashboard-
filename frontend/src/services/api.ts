@@ -204,6 +204,30 @@ export const api = {
 
   getCurrentUser: () => request<TokenResponse>("/auth/me"),
 
+  // Batch 4D: Credential Lifecycle
+  acceptInvitation: (payload: { token: string; new_password: string }) =>
+    request<{ message: string }>("/auth/accept-invitation", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  forgotPassword: (payload: { email: string }) =>
+    request<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  resetPassword: (payload: { token: string; new_password: string }) =>
+    request<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  resendInvitation: (userId: string) =>
+    request<{ message: string }>(`/users/${userId}/resend-invitation`, {
+      method: "POST",
+    }),
+
   // Deliverables
   getAssessmentCsvUrl: (assessmentId: string) => `${API_BASE}/assessments/${assessmentId}/deliverables/csv`,
   getAssessmentPdfUrl: (assessmentId: string) => `${API_BASE}/assessments/${assessmentId}/deliverables/pdf`,

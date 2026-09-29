@@ -7,12 +7,25 @@ from app.api.deps import get_current_user, get_db
 from app.config import settings
 from app.core.audit import log_audit_event
 from app.core.errors import AuthenticationError
-from app.core.rate_limit import get_trusted_client_ip, rate_limit_login
+from app.core.rate_limit import (
+    get_trusted_client_ip,
+    rate_limit_credential_redemption,
+    rate_limit_forgot_password,
+    rate_limit_login,
+)
 from app.core.rbac import ROLE_PERMISSIONS, Role
 from app.core.security import create_access_token, verify_password
 from app.models.user import User
-from app.schemas.auth import LoginRequest, AuthResponse
+from app.schemas.auth import (
+    AcceptInvitationRequest,
+    AuthResponse,
+    ForgotPasswordRequest,
+    GenericMessageResponse,
+    LoginRequest,
+    ResetPasswordRequest,
+)
 from app.schemas.user import UserResponse
+from app.services.credential_service import CredentialService
 
 router = APIRouter()
 
@@ -145,3 +158,80 @@ async def get_current_user_profile(
         permissions=user_perms,
         expires_in_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
     )
+
+
+@router.post(
+    "/accept-invitation",
+    response_model=GenericMessageResponse,
+    summary="Accept an invitation and set initial password",
+)
+async def accept_invitation(
+    request: Request,
+    payload: AcceptInvitationRequest,
+    _rate_limit: None = Depends(rate_limit_credential_redemption),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Redeems a single-use invitation token, sets the user's initial bcrypt password,
+    and activates the user account.
+    """
+    client_ip = get_trusted_client_ip(request)
+    await CredentialService.accept_invitation(
+        db=db,
+        raw_token=payload.token,
+        new_password=payload.new_password,
+        client_ip=client_ip,
+    )
+    return GenericMessageResponse(message="Invitation accepted successfully. You can now log in.")
+
+
+@router.post(
+    "/forgot-password",
+    response_model=GenericMessageResponse,
+    summary="Request a password reset link",
+)
+async def forgot_password(
+    request: Request,
+    payload: ForgotPasswordRequest,
+    _rate_limit: None = Depends(rate_limit_forgot_password),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Initiates a password reset flow.
+    Always returns a generic success message to prevent user enumeration attacks.
+    """
+    client_ip = get_trusted_client_ip(request)
+    await CredentialService.request_password_reset(
+        db=db,
+        email=payload.email,
+        client_ip=client_ip,
+    )
+    return GenericMessageResponse(
+        message="If the account exists, password reset instructions have been sent."
+    )
+
+
+@router.post(
+    "/reset-password",
+    response_model=GenericMessageResponse,
+    summary="Reset password using a valid reset token",
+)
+async def reset_password(
+    request: Request,
+    payload: ResetPasswordRequest,
+    _rate_limit: None = Depends(rate_limit_credential_redemption),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Redeems a single-use password reset token and updates the user's password.
+    Rejects reset for deactivated accounts.
+    """
+    client_ip = get_trusted_client_ip(request)
+    await CredentialService.reset_password(
+        db=db,
+        raw_token=payload.token,
+        new_password=payload.new_password,
+        client_ip=client_ip,
+    )
+    return GenericMessageResponse(message="Password reset successfully. You can now log in.")
+

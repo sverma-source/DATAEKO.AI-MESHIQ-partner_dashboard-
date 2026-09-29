@@ -6,6 +6,7 @@ from app.models.customer import Customer
 from app.models.assessment import Assessment, AssessmentStatus
 from app.models.assessment_response import AssessmentResponse
 from app.models.calculation_snapshot import CalculationSnapshot
+from app.models.user_credential_token import UserCredentialToken, TokenType
 
 __all__ = [
     "Base",
@@ -19,4 +20,6 @@ __all__ = [
     "AssessmentStatus",
     "AssessmentResponse",
     "CalculationSnapshot",
+    "UserCredentialToken",
+    "TokenType",
 ]
