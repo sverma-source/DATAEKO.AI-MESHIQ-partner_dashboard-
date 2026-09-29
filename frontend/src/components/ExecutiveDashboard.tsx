@@ -283,196 +283,262 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           tabIndex={0}
           className="space-y-8 focus:outline-hidden"
         >
-          {/* Top KPI Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* KPI 1: Total Quantified Operational Labor Cost */}
-            <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-[#38B449] bg-white p-6 shadow-xs hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
-                  Operational Labor Cost
-                </span>
-                <ProvenanceBadge
-                  provenance="CALCULATED_RESULT"
-                  state={metrics.total_quantified_labor_cost?.state || "VALID"}
-                  formulaCode={viewMode === "consultant" ? "C_TOTAL = C_ADMIN + C_TRB" : undefined}
-                />
+          {/* A. PRIMARY EXECUTIVE HEADLINE: Core Economic Baseline */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#38B449]" />
+                <h2 className="text-sm font-bold text-[#172033] uppercase tracking-wider">
+                  Primary Economic Headline
+                </h2>
               </div>
-              <div className="mt-3 flex items-baseline justify-between">
-                <span className="text-3xl font-black text-[#172033] font-mono">
-                  {formatCurrency(summary.total_operational_labor_cost)}
-                </span>
-                <span className="text-xs font-semibold text-[#667085]">/ year</span>
-              </div>
-              <p className="mt-2 text-xs text-[#667085]">
-                Calculated from modeled staff hours ({formatNumber((summary.admin_annual_hours || 0) + (summary.troubleshooting_annual_hours || 0))} hrs) × loaded hourly rate (${loadedHourlyRate.toFixed(2)}/hr).
-              </p>
-              <div className="mt-4 pt-3 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#667085]">
-                <span>Admin: {formatCurrency(summary.admin_annual_cost)}</span>
-                <span>•</span>
-                <span>Troubleshooting: {formatCurrency(summary.troubleshooting_annual_cost)}</span>
-              </div>
+              <span className="text-xs text-[#667085]">
+                Quantified Middleware Operations Baseline
+              </span>
             </div>
 
-            {/* KPI 2: Operational FTE Burden */}
-            <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-[#172033] bg-white p-6 shadow-xs hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
-                  Operational FTE Burden
-                </span>
-                <ProvenanceBadge
-                  provenance="CALCULATED_RESULT"
-                  state={metrics.operational_fte_burden?.state || "VALID"}
-                  formulaCode={viewMode === "consultant" ? "FTE = H_TOTAL / 2,080" : undefined}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Headline Card 1: Total Quantified Operational Labor Cost */}
+              <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-[#38B449] bg-white p-6 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
+                      Operational Labor Cost
+                    </span>
+                    <ProvenanceBadge
+                      provenance="CALCULATED_RESULT"
+                      state={metrics.total_quantified_labor_cost?.state || "VALID"}
+                      formulaCode={viewMode === "consultant" ? "C_TOTAL = C_ADMIN + C_TRB" : undefined}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-baseline justify-between">
+                    <span className="text-3xl sm:text-4xl font-black text-[#172033] font-mono tracking-tight">
+                      {formatCurrency(summary.total_operational_labor_cost)}
+                    </span>
+                    <span className="text-xs font-bold text-[#667085]">/ year</span>
+                  </div>
+                  <p className="mt-2 text-xs text-[#667085] leading-relaxed">
+                    Quantified engineering labor expenditure modeled across routine administration and reactive incident troubleshooting.
+                  </p>
+                </div>
+                <div className="mt-5 pt-3.5 border-t border-[#E2E6EE] flex flex-wrap items-center justify-between gap-2 text-xs text-[#667085]">
+                  <span>Admin: <strong className="text-[#172033]">{formatCurrency(summary.admin_annual_cost)}</strong></span>
+                  <span>•</span>
+                  <span>Troubleshooting: <strong className="text-[#172033]">{formatCurrency(summary.troubleshooting_annual_cost)}</strong></span>
+                  <span>•</span>
+                  <span>Rate: <strong className="text-[#172033]">${loadedHourlyRate.toFixed(2)}/hr</strong></span>
+                </div>
               </div>
-              <div className="mt-3 flex items-baseline justify-between">
-                <span className="text-3xl font-black text-[#172033] font-mono">
-                  {formatNumber(summary.operational_fte_burden, 2)} FTE
-                </span>
-                <span className="text-xs font-semibold text-[#667085]">
-                  ({formatNumber((summary.admin_annual_hours || 0) + (summary.troubleshooting_annual_hours || 0))} hrs/yr)
-                </span>
-              </div>
-              <p className="mt-2 text-xs text-[#667085]">
-                Full-time equivalent engineering capacity consumed by routine messaging maintenance and triage.
-              </p>
-              <div className="mt-4 pt-3 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#667085]">
-                <span>Working Standard: 2,080 hrs/yr</span>
-                <span className="font-semibold text-[#172033]">
-                  {(((summary.operational_fte_burden || 0)) * 100).toFixed(0)}% FTE equivalent
-                </span>
-              </div>
-            </div>
 
-            {/* KPI 3: Representative Single-Event Exposure */}
-            <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-amber-500 bg-white p-6 shadow-xs hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
-                  Single-Event Exposure
-                </span>
-                <ProvenanceBadge
-                  provenance={isExposureBenchmark ? "INDUSTRY_BENCHMARK" : "CALCULATED_RESULT"}
-                  state={exposureMetric?.state || "VALID"}
-                  formulaCode={viewMode === "consultant" ? "EXPOSURE = D_HOURS × R_IMPACT" : undefined}
-                />
-              </div>
-              <div className="mt-3 flex items-baseline justify-between">
-                <span className="text-3xl font-black text-[#172033] font-mono">
-                  {metrics.representative_single_event_exposure?.state === "NOT_MODELED" ||
-                  metrics.representative_single_event_exposure?.state === "INSUFFICIENT_DATA"
-                    ? "—"
-                    : formatCurrency(summary.representative_single_event_exposure)}
-                </span>
-                <span className="text-xs font-semibold text-[#667085]">/ event</span>
-              </div>
-              <div className="mt-2">
-                <span className="inline-flex text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                  Representative Single-Event Exposure
-                </span>
-                <p className="mt-1 text-xs text-[#667085]">
-                  Financial exposure for one major outage (Duration × Hourly Downtime Rate). <strong>Not annualized loss.</strong>
-                </p>
-              </div>
-              <div className="mt-4 pt-3 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#667085]">
-                <span>Duration: {answers.q14_disruption_duration || "1.13 hrs"}</span>
-                <span>•</span>
-                <span>{isExposureBenchmark ? "ITIC $300k/hr Benchmark" : "Customer Fact"}</span>
-              </div>
-            </div>
-
-            {/* KPI 4: Total Recoverable Labor Hours */}
-            <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-[#38B449] bg-white p-6 shadow-xs hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
-                  Total Recoverable Hours
-                </span>
-                <ProvenanceBadge
-                  provenance="SCENARIO_PROJECTION"
-                  state="VALID"
-                  formulaCode={viewMode === "consultant" ? "H_REC = 0.25·H_ADMIN + 0.25·H_TRB" : undefined}
-                />
-              </div>
-              <div className="mt-3 flex items-baseline justify-between">
-                <span className="text-3xl font-black text-[#008638] font-mono">
-                  {formatNumber(summary.total_recoverable_labor_hours)} hrs
-                </span>
-                <span className="text-xs font-semibold text-[#667085]">/ year</span>
-              </div>
-              <p className="mt-2 text-xs text-[#667085]">
-                Engineering capacity liberated under approved 50%×50% admin and 25% diagnostic acceleration.
-              </p>
-              <div className="mt-4 pt-3 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#667085]">
-                <span>Liberated Admin: {formatNumber((summary.admin_annual_hours || 0) * 0.25)} hrs</span>
-                <span>•</span>
-                <span>Liberated Triage: {formatNumber((summary.troubleshooting_annual_hours || 0) * 0.25)} hrs</span>
-              </div>
-            </div>
-
-            {/* KPI 5: Illustrative Economic Value */}
-            <div className="rounded-xl border border-[#A8E2B5] border-t-4 border-t-[#38B449] bg-gradient-to-br from-white to-[#EEF8F0] p-6 shadow-xs hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#008638] uppercase tracking-wider">
-                  Illustrative Economic Value
-                </span>
-                <ProvenanceBadge
-                  provenance="SCENARIO_PROJECTION"
-                  state="VALID"
-                  formulaCode={viewMode === "consultant" ? "SAVINGS = H_REC × R_HR" : undefined}
-                />
-              </div>
-              <div className="mt-3 flex items-baseline justify-between">
-                <span className="text-3xl font-black text-[#008638] font-mono">
-                  {formatCurrency(summary.illustrative_annual_labor_savings)}
-                </span>
-                <span className="text-xs font-bold text-[#008638]">/ year</span>
-              </div>
-              <div className="mt-2">
-                <span className="inline-flex text-[11px] font-bold text-[#008638] bg-[#EEF8F0] px-2 py-0.5 rounded border border-[#A8E2B5]">
-                  Illustrative Economic Value
-                </span>
-                <p className="mt-1 text-xs text-[#667085]">
-                  Scenario value of liberated hours. <strong>Not guaranteed cash savings or fixed ROI.</strong>
-                </p>
-              </div>
-              <div className="mt-4 pt-3 border-t border-[#A8E2B5]/50 flex items-center justify-between text-xs text-[#172033]">
-                <span>Value Rate: ${loadedHourlyRate.toFixed(2)}/hr</span>
-                <span className="font-bold text-[#008638]">Model Baseline</span>
-              </div>
-            </div>
-
-            {/* KPI 6: Customer-Reported Annual MQ Spend (Q21) */}
-            <div className="rounded-xl border border-[#E2E6EE] bg-white p-6 shadow-xs hover:shadow-sm transition-shadow">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
-                  Customer-Reported MQ Spend
-                </span>
-                <ProvenanceBadge
-                  provenance={q21IsUnknown ? "MODEL_ASSUMPTION" : "CUSTOMER_FACT"}
-                  state={q21IsUnknown ? "NOT_MODELED" : "VALID"}
-                />
-              </div>
-              <div className="mt-3 flex items-baseline justify-between">
-                <span className="text-3xl font-black text-[#172033] font-mono">
-                  {q21IsUnknown ? "Not provided" : formatCurrency(q21Value)}
-                </span>
-                {!q21IsUnknown && (
-                  <span className="text-xs font-semibold text-[#667085]">/ year</span>
-                )}
-              </div>
-              <p className="mt-2 text-xs text-[#667085]">
-                Customer-disclosed total licensing and vendor spend. <strong>Preserved as isolated customer fact; never synthesized or equated to operational labor.</strong>
-              </p>
-              <div className="mt-4 pt-3 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#667085]">
-                <span>Question Code: Q21</span>
-                <span className="font-bold text-[#172033]">
-                  {q21IsUnknown ? "Unstated Fact" : "Customer Fact"}
-                </span>
+              {/* Headline Card 2: Operational FTE Burden */}
+              <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-[#172033] bg-white p-6 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
+                      Operational FTE Burden
+                    </span>
+                    <ProvenanceBadge
+                      provenance="CALCULATED_RESULT"
+                      state={metrics.operational_fte_burden?.state || "VALID"}
+                      formulaCode={viewMode === "consultant" ? "FTE = H_TOTAL / 2,080" : undefined}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-baseline justify-between">
+                    <span className="text-3xl sm:text-4xl font-black text-[#172033] font-mono tracking-tight">
+                      {formatNumber(summary.operational_fte_burden, 2)} FTE
+                    </span>
+                    <span className="text-xs font-semibold text-[#667085]">
+                      ({formatNumber((summary.admin_annual_hours || 0) + (summary.troubleshooting_annual_hours || 0))} hrs/yr)
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-[#667085] leading-relaxed">
+                    Full-time equivalent engineering headcount consumed by routine middleware configuration, patching, and bridge-call triage.
+                  </p>
+                </div>
+                <div className="mt-5 pt-3.5 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#667085]">
+                  <span>Standard Benchmark: 2,080 hrs/yr</span>
+                  <span className="font-bold text-[#172033]">
+                    {(((summary.operational_fte_burden || 0)) * 100).toFixed(0)}% Dedicated FTE Capacity
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Decision-Support Visualizations */}
-          <div className="space-y-4">
+          {/* B. SECONDARY ECONOMIC INDICATORS: Exposure & Investment Context */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                <h2 className="text-sm font-bold text-[#172033] uppercase tracking-wider">
+                  Secondary Economic Indicators
+                </h2>
+              </div>
+              <span className="text-xs text-[#667085]">
+                Single-Event Consequence &amp; Customer-Disclosed Spend
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Secondary Card 1: Representative Single-Event Exposure */}
+              <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-amber-500 bg-white p-6 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
+                      Single-Event Exposure
+                    </span>
+                    <ProvenanceBadge
+                      provenance={isExposureBenchmark ? "INDUSTRY_BENCHMARK" : "CALCULATED_RESULT"}
+                      state={exposureMetric?.state || "VALID"}
+                      formulaCode={viewMode === "consultant" ? "EXPOSURE = D_HOURS × R_IMPACT" : undefined}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-baseline justify-between">
+                    <span className="text-3xl font-black text-[#172033] font-mono">
+                      {metrics.representative_single_event_exposure?.state === "NOT_MODELED" ||
+                      metrics.representative_single_event_exposure?.state === "INSUFFICIENT_DATA"
+                        ? "—"
+                        : formatCurrency(summary.representative_single_event_exposure)}
+                    </span>
+                    <span className="text-xs font-semibold text-[#667085]">/ event</span>
+                  </div>
+                  <div className="mt-2">
+                    <span className="inline-flex text-[11px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                      Representative Single-Event Exposure
+                    </span>
+                    <p className="mt-1.5 text-xs text-[#667085] leading-relaxed">
+                      Modeled financial impact of one major outage (Duration × Hourly Downtime Rate). <strong>Not annualized loss.</strong>
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-5 pt-3.5 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#667085]">
+                  <span>Duration: <strong className="text-[#172033]">{answers.q14_disruption_duration || "1.13 hrs"}</strong></span>
+                  <span>•</span>
+                  <span>{isExposureBenchmark ? "ITIC $300k/hr Benchmark" : "Customer Fact"}</span>
+                </div>
+              </div>
+
+              {/* Secondary Card 2: Customer-Reported Annual MQ Spend (Q21) */}
+              <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-slate-400 bg-white p-6 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
+                      Customer-Reported MQ Spend
+                    </span>
+                    <ProvenanceBadge
+                      provenance={q21IsUnknown ? "MODEL_ASSUMPTION" : "CUSTOMER_FACT"}
+                      state={q21IsUnknown ? "NOT_MODELED" : "VALID"}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-baseline justify-between">
+                    <span className="text-3xl font-black text-[#172033] font-mono">
+                      {q21IsUnknown ? "Not provided" : formatCurrency(q21Value)}
+                    </span>
+                    {!q21IsUnknown && (
+                      <span className="text-xs font-semibold text-[#667085]">/ year</span>
+                    )}
+                  </div>
+                  <div className="mt-2">
+                    <span className="inline-flex text-[11px] font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+                      Isolated Customer Fact (Q21)
+                    </span>
+                    <p className="mt-1.5 text-xs text-[#667085] leading-relaxed">
+                      Customer-disclosed total licensing and vendor spend. <strong>Preserved as isolated customer fact; never synthesized or equated to operational labor.</strong>
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-5 pt-3.5 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#667085]">
+                  <span>Question Code: Q21</span>
+                  <span className="font-bold text-[#172033]">
+                    {q21IsUnknown ? "Unstated Fact" : "Verified Customer Fact"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* C. CONTROLLED IMPROVEMENT SCENARIO: Capacity Recovery & Illustrative Value */}
+          <div className="rounded-2xl border border-[#A8E2B5] bg-gradient-to-br from-white to-[#EEF8F0] p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[#A8E2B5]/60 pb-3.5">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="h-4 w-4 text-[#008638]" />
+                <h2 className="text-sm font-bold text-[#008638] uppercase tracking-wider">
+                  meshIQ Controlled Improvement Scenario (Illustrative Simulation)
+                </h2>
+              </div>
+              <span className="inline-flex items-center text-[11px] font-bold text-[#008638] bg-white px-2.5 py-0.5 rounded-full border border-[#A8E2B5]">
+                50%×50% Admin • 25% MTTR Acceleration
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Scenario Card 1: Total Recoverable Labor Hours */}
+              <div className="rounded-xl border border-[#A8E2B5] bg-white p-5 shadow-2xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#008638] uppercase tracking-wider">
+                      Total Recoverable Hours
+                    </span>
+                    <ProvenanceBadge
+                      provenance="SCENARIO_PROJECTION"
+                      state="VALID"
+                      formulaCode={viewMode === "consultant" ? "H_REC = 0.25·H_ADMIN + 0.25·H_TRB" : undefined}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-baseline justify-between">
+                    <span className="text-3xl font-black text-[#008638] font-mono">
+                      {formatNumber(summary.total_recoverable_labor_hours)} hrs
+                    </span>
+                    <span className="text-xs font-bold text-[#667085]">/ year</span>
+                  </div>
+                  <p className="mt-2 text-xs text-[#667085] leading-relaxed">
+                    Engineering capacity liberated under approved automation and diagnostic acceleration levers.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#667085]">
+                  <span>Liberated Admin: <strong className="text-[#172033]">{formatNumber((summary.admin_annual_hours || 0) * 0.25)} hrs</strong></span>
+                  <span>•</span>
+                  <span>Liberated Triage: <strong className="text-[#172033]">{formatNumber((summary.troubleshooting_annual_hours || 0) * 0.25)} hrs</strong></span>
+                </div>
+              </div>
+
+              {/* Scenario Card 2: Illustrative Economic Value */}
+              <div className="rounded-xl border border-[#A8E2B5] bg-white p-5 shadow-2xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#008638] uppercase tracking-wider">
+                      Illustrative Economic Value
+                    </span>
+                    <ProvenanceBadge
+                      provenance="SCENARIO_PROJECTION"
+                      state="VALID"
+                      formulaCode={viewMode === "consultant" ? "SAVINGS = H_REC × R_HR" : undefined}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-baseline justify-between">
+                    <span className="text-3xl font-black text-[#008638] font-mono">
+                      {formatCurrency(summary.illustrative_annual_labor_savings)}
+                    </span>
+                    <span className="text-xs font-bold text-[#008638]">/ year</span>
+                  </div>
+                  <p className="mt-2 text-xs text-[#667085] leading-relaxed">
+                    Theoretical capacity value of recovered engineering hours. <strong>Not guaranteed cash savings or fixed ROI.</strong>
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#E2E6EE] flex items-center justify-between text-xs text-[#172033]">
+                  <span>Applied Loaded Rate: <strong>${loadedHourlyRate.toFixed(2)}/hr</strong></span>
+                  <span className="font-bold text-[#008638]">Standard Model Baseline</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-[#008638] bg-white/80 p-3 rounded-lg border border-[#A8E2B5]/60 leading-relaxed">
+              <strong>Scenario Governance Notice:</strong> The controlled improvement scenario models illustrative operational capacity liberation under standard meshIQ automation assumptions. It represents hypothetical efficiency potential and does not constitute a contractual commitment or cash savings guarantee.
+            </div>
+          </div>
+
+          {/* D. DECISION-SUPPORT VISUALIZATIONS */}
+          <div className="space-y-4 pt-2">
             <h2 className="text-lg font-bold text-[#172033]">
               Operational Baseline &amp; Scenario Visualizations
             </h2>

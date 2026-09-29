@@ -382,4 +382,31 @@ describe("Phase 6 Executive KPI Dashboard & Scenario Sandbox", () => {
     expect(screen.getAllByText("Single-Event Exposure")[0]).toBeInTheDocument();
     expect(screen.queryByText("$0")).not.toBeInTheDocument();
   });
+
+  it("verifies Batch 5A Executive KPI hierarchy grouping and scenario demarcation", () => {
+    render(
+      <ExecutiveDashboard
+        calculation={mockCalculation}
+        customer={mockCustomer}
+        answers={mockAnswers}
+        onReturnToWizard={vi.fn()}
+      />
+    );
+
+    // 1. Grouping headers
+    expect(screen.getByText("Primary Economic Headline")).toBeInTheDocument();
+    expect(screen.getByText("Secondary Economic Indicators")).toBeInTheDocument();
+    expect(screen.getByText(/meshIQ Controlled Improvement Scenario \(Illustrative Simulation\)/i)).toBeInTheDocument();
+
+    // 2. Scenario disclaimers
+    expect(screen.getByText(/Theoretical capacity value of recovered engineering hours/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scenario Governance Notice/i)).toBeInTheDocument();
+
+    // 3. Accessible charts regions
+    expect(screen.getByRole("region", { name: /Annual Labor Hours Composition chart/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Operational Labor Cost Distribution chart/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Illustrative Labor Recovery Model chart/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Operational and Governance Indicators summary/i })).toBeInTheDocument();
+  });
 });
+
