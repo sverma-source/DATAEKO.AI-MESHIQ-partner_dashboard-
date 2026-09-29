@@ -179,7 +179,15 @@ export default function LoginPage() {
                 <ShieldCheck className="h-3.5 w-3.5 mr-1 text-[#008638]" />
                 Development Quick Roles
               </p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => handleFillDevCredentials("client@dataeko.ai", "ClientPass123!")}
+                  className="text-left px-2.5 py-1.5 rounded bg-[#0D1322] hover:bg-[#0D1322]/80 border border-[#1E293B] text-slate-300 hover:text-white transition truncate cursor-pointer"
+                >
+                  <div className="font-medium text-[#8CC63E]">Client</div>
+                  <div className="text-[10px] text-slate-500 truncate">client@dataeko.ai</div>
+                </button>
                 <button
                   type="button"
                   onClick={() => handleFillDevCredentials("consultant@dataeko.ai", "Consultant123!")}

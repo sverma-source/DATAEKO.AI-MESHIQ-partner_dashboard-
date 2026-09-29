@@ -118,16 +118,24 @@ export default function AssessmentWizardPage() {
     }
   }, []);
 
-  // Check URL query parameters for assessment_id on mount
+  // Check URL query parameters for assessment_id on mount or load client's own assessment
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const urlAssessmentId = params.get("assessment_id");
       if (urlAssessmentId) {
         loadAssessmentById(urlAssessmentId);
+      } else if (user?.role === "CUSTOMER_USER") {
+        api.listAssessments()
+          .then((assList) => {
+            if (assList.length > 0) {
+              loadAssessmentById(assList[0].id);
+            }
+          })
+          .catch(() => {});
       }
     }
-  }, [loadAssessmentById]);
+  }, [loadAssessmentById, user]);
 
   // Fetch initial customer list on mount
   useEffect(() => {
@@ -470,17 +478,20 @@ export default function AssessmentWizardPage() {
                 <div className="flex items-center space-x-2 text-[#172033]">
                   <Building2 className="h-4 w-4 text-[#38B449] shrink-0" />
                   <span>
-                    Working in draft mode. Click{" "}
-                    <strong>Select/Create Customer</strong> to link this session to a verified enterprise account.
+                    {user?.role === "CUSTOMER_USER"
+                      ? "Enterprise Assessment Intake — Answer the discovery questions below."
+                      : "Working in draft mode. Click Select/Create Customer to link this session to a verified enterprise account."}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomerModalOpen(true)}
-                  className="px-3 py-1.5 rounded-md bg-[#008638] text-white font-semibold hover:bg-[#006B2D] transition-colors shrink-0 shadow-xs cursor-pointer"
-                >
-                  Select Customer
-                </button>
+                {user?.role !== "CUSTOMER_USER" && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomerModalOpen(true)}
+                    className="px-3 py-1.5 rounded-md bg-[#008638] text-white font-semibold hover:bg-[#006B2D] transition-colors shrink-0 shadow-xs cursor-pointer"
+                  >
+                    Select Customer
+                  </button>
+                )}
               </div>
             ) : (
               <div className="flex items-center justify-between rounded-xl bg-white p-3.5 border border-[#E2E6EE] text-xs shadow-xs">
@@ -495,13 +506,15 @@ export default function AssessmentWizardPage() {
                     )}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomerModalOpen(true)}
-                  className="px-3 py-1.5 rounded-md border border-[#CBD2DE] text-[#172033] font-medium hover:bg-[#F1F3F7] transition-colors shrink-0 text-xs"
-                >
-                  Switch Customer / Assessment
-                </button>
+                {user?.role !== "CUSTOMER_USER" && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomerModalOpen(true)}
+                    className="px-3 py-1.5 rounded-md border border-[#CBD2DE] text-[#172033] font-medium hover:bg-[#F1F3F7] transition-colors shrink-0 text-xs"
+                  >
+                    Switch Customer / Assessment
+                  </button>
+                )}
               </div>
             )}
 

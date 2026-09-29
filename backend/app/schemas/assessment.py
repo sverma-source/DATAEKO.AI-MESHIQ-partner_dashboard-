@@ -31,6 +31,7 @@ class AssessmentResponseSchema(AssessmentBase):
     id: str
     tenant_id: str
     customer_id: str
+    created_by_user_id: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

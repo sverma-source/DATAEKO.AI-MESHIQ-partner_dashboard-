@@ -20,7 +20,10 @@ logger = logging.getLogger(__name__)
 class AssessmentService:
     @staticmethod
     async def create_assessment(
-        db: AsyncSession, tenant_id: str, payload: AssessmentCreate
+        db: AsyncSession,
+        tenant_id: str,
+        payload: AssessmentCreate,
+        created_by_user_id: Optional[str] = None,
     ) -> Assessment:
         # Verify customer belongs to tenant
         customer_stmt = select(Customer).where(
@@ -33,6 +36,7 @@ class AssessmentService:
         assessment = Assessment(
             tenant_id=payload.tenant_id or tenant_id,
             customer_id=payload.customer_id,
+            created_by_user_id=created_by_user_id,
             title=payload.title,
             description=payload.description,
             status=payload.status or AssessmentStatus.DRAFT,
@@ -67,6 +71,7 @@ class AssessmentService:
         db: AsyncSession,
         tenant_id: str,
         customer_id: Optional[str] = None,
+        created_by_user_id: Optional[str] = None,
         skip: int = 0,
         limit: int = 100,
     ) -> List[Assessment]:
@@ -77,6 +82,8 @@ class AssessmentService:
         )
         if customer_id:
             stmt = stmt.where(Assessment.customer_id == customer_id)
+        if created_by_user_id:
+            stmt = stmt.where(Assessment.created_by_user_id == created_by_user_id)
         stmt = stmt.offset(skip)
         stmt = stmt.limit(limit)
         result = await db.execute(stmt)

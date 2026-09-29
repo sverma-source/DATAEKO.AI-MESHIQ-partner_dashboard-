@@ -3,8 +3,10 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_tenant_id, get_current_user_optional, get_db
 from app.core.audit import log_audit_event
-from app.core.errors import EntityNotFoundError
+from app.core.errors import EntityNotFoundError, PermissionDeniedError
 from app.core.rate_limit import rate_limit_calculation
+from app.core.rbac import Role
+from app.models.assessment import Assessment
 from app.models.user import User
 from app.schemas.assessment import (
     AssessmentCreate,
@@ -27,6 +29,17 @@ from app.services.deliverable_service import DeliverableService
 router = APIRouter()
 
 
+def check_assessment_access(
+    assessment: Assessment,
+    user_id: Optional[str],
+    user_role: Optional[str],
+) -> None:
+    """Enforces user-level ownership access for CUSTOMER_USER."""
+    if user_role == Role.CUSTOMER_USER.value:
+        if not assessment.created_by_user_id or assessment.created_by_user_id != user_id:
+            raise PermissionDeniedError("Access denied to this assessment.")
+
+
 @router.post(
     "",
     response_model=AssessmentResponseSchema,
@@ -39,12 +52,15 @@ async def create_assessment(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
-    assessment = await AssessmentService.create_assessment(db, tenant_id, payload)
+    user_id = current_user.id if current_user else None
+    assessment = await AssessmentService.create_assessment(
+        db, tenant_id, payload, created_by_user_id=user_id
+    )
     await log_audit_event(
         session=db,
         event_type="ASSESSMENT_CREATED",
         tenant_id=tenant_id,
-        user_id=current_user.id if current_user else None,
+        user_id=user_id,
         resource_type="Assessment",
         resource_id=assessment.id,
         status="SUCCESS",
@@ -65,9 +81,22 @@ async def list_assessments(
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    user_id = current_user.id if current_user else None
+    user_role = current_user.role if current_user else None
+    created_by_user_id = (
+        user_id
+        if user_role == Role.CUSTOMER_USER.value
+        else None
+    )
     return await AssessmentService.list_assessments(
-        db, tenant_id, customer_id=customer_id, skip=skip, limit=limit
+        db,
+        tenant_id,
+        customer_id=customer_id,
+        created_by_user_id=created_by_user_id,
+        skip=skip,
+        limit=limit,
     )
 
 
@@ -80,19 +109,30 @@ async def get_assessment(
     assessment_id: str,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    user_id = current_user.id if current_user else None
+    user_role = current_user.role if current_user else None
+
     assessment = await AssessmentService.get_assessment(
         db, tenant_id, assessment_id, load_details=True
     )
-    latest_snapshot = (
-        assessment.calculation_snapshots[0]
-        if assessment.calculation_snapshots
-        else None
-    )
+    check_assessment_access(assessment, user_id, user_role)
+
+    # For CUSTOMER_USER, sanitize latest_snapshot = None so internal economic metrics are never exposed
+    latest_snapshot = None
+    if user_role != Role.CUSTOMER_USER.value:
+        latest_snapshot = (
+            assessment.calculation_snapshots[0]
+            if assessment.calculation_snapshots
+            else None
+        )
+
     return AssessmentDetailResponse(
         id=assessment.id,
         tenant_id=assessment.tenant_id,
         customer_id=assessment.customer_id,
+        created_by_user_id=assessment.created_by_user_id,
         title=assessment.title,
         description=assessment.description,
         status=assessment.status,
@@ -117,6 +157,12 @@ async def update_assessment(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    user_id = current_user.id if current_user else None
+    user_role = current_user.role if current_user else None
+
+    existing = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
+    check_assessment_access(existing, user_id, user_role)
+
     assessment = await AssessmentService.update_assessment(
         db, tenant_id, assessment_id, payload
     )
@@ -124,7 +170,7 @@ async def update_assessment(
         session=db,
         event_type="ASSESSMENT_UPDATED",
         tenant_id=tenant_id,
-        user_id=current_user.id if current_user else None,
+        user_id=user_id,
         resource_type="Assessment",
         resource_id=assessment.id,
         status="SUCCESS",
@@ -146,6 +192,12 @@ async def save_assessment_responses(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    user_id = current_user.id if current_user else None
+    user_role = current_user.role if current_user else None
+
+    existing = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
+    check_assessment_access(existing, user_id, user_role)
+
     saved_resp = await AssessmentService.save_responses(
         db, tenant_id, assessment_id, payload
     )
@@ -153,7 +205,7 @@ async def save_assessment_responses(
         session=db,
         event_type="ASSESSMENT_RESPONSES_SAVED",
         tenant_id=tenant_id,
-        user_id=current_user.id if current_user else None,
+        user_id=user_id,
         resource_type="AssessmentResponse",
         resource_id=saved_resp.id,
         status="SUCCESS",
@@ -172,10 +224,15 @@ async def get_assessment_responses(
     assessment_id: str,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    user_id = current_user.id if current_user else None
+    user_role = current_user.role if current_user else None
+
     assessment = await AssessmentService.get_assessment(
         db, tenant_id, assessment_id, load_details=True
     )
+    check_assessment_access(assessment, user_id, user_role)
     if not assessment.response:
         raise EntityNotFoundError("AssessmentResponse", assessment_id)
     return assessment.response
@@ -192,18 +249,30 @@ async def submit_assessment_endpoint(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    user_id = current_user.id if current_user else None
+    user_role = current_user.role if current_user else None
+
+    existing = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
+    check_assessment_access(existing, user_id, user_role)
+
     assessment = await AssessmentService.submit_assessment(
-        db, tenant_id, assessment_id, user_id=current_user.id if current_user else None
+        db, tenant_id, assessment_id, user_id=user_id
     )
-    latest_snapshot = (
-        assessment.calculation_snapshots[0]
-        if assessment.calculation_snapshots
-        else None
-    )
+
+    # For CUSTOMER_USER, sanitize latest_snapshot = None
+    latest_snapshot = None
+    if user_role != Role.CUSTOMER_USER.value:
+        latest_snapshot = (
+            assessment.calculation_snapshots[0]
+            if assessment.calculation_snapshots
+            else None
+        )
+
     return AssessmentDetailResponse(
         id=assessment.id,
         tenant_id=assessment.tenant_id,
         customer_id=assessment.customer_id,
+        created_by_user_id=assessment.created_by_user_id,
         title=assessment.title,
         description=assessment.description,
         status=assessment.status,
@@ -228,6 +297,9 @@ async def calculate_assessment_endpoint(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+        raise PermissionDeniedError("Calculation execution is restricted to consultants and platform administrators.")
+
     calc_result = await CalculationService.run_calculation(db, tenant_id, assessment_id)
     await log_audit_event(
         session=db,
@@ -255,7 +327,11 @@ async def list_calculation_snapshots(
     assessment_id: str,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+        raise PermissionDeniedError("Calculation snapshots are restricted to consultants and platform administrators.")
+
     await AssessmentService.get_assessment(db, tenant_id, assessment_id)
     return await CalculationService.list_snapshots(db, tenant_id, assessment_id)
 
@@ -269,7 +345,11 @@ async def get_latest_calculation_snapshot(
     assessment_id: str,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+        raise PermissionDeniedError("Calculation snapshots are restricted to consultants and platform administrators.")
+
     return await CalculationService.get_latest_snapshot(db, tenant_id, assessment_id)
 
 
@@ -284,6 +364,9 @@ async def delete_assessment(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+        raise PermissionDeniedError("Assessment deletion is restricted to consultants and platform administrators.")
+
     await AssessmentService.delete_assessment(db, tenant_id, assessment_id)
     await log_audit_event(
         session=db,
@@ -306,7 +389,11 @@ async def download_assessment_csv(
     assessment_id: str,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+        raise PermissionDeniedError("Assessment deliverables are restricted to consultants and platform administrators.")
+
     assessment = await DeliverableService.get_assessment_for_deliverable(
         db, tenant_id, assessment_id
     )
@@ -332,7 +419,11 @@ async def download_assessment_pdf(
     assessment_id: str,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+        raise PermissionDeniedError("Executive assessment deliverables are restricted to consultants and platform administrators.")
+
     assessment = await DeliverableService.get_assessment_for_deliverable(
         db, tenant_id, assessment_id
     )
@@ -345,4 +436,5 @@ async def download_assessment_pdf(
             "Content-Disposition": f'attachment; filename="{filename}"',
         },
     )
+
 

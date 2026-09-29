@@ -62,8 +62,7 @@ async def lifespan(app: FastAPI):
             # Seed default development users if they don't exist
             user_stmt = select(User).where(User.email == "consultant@dataeko.ai")
             user_res = await session.execute(user_stmt)
-            default_user = user_res.scalar_one_or_none()
-            if not default_user:
+            if not user_res.scalar_one_or_none():
                 consultant_user = User(
                     id="00000000-0000-0000-0000-000000000002",
                     email="consultant@dataeko.ai",
@@ -75,6 +74,9 @@ async def lifespan(app: FastAPI):
                 )
                 session.add(consultant_user)
 
+            admin_stmt = select(User).where(User.email == "admin@dataeko.ai")
+            admin_res = await session.execute(admin_stmt)
+            if not admin_res.scalar_one_or_none():
                 admin_user = User(
                     id="00000000-0000-0000-0000-000000000003",
                     email="admin@dataeko.ai",
@@ -85,6 +87,20 @@ async def lifespan(app: FastAPI):
                     is_active=True,
                 )
                 session.add(admin_user)
+
+            client_stmt = select(User).where(User.email == "client@dataeko.ai")
+            client_res = await session.execute(client_stmt)
+            if not client_res.scalar_one_or_none():
+                client_user = User(
+                    id="00000000-0000-0000-0000-000000000007",
+                    email="client@dataeko.ai",
+                    hashed_password=get_password_hash("ClientPass123!"),
+                    full_name="Assessment Client",
+                    role=Role.CUSTOMER_USER.value,
+                    tenant_id=DEFAULT_TENANT_ID,
+                    is_active=True,
+                )
+                session.add(client_user)
 
             await session.commit()
 
