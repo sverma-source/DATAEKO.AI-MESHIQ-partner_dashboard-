@@ -15,7 +15,9 @@ vi.mock("../services/api", () => ({
     listCustomers: vi.fn().mockResolvedValue([
       { id: "cust-1", name: "Apex Financial", industry: "Banking" },
     ]),
+    listUsers: vi.fn().mockResolvedValue([]),
     listAssessments: vi.fn().mockResolvedValue([]),
+    listAuditEvents: vi.fn().mockResolvedValue([]),
     createAssessment: vi.fn().mockResolvedValue({
       id: "ass-1",
       customer_id: "cust-1",
@@ -92,8 +94,8 @@ describe("Role-Aware Application Workspaces", () => {
     });
     expect(screen.getByText("Platform Superadmin")).toBeInTheDocument();
     expect(screen.getAllByText("Platform Administration").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("User Visibility & Identity")).toBeInTheDocument();
-    expect(screen.getByText("Audit Trail & Compliance")).toBeInTheDocument();
+    expect(screen.getByText(/User Directory/i)).toBeInTheDocument();
+    expect(screen.getByText(/Audit Trail & Compliance/i)).toBeInTheDocument();
 
     // Client wizard questions should NOT be rendered
     expect(screen.queryByRole("heading", { name: "A. Environment & Cost Baseline" })).not.toBeInTheDocument();

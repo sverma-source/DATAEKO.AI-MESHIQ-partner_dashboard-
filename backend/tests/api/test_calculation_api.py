@@ -3,9 +3,9 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_calculation_api_and_snapshot_persistence(client: AsyncClient):
+async def test_calculation_api_and_snapshot_persistence(client: AsyncClient, auth_headers: dict):
     # 1. Setup Customer & Assessment
-    cust_res = await client.post("/api/v1/customers", json={"name": "Vanguard Enterprises"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Vanguard Enterprises"}, headers=auth_headers)
     customer_id = cust_res.json()["id"]
 
     ass_res = await client.post(
@@ -85,9 +85,9 @@ async def test_calculation_api_and_snapshot_persistence(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_calculation_with_empty_responses(client: AsyncClient):
+async def test_calculation_with_empty_responses(client: AsyncClient, auth_headers: dict):
     # Setup Customer & Empty Assessment
-    cust_res = await client.post("/api/v1/customers", json={"name": "Empty Test Corp"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Empty Test Corp"}, headers=auth_headers)
     customer_id = cust_res.json()["id"]
     ass_res = await client.post(
         "/api/v1/assessments",

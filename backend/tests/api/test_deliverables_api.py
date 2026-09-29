@@ -67,13 +67,14 @@ def sample_payload():
 async def test_csv_deliverable_generation_and_content(
     client: AsyncClient,
     sample_payload: dict,
+    auth_headers: dict,
 ):
     """
     Test that an authorized user can generate a valid, deterministic CSV deliverable
     for a submitted assessment containing all 22 questions and metadata.
     """
     # 1. Setup Customer & Assessment
-    cust_res = await client.post("/api/v1/customers", json={"name": "Acme Global Financial"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Acme Global Financial"}, headers=auth_headers)
     customer_id = cust_res.json()["id"]
 
     create_res = await client.post(
@@ -156,12 +157,13 @@ async def test_csv_deliverable_generation_and_content(
 async def test_pdf_deliverable_requires_calculation_snapshot(
     client: AsyncClient,
     sample_payload: dict,
+    auth_headers: dict,
 ):
     """
     Test that PDF generation returns 404/error if assessment has not yet been calculated,
     preventing silent calculation invocation during deliverable generation.
     """
-    cust_res = await client.post("/api/v1/customers", json={"name": "Pre-Calc Client"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Pre-Calc Client"}, headers=auth_headers)
     customer_id = cust_res.json()["id"]
 
     create_res = await client.post(
@@ -185,11 +187,12 @@ async def test_pdf_deliverable_requires_calculation_snapshot(
 async def test_pdf_deliverable_generation_after_calculation(
     client: AsyncClient,
     sample_payload: dict,
+    auth_headers: dict,
 ):
     """
     Test that PDF deliverable is generated as non-empty application/pdf when calculation snapshot exists.
     """
-    cust_res = await client.post("/api/v1/customers", json={"name": "Post-Calc Client"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Post-Calc Client"}, headers=auth_headers)
     customer_id = cust_res.json()["id"]
 
     create_res = await client.post(
@@ -217,11 +220,12 @@ async def test_pdf_deliverable_generation_after_calculation(
 async def test_deliverable_cross_tenant_isolation(
     client: AsyncClient,
     sample_payload: dict,
+    auth_headers: dict,
 ):
     """
     Test that deliverables are strictly isolated by tenant and reject cross-tenant requests.
     """
-    cust_res = await client.post("/api/v1/customers", json={"name": "Tenant Iso Client"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Tenant Iso Client"}, headers=auth_headers)
     customer_id = cust_res.json()["id"]
 
     create_res = await client.post(

@@ -95,6 +95,33 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  updateCustomer: (customerId: string, data: { name?: string; industry?: string; primary_contact_name?: string; primary_contact_email?: string; notes?: string }) =>
+    request<Customer>(`/customers/${customerId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  // Users & Administration (Batch 4B)
+  listUsers: (params?: { search?: string; role?: string; is_active?: boolean }) => {
+    const query = new URLSearchParams();
+    if (params?.search) query.set("search", params.search);
+    if (params?.role) query.set("role", params.role);
+    if (params?.is_active !== undefined) query.set("is_active", String(params.is_active));
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return request<User[]>(`/users${qs}`);
+  },
+
+  createUser: (data: { email: string; full_name: string; role: string; password?: string }) =>
+    request<User>("/users", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  updateUser: (userId: string, data: { full_name?: string; role?: string; is_active?: boolean }) =>
+    request<User>(`/users/${userId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
 
   // Assessments
   listAssessments: (customerId?: string) =>

@@ -3,9 +3,9 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_assessment_response_persistence(client: AsyncClient):
+async def test_assessment_response_persistence(client: AsyncClient, auth_headers: dict):
     # Setup Customer & Assessment
-    cust_res = await client.post("/api/v1/customers", json={"name": "Pinnacle Health Systems"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Pinnacle Health Systems"}, headers=auth_headers)
     customer_id = cust_res.json()["id"]
 
     ass_res = await client.post(

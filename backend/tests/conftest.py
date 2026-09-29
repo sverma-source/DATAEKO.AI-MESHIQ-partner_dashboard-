@@ -1,3 +1,4 @@
+import pytest
 import pytest_asyncio
 from typing import AsyncGenerator
 from httpx import ASGITransport, AsyncClient
@@ -77,6 +78,33 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+
+from app.core.security import create_access_token
+
+
+@pytest.fixture(scope="function")
+def auth_headers() -> dict:
+    """Provides Authorization headers for default CONSULTANT user."""
+    token = create_access_token(
+        subject="00000000-0000-0000-0000-000000000002",
+        tenant_id=DEFAULT_TENANT_ID,
+        role=Role.CONSULTANT.value,
+        email="consultant@dataeko.ai",
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+def admin_auth_headers() -> dict:
+    """Provides Authorization headers for default PLATFORM_ADMIN user."""
+    token = create_access_token(
+        subject="00000000-0000-0000-0000-000000000003",
+        tenant_id=DEFAULT_TENANT_ID,
+        role=Role.PLATFORM_ADMIN.value,
+        email="admin@dataeko.ai",
+    )
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest_asyncio.fixture(scope="function")

@@ -8,12 +8,17 @@ import { api } from "../services/api";
 vi.mock("../services/api", () => ({
   api: {
     listCustomers: vi.fn(),
+    createCustomer: vi.fn(),
+    updateCustomer: vi.fn(),
+    listUsers: vi.fn(),
+    createUser: vi.fn(),
+    updateUser: vi.fn(),
     listAssessments: vi.fn(),
     listAuditEvents: vi.fn(),
   },
 }));
 
-describe("AdminWorkspace Component (Batch 4A Read-Only Governance)", () => {
+describe("AdminWorkspace Component (Batch 4B User & Customer Governance Mutations)", () => {
   const mockCustomers = [
     {
       id: "cust-001",
@@ -32,6 +37,39 @@ describe("AdminWorkspace Component (Batch 4A Read-Only Governance)", () => {
       primary_contact_email: "smith@health.org",
       tenant_id: "tenant-001",
       created_at: "2026-02-20T10:00:00Z",
+    },
+  ];
+
+  const mockUsers = [
+    {
+      id: "usr-001",
+      email: "admin@enterprise.com",
+      full_name: "Admin User",
+      role: "PARTNER_ADMIN",
+      tenant_id: "tenant-001",
+      is_active: true,
+      created_at: "2026-01-10T10:00:00Z",
+      updated_at: "2026-01-10T10:00:00Z",
+    },
+    {
+      id: "usr-002",
+      email: "jane.client@acme.com",
+      full_name: "Jane Client",
+      role: "CUSTOMER_USER",
+      tenant_id: "tenant-001",
+      is_active: true,
+      created_at: "2026-02-01T10:00:00Z",
+      updated_at: "2026-02-01T10:00:00Z",
+    },
+    {
+      id: "usr-003",
+      email: "bob.consultant@meshiq.com",
+      full_name: "Bob Consultant",
+      role: "CONSULTANT",
+      tenant_id: "tenant-001",
+      is_active: false,
+      created_at: "2026-02-15T10:00:00Z",
+      updated_at: "2026-02-20T10:00:00Z",
     },
   ];
 
@@ -63,20 +101,20 @@ describe("AdminWorkspace Component (Batch 4A Read-Only Governance)", () => {
     {
       id: "audit-001",
       tenant_id: "tenant-001",
-      user_id: "usr-admin",
-      event_type: "USER_LOGIN_SUCCESS",
-      resource_type: "SESSION",
-      resource_id: "sess-123",
+      user_id: "usr-001",
+      event_type: "USER_CREATED",
+      resource_type: "USER",
+      resource_id: "usr-002",
       status: "SUCCESS",
       created_at: "2026-03-10T14:00:00Z",
     },
     {
       id: "audit-002",
       tenant_id: "tenant-001",
-      user_id: "usr-client",
-      event_type: "ASSESSMENT_SUBMITTED",
-      resource_type: "ASSESSMENT",
-      resource_id: "ass-001",
+      user_id: "usr-001",
+      event_type: "CUSTOMER_CREATED",
+      resource_type: "CUSTOMER",
+      resource_id: "cust-001",
       status: "SUCCESS",
       created_at: "2026-03-10T15:00:00Z",
     },
@@ -85,21 +123,22 @@ describe("AdminWorkspace Component (Batch 4A Read-Only Governance)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (api.listCustomers as any).mockResolvedValue(mockCustomers);
+    (api.listUsers as any).mockResolvedValue(mockUsers);
     (api.listAssessments as any).mockResolvedValue(mockAssessments);
     (api.listAuditEvents as any).mockResolvedValue(mockAuditEvents);
   });
 
-  const renderWithRole = (role: string) => {
+  const renderWithRole = (role: string, currentUserId: string = "usr-001") => {
     const authValue: any = {
       user: {
-        id: "usr-admin-001",
+        id: currentUserId,
         email: "admin@enterprise.com",
         full_name: "Admin User",
         role: role,
         tenant_id: "tenant-001",
         is_active: true,
       },
-      permissions: ["CUSTOMER_READ", "ASSESSMENT_READ", "AUDIT_READ"],
+      permissions: ["CUSTOMER_READ", "CUSTOMER_CREATE", "CUSTOMER_UPDATE", "ASSESSMENT_READ", "AUDIT_READ"],
       isAuthenticated: true,
       isLoading: false,
       error: null,
@@ -117,18 +156,42 @@ describe("AdminWorkspace Component (Batch 4A Read-Only Governance)", () => {
     );
   };
 
-  it("renders Customer Directory with metrics and search functionality", async () => {
+  it("renders User Directory by default with search and filters", async () => {
     renderWithRole("PARTNER_ADMIN");
 
     await waitFor(() => {
-      expect(screen.getByTestId("admin-customer-directory")).toBeInTheDocument();
+      expect(screen.queryByText("Loading governance records...")).not.toBeInTheDocument();
     });
 
+    expect(screen.getByTestId("admin-user-directory")).toBeInTheDocument();
+    expect(screen.getByText("Admin User")).toBeInTheDocument();
+    expect(screen.getByText("Jane Client")).toBeInTheDocument();
+    expect(screen.getByText("Bob Consultant")).toBeInTheDocument();
+
+    // Filter by search query
+    const searchInput = screen.getByPlaceholderText("Search users by name or email...");
+    fireEvent.change(searchInput, { target: { value: "Jane" } });
+
+    expect(screen.getByText("Jane Client")).toBeInTheDocument();
+    expect(screen.queryByText("Bob Consultant")).not.toBeInTheDocument();
+  });
+
+  it("renders Customer Directory when switching tabs", async () => {
+    renderWithRole("PARTNER_ADMIN");
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading governance records...")).not.toBeInTheDocument();
+    });
+
+    // Switch to Customer Directory tab
+    const custTabBtn = screen.getByRole("button", { name: /Customer Directory/i });
+    fireEvent.click(custTabBtn);
+
+    expect(screen.getByTestId("admin-customer-directory")).toBeInTheDocument();
     expect(screen.getByText("Acme Corp Financial")).toBeInTheDocument();
     expect(screen.getByText("Global Health Systems")).toBeInTheDocument();
-    expect(screen.getByText("Partner Administration")).toBeInTheDocument();
 
-    // Verify search
+    // Filter by search query
     const searchInput = screen.getByPlaceholderText("Search customer organizations...");
     fireEvent.change(searchInput, { target: { value: "Acme" } });
 
@@ -136,107 +199,190 @@ describe("AdminWorkspace Component (Batch 4A Read-Only Governance)", () => {
     expect(screen.queryByText("Global Health Systems")).not.toBeInTheDocument();
   });
 
-  it("opens customer read-only detail inspection modal and closes it", async () => {
-    renderWithRole("CUSTOMER_ADMIN");
-
-    await waitFor(() => {
-      expect(screen.getByText("Acme Corp Financial")).toBeInTheDocument();
+  it("provisions a new user with role-constrained choices", async () => {
+    (api.createUser as any).mockResolvedValue({
+      id: "usr-004",
+      email: "new.user@acme.com",
+      full_name: "New User",
+      role: "CUSTOMER_USER",
+      is_active: true,
     });
 
-    const inspectBtn = screen.getByRole("button", { name: "Inspect Acme Corp Financial" });
-    fireEvent.click(inspectBtn);
-
-    expect(screen.getByText("Customer Organization Detail")).toBeInTheDocument();
-    expect(screen.getAllByText("Financial Services").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("jane@acme.com").length).toBeGreaterThanOrEqual(1);
-
-    // Close modal
-    const closeBtn = screen.getByRole("button", { name: "Close" });
-    fireEvent.click(closeBtn);
-    expect(screen.queryByText("Customer Organization Detail")).not.toBeInTheDocument();
-  });
-
-  it("renders Assessment Registry, supports status filtering and modal inspection", async () => {
-    renderWithRole("PLATFORM_ADMIN");
-
-    await waitFor(() => {
-      expect(screen.getByText(/Assessment Registry \(/i)).toBeInTheDocument();
-    });
-
-    // Switch to Assessment Registry Tab
-    const registryTabBtn = screen.getByRole("button", { name: /Assessment Registry/i });
-    fireEvent.click(registryTabBtn);
-
-    expect(screen.getByTestId("admin-assessment-registry")).toBeInTheDocument();
-    expect(screen.getByText("Acme Core Banking MQ Assessment")).toBeInTheDocument();
-    expect(screen.getByText("Global Health MQ Discovery")).toBeInTheDocument();
-
-    // Filter by SUBMITTED
-    const submittedFilterBtn = screen.getByRole("button", { name: /Submitted \(1\)/i });
-    fireEvent.click(submittedFilterBtn);
-
-    expect(screen.getByText("Acme Core Banking MQ Assessment")).toBeInTheDocument();
-    expect(screen.queryByText("Global Health MQ Discovery")).not.toBeInTheDocument();
-
-    // Inspect assessment record modal
-    const inspectAssBtn = screen.getByRole("button", { name: "Inspect assessment ass-001" });
-    fireEvent.click(inspectAssBtn);
-
-    expect(screen.getByText("Assessment Registry Record")).toBeInTheDocument();
-    expect(screen.getAllByText("v1.0.0").length).toBeGreaterThanOrEqual(1);
-
-    // Close modal
-    const closeBtn = screen.getByRole("button", { name: "Close" });
-    fireEvent.click(closeBtn);
-    expect(screen.queryByText("Assessment Registry Record")).not.toBeInTheDocument();
-  });
-
-  it("renders Audit Trail & Compliance tab with category filter", async () => {
     renderWithRole("PARTNER_ADMIN");
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /Audit Trail/i })).toBeInTheDocument();
+      expect(screen.queryByText("Loading governance records...")).not.toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Audit Trail/i }));
+    // Click Provision User
+    const provisionBtn = screen.getByRole("button", { name: /Provision User/i });
+    fireEvent.click(provisionBtn);
 
-    expect(screen.getByTestId("admin-audit-trail")).toBeInTheDocument();
-    expect(screen.getByText("USER_LOGIN_SUCCESS")).toBeInTheDocument();
-    expect(screen.getByText("ASSESSMENT_SUBMITTED")).toBeInTheDocument();
+    expect(screen.getByText("Provision New User Account")).toBeInTheDocument();
+
+    // Fill form
+    fireEvent.change(screen.getByPlaceholderText("e.g. Jane Doe"), { target: { value: "New User" } });
+    fireEvent.change(screen.getByPlaceholderText("jane@company.com"), { target: { value: "new.user@acme.com" } });
+    fireEvent.change(screen.getByPlaceholderText("••••••••••••"), { target: { value: "SecurePass123!" } });
+
+    // Select role
+    const roleSelects = screen.getAllByRole("combobox");
+    // The role select inside modal is the last combobox
+    const modalRoleSelect = roleSelects[roleSelects.length - 1];
+    fireEvent.change(modalRoleSelect, { target: { value: "CUSTOMER_USER" } });
+
+    // Submit
+    const submitBtn = screen.getByRole("button", { name: "Provision Account" });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(api.createUser).toHaveBeenCalledWith({
+        full_name: "New User",
+        email: "new.user@acme.com",
+        role: "CUSTOMER_USER",
+        password: "SecurePass123!",
+      });
+    });
   });
 
-  it("renders User Visibility & Identity tab with authenticated profile information", async () => {
+  it("displays duplicate email error (409) during user provisioning", async () => {
+    (api.createUser as any).mockRejectedValue({
+      status: 409,
+      message: "A user with this email address already exists.",
+    });
+
+    renderWithRole("PARTNER_ADMIN");
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading governance records...")).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Provision User/i }));
+    fireEvent.change(screen.getByPlaceholderText("e.g. Jane Doe"), { target: { value: "Existing User" } });
+    fireEvent.change(screen.getByPlaceholderText("jane@company.com"), { target: { value: "admin@enterprise.com" } });
+    fireEvent.change(screen.getByPlaceholderText("••••••••••••"), { target: { value: "SecurePass123!" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Provision Account" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/A user with this email address already exists/i)).toBeInTheDocument();
+    });
+  });
+
+  it("handles user activation and deactivation with confirmation dialog", async () => {
+    (api.updateUser as any).mockResolvedValue({
+      id: "usr-002",
+      full_name: "Jane Client",
+      email: "jane.client@acme.com",
+      role: "CUSTOMER_USER",
+      is_active: false,
+    });
+
+    renderWithRole("PARTNER_ADMIN");
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading governance records...")).not.toBeInTheDocument();
+    });
+
+    // Click Deactivate for Jane Client (index 1, index 0 is admin user)
+    const deactBtns = screen.getAllByRole("button", { name: "Deactivate" });
+    fireEvent.click(deactBtns[1]);
+
+    // Confirmation dialog appears
+    expect(screen.getByText("Deactivate User Account?")).toBeInTheDocument();
+
+    // Confirm
+    const confirmBtn = screen.getByRole("button", { name: "Confirm Deactivation" });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(api.updateUser).toHaveBeenCalledWith("usr-002", { is_active: false });
+    });
+  });
+
+  it("handles role change with confirmation dialog", async () => {
+    (api.updateUser as any).mockResolvedValue({
+      id: "usr-002",
+      full_name: "Jane Client",
+      email: "jane.client@acme.com",
+      role: "CONSULTANT",
+      is_active: true,
+    });
+
+    renderWithRole("PARTNER_ADMIN");
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading governance records...")).not.toBeInTheDocument();
+    });
+
+    // Click Change Role for Jane Client (first "Role" button for usr-001 is for admin, second is usr-002)
+    const roleButtons = screen.getAllByRole("button", { name: "Role" });
+    fireEvent.click(roleButtons[1]);
+
+    expect(screen.getByText("Modify User Role Assignment")).toBeInTheDocument();
+
+    // Change role in select
+    const roleSelect = screen.getByDisplayValue("CUSTOMER_USER");
+    fireEvent.change(roleSelect, { target: { value: "CONSULTANT" } });
+
+    // Confirm Role Change
+    const confirmRoleBtn = screen.getByRole("button", { name: "Save Role Change" });
+    fireEvent.click(confirmRoleBtn);
+
+    await waitFor(() => {
+      expect(api.updateUser).toHaveBeenCalledWith("usr-002", { role: "CONSULTANT" });
+    });
+  });
+
+  it("creates customer organization via Add Organization modal", async () => {
+    (api.createCustomer as any).mockResolvedValue({
+      id: "cust-003",
+      name: "New Enterprise Org",
+      industry: "Financial Services",
+    });
+
+    renderWithRole("PARTNER_ADMIN");
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading governance records...")).not.toBeInTheDocument();
+    });
+
+    // Switch to Customer Directory tab
+    const custTabBtn = screen.getByRole("button", { name: /Customer Directory/i });
+    fireEvent.click(custTabBtn);
+
+    expect(screen.getByTestId("admin-customer-directory")).toBeInTheDocument();
+
+    // Click Add Organization
+    const addCustBtn = screen.getByRole("button", { name: /Add Organization/i });
+    fireEvent.click(addCustBtn);
+
+    expect(screen.getByText("Create Customer Organization")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. Apex Global Financial"), {
+      target: { value: "New Enterprise Org" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Create Organization" }));
+
+    await waitFor(() => {
+      expect(api.createCustomer).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "New Enterprise Org" })
+      );
+    });
+  });
+
+  it("enforces immutable isolation without exposing destructive customer/user delete controls", async () => {
     renderWithRole("PLATFORM_ADMIN");
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /User Visibility/i })).toBeInTheDocument();
+      expect(screen.queryByText("Loading governance records...")).not.toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /User Visibility/i }));
-
-    expect(screen.getByTestId("admin-user-visibility")).toBeInTheDocument();
-    expect(screen.getByText("Admin User")).toBeInTheDocument();
-    expect(screen.getByText("admin@enterprise.com")).toBeInTheDocument();
-    expect(screen.getByText("PLATFORM_ADMIN")).toBeInTheDocument();
-    expect(screen.getByText("Active & Authenticated")).toBeInTheDocument();
-    expect(screen.getByText(/User Directory & Access Governance Notice/i)).toBeInTheDocument();
-  });
-
-  it("enforces read-only governance without exposing mutation controls", async () => {
-    renderWithRole("PLATFORM_ADMIN");
-
-    await waitFor(() => {
-      expect(screen.getByTestId("admin-customer-directory")).toBeInTheDocument();
-    });
-
-    // Ensure NO mutation buttons exist
-    expect(screen.queryByRole("button", { name: /Create Customer/i })).not.toBeInTheDocument();
+    // Verify NO delete user / hard delete buttons exist
+    expect(screen.queryByRole("button", { name: /Delete User/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Purge User/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Delete Customer/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Create Assessment/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Delete Assessment/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Edit Assessment/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Create User/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Calculate/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Submit Assessment/i })).not.toBeInTheDocument();
   });
 });

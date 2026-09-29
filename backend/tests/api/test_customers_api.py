@@ -1,9 +1,20 @@
 import pytest
 from httpx import AsyncClient
+from app.api.deps import DEFAULT_TENANT_ID
+from app.core.security import create_access_token
+from app.core.rbac import Role
 
 
 @pytest.mark.asyncio
 async def test_customer_lifecycle(client: AsyncClient):
+    token = create_access_token(
+        subject="00000000-0000-0000-0000-000000000003",
+        tenant_id=DEFAULT_TENANT_ID,
+        role=Role.PLATFORM_ADMIN.value,
+        email="admin@dataeko.ai",
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+
     # 1. Create Customer
     create_payload = {
         "name": "Global Logistics Corp",
@@ -12,7 +23,7 @@ async def test_customer_lifecycle(client: AsyncClient):
         "primary_contact_email": "jane@globallogistics.example.com",
         "notes": "Large multi-queue manager enterprise setup",
     }
-    create_res = await client.post("/api/v1/customers", json=create_payload)
+    create_res = await client.post("/api/v1/customers", json=create_payload, headers=headers)
     assert create_res.status_code == 201
     cust_data = create_res.json()
     assert cust_data["name"] == "Global Logistics Corp"
@@ -33,7 +44,7 @@ async def test_customer_lifecycle(client: AsyncClient):
 
     # 4. Update Customer
     update_payload = {"name": "Global Logistics Holdings", "notes": "Updated notes"}
-    update_res = await client.put(f"/api/v1/customers/{customer_id}", json=update_payload)
+    update_res = await client.put(f"/api/v1/customers/{customer_id}", json=update_payload, headers=headers)
     assert update_res.status_code == 200
     updated_data = update_res.json()
     assert updated_data["name"] == "Global Logistics Holdings"
@@ -41,7 +52,7 @@ async def test_customer_lifecycle(client: AsyncClient):
     assert updated_data["primary_contact_email"] == "jane@globallogistics.example.com"
 
     # 5. Delete Customer
-    del_res = await client.delete(f"/api/v1/customers/{customer_id}")
+    del_res = await client.delete(f"/api/v1/customers/{customer_id}", headers=headers)
     assert del_res.status_code == 204
 
     # 6. Verify 404
@@ -50,5 +61,5 @@ async def test_customer_lifecycle(client: AsyncClient):
 
     # 7. Non-existent customer update & delete
     non_existent_id = "00000000-0000-0000-0000-000000000999"
-    assert (await client.put(f"/api/v1/customers/{non_existent_id}", json={"name": "test"})).status_code == 404
-    assert (await client.delete(f"/api/v1/customers/{non_existent_id}")).status_code == 404
+    assert (await client.put(f"/api/v1/customers/{non_existent_id}", json={"name": "test"}, headers=headers)).status_code == 404
+    assert (await client.delete(f"/api/v1/customers/{non_existent_id}", headers=headers)).status_code == 404

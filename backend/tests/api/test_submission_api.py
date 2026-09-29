@@ -5,10 +5,10 @@ from app.models.audit_event import AuditEvent
 
 
 @pytest.mark.asyncio
-async def test_assessment_submission_lifecycle(client: AsyncClient, db_session):
+async def test_assessment_submission_lifecycle(client: AsyncClient, db_session, auth_headers: dict):
     # 1. Setup Customer & Assessment
     cust_res = await client.post(
-        "/api/v1/customers", json={"name": "Acme Global Financial"}
+        "/api/v1/customers", json={"name": "Acme Global Financial"}, headers=auth_headers
     )
     assert cust_res.status_code == 201
     customer_id = cust_res.json()["id"]

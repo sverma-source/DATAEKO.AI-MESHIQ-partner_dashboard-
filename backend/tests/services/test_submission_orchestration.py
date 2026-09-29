@@ -11,7 +11,7 @@ from app.services.email_service import InMemoryEmailTransport, EmailService
 
 
 @pytest.mark.asyncio
-async def test_submission_orchestration_full_success(client: AsyncClient, db_session, monkeypatch):
+async def test_submission_orchestration_full_success(client: AsyncClient, db_session, monkeypatch, auth_headers: dict):
     """
     Verifies full end-to-end orchestration:
     Submission -> Calculation -> Snapshot -> Deliverables (PDF + CSV) -> Email (In-Memory Transport).
@@ -26,7 +26,7 @@ async def test_submission_orchestration_full_success(client: AsyncClient, db_ses
     monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
 
     # 2. Create customer and assessment
-    cust_res = await client.post("/api/v1/customers", json={"name": "Global FinCorp"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Global FinCorp"}, headers=auth_headers)
     assert cust_res.status_code == 201
     cust_id = cust_res.json()["id"]
 
@@ -115,7 +115,7 @@ async def test_submission_orchestration_full_success(client: AsyncClient, db_ses
 
 
 @pytest.mark.asyncio
-async def test_submission_idempotency_prevents_duplicate_delivery(client: AsyncClient, db_session, monkeypatch):
+async def test_submission_idempotency_prevents_duplicate_delivery(client: AsyncClient, db_session, monkeypatch, auth_headers: dict):
     """
     Verifies that repeated submissions of an already-submitted assessment are idempotent:
     - Does not re-calculate duplicate snapshots
@@ -130,7 +130,7 @@ async def test_submission_idempotency_prevents_duplicate_delivery(client: AsyncC
     monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
     monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
 
-    cust_res = await client.post("/api/v1/customers", json={"name": "Idempotent Bank"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Idempotent Bank"}, headers=auth_headers)
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
@@ -159,7 +159,7 @@ async def test_submission_idempotency_prevents_duplicate_delivery(client: AsyncC
 
 
 @pytest.mark.asyncio
-async def test_email_failure_does_not_reopen_or_rollback_submission(client: AsyncClient, db_session, monkeypatch):
+async def test_email_failure_does_not_reopen_or_rollback_submission(client: AsyncClient, db_session, monkeypatch, auth_headers: dict):
     """
     Verifies failure isolation:
     If email dispatch fails (e.g. SMTP down), the assessment remains SUBMITTED,
@@ -169,7 +169,7 @@ async def test_email_failure_does_not_reopen_or_rollback_submission(client: Asyn
     monkeypatch.setattr(settings, "TEST_RECIPIENT_ROOP", "r.sabbavarapu@dataeko.ai")
     monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
 
-    cust_res = await client.post("/api/v1/customers", json={"name": "Failure Resilience Corp"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Failure Resilience Corp"}, headers=auth_headers)
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
@@ -213,7 +213,7 @@ async def test_email_failure_does_not_reopen_or_rollback_submission(client: Asyn
 
 
 @pytest.mark.asyncio
-async def test_missing_test_recipients_skips_cleanly(client: AsyncClient, db_session, monkeypatch):
+async def test_missing_test_recipients_skips_cleanly(client: AsyncClient, db_session, monkeypatch, auth_headers: dict):
     """
     Verifies that when test recipients are not configured:
     - Submission and calculation succeed
@@ -226,7 +226,7 @@ async def test_missing_test_recipients_skips_cleanly(client: AsyncClient, db_ses
     monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", None)
     monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
 
-    cust_res = await client.post("/api/v1/customers", json={"name": "No Recipient Co"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "No Recipient Co"}, headers=auth_headers)
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
@@ -255,7 +255,7 @@ async def test_missing_test_recipients_skips_cleanly(client: AsyncClient, db_ses
 
 @pytest.mark.asyncio
 async def test_calculation_failure_leaves_assessment_submitted_and_skips_email(
-    client: AsyncClient, db_session, monkeypatch
+    client: AsyncClient, db_session, monkeypatch, auth_headers: dict
 ):
     """
     Verifies that if calculation fails during submission:
@@ -269,7 +269,7 @@ async def test_calculation_failure_leaves_assessment_submitted_and_skips_email(
     monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
     monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
 
-    cust_res = await client.post("/api/v1/customers", json={"name": "Calc Failure Corp"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Calc Failure Corp"}, headers=auth_headers)
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
@@ -311,7 +311,7 @@ async def test_calculation_failure_leaves_assessment_submitted_and_skips_email(
 
 
 @pytest.mark.asyncio
-async def test_no_secrets_in_submission_audit_or_api(client: AsyncClient, db_session, monkeypatch):
+async def test_no_secrets_in_submission_audit_or_api(client: AsyncClient, db_session, monkeypatch, auth_headers: dict):
     """
     Verifies that neither API responses nor audit logs expose SMTP credentials or raw passwords.
     """
@@ -322,7 +322,7 @@ async def test_no_secrets_in_submission_audit_or_api(client: AsyncClient, db_ses
     monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
     monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
 
-    cust_res = await client.post("/api/v1/customers", json={"name": "Privacy Audit Org"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Privacy Audit Org"}, headers=auth_headers)
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
@@ -351,7 +351,7 @@ async def test_no_secrets_in_submission_audit_or_api(client: AsyncClient, db_ses
 
 @pytest.mark.asyncio
 async def test_repeated_submission_after_email_failure_preserves_state_and_does_not_duplicate(
-    client: AsyncClient, db_session, monkeypatch
+    client: AsyncClient, db_session, monkeypatch, auth_headers: dict
 ):
     """
     Documents Classification B behavior:
@@ -369,7 +369,7 @@ async def test_repeated_submission_after_email_failure_preserves_state_and_does_
     monkeypatch.setattr(settings, "TEST_RECIPIENT_ROOP", "r.sabbavarapu@dataeko.ai")
     monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
 
-    cust_res = await client.post("/api/v1/customers", json={"name": "Retry Boundary Bank"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Retry Boundary Bank"}, headers=auth_headers)
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
@@ -418,7 +418,7 @@ async def test_repeated_submission_after_email_failure_preserves_state_and_does_
 
 @pytest.mark.asyncio
 async def test_deliverable_generation_failure_audits_cleanly_and_skips_email(
-    client: AsyncClient, db_session, monkeypatch
+    client: AsyncClient, db_session, monkeypatch, auth_headers: dict
 ):
     """
     Verifies that if PDF/CSV deliverable generation fails:
@@ -434,7 +434,7 @@ async def test_deliverable_generation_failure_audits_cleanly_and_skips_email(
     monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
     monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
 
-    cust_res = await client.post("/api/v1/customers", json={"name": "Deliverable Failure Org"})
+    cust_res = await client.post("/api/v1/customers", json={"name": "Deliverable Failure Org"}, headers=auth_headers)
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(

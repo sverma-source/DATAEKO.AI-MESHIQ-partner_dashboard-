@@ -3,10 +3,10 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_assessment_lifecycle(client: AsyncClient):
+async def test_assessment_lifecycle(client: AsyncClient, auth_headers: dict):
     # 1. Setup Customer
     cust_res = await client.post(
-        "/api/v1/customers", json={"name": "Acme Financial Group"}
+        "/api/v1/customers", json={"name": "Acme Financial Group"}, headers=auth_headers
     )
     assert cust_res.status_code == 201
     customer_id = cust_res.json()["id"]

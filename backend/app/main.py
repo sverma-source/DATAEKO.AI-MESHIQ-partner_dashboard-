@@ -102,6 +102,32 @@ async def lifespan(app: FastAPI):
                 )
                 session.add(client_user)
 
+            partner_stmt = select(User).where(User.email == "partner_admin@dataeko.ai")
+            partner_res = await session.execute(partner_stmt)
+            if not partner_res.scalar_one_or_none():
+                partner_user = User(
+                    email="partner_admin@dataeko.ai",
+                    hashed_password=get_password_hash("PartnerPass123!"),
+                    full_name="Partner Administrator",
+                    role=Role.PARTNER_ADMIN.value,
+                    tenant_id=DEFAULT_TENANT_ID,
+                    is_active=True,
+                )
+                session.add(partner_user)
+
+            cust_admin_stmt = select(User).where(User.email == "customer_admin@dataeko.ai")
+            cust_admin_res = await session.execute(cust_admin_stmt)
+            if not cust_admin_res.scalar_one_or_none():
+                cust_admin_user = User(
+                    email="customer_admin@dataeko.ai",
+                    hashed_password=get_password_hash("CustomerAdmin123!"),
+                    full_name="Customer Administrator",
+                    role=Role.CUSTOMER_ADMIN.value,
+                    tenant_id=DEFAULT_TENANT_ID,
+                    is_active=True,
+                )
+                session.add(cust_admin_user)
+
             await session.commit()
 
     yield

@@ -15,8 +15,8 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
-    role: str = "CONSULTANT"
-    tenant_id: str
+    role: str = "CUSTOMER_USER"
+    tenant_id: Optional[str] = None
 
 
 class UserUpdate(BaseModel):

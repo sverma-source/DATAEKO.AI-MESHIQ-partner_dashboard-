@@ -1,8 +1,9 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_current_tenant_id, get_current_user_optional, get_db
+from app.api.deps import get_current_tenant_id, get_db, require_permission, require_role
 from app.core.audit import log_audit_event
+from app.core.rbac import Permission, Role
 from app.models.user import User
 from app.schemas.customer import CustomerCreate, CustomerResponse, CustomerUpdate
 from app.services.customer_service import CustomerService
@@ -20,7 +21,7 @@ async def create_customer(
     payload: CustomerCreate,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(require_permission(Permission.CUSTOMER_CREATE)),
 ):
     customer = await CustomerService.create_customer(db, tenant_id, payload)
     await log_audit_event(
@@ -74,7 +75,7 @@ async def update_customer(
     payload: CustomerUpdate,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(require_permission(Permission.CUSTOMER_UPDATE)),
 ):
     customer = await CustomerService.update_customer(db, tenant_id, customer_id, payload)
     await log_audit_event(
@@ -100,7 +101,7 @@ async def delete_customer(
     customer_id: str,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(require_role([Role.PLATFORM_ADMIN, Role.PARTNER_ADMIN])),
 ):
     await CustomerService.delete_customer(db, tenant_id, customer_id)
     await log_audit_event(
