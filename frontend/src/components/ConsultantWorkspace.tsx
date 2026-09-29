@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   AlertCircle,
   ArrowLeft,
   Building2,
   Calendar,
+  Calculator,
   CheckCircle2,
   Clock,
   ExternalLink,
@@ -30,10 +31,14 @@ import { QUESTIONS, SECTIONS } from "../data/questionCatalog";
 import {
   Assessment,
   AssessmentResponseState,
+  CalculationRunResponse,
+  CalculationSnapshot,
   Customer,
   QuestionDefinition,
   SectionDefinition,
 } from "../types/assessment";
+import { ConsultantAssessmentSummary } from "./ConsultantAssessmentSummary";
+import { ExecutiveDashboard } from "./ExecutiveDashboard";
 
 export const ConsultantWorkspace: React.FC = () => {
   const { user } = useAuth();
@@ -51,8 +56,14 @@ export const ConsultantWorkspace: React.FC = () => {
   // Selected Assessment View State
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+  const [selectedSnapshot, setSelectedSnapshot] = useState<CalculationSnapshot | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
+  const [isLoadingSnapshot, setIsLoadingSnapshot] = useState<boolean>(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [snapshotError, setSnapshotError] = useState<string | null>(null);
+
+  // Detail View Sub-Tab ("summary" = 12-Section Economic Summary, "responses" = Q01–Q22 answers, "dashboard" = Executive Dashboard)
+  const [activeDetailTab, setActiveDetailTab] = useState<"summary" | "responses" | "dashboard">("summary");
 
   // Fetch Portfolio Assessments & Customers
   const fetchPortfolioData = useCallback(async () => {
@@ -76,27 +87,57 @@ export const ConsultantWorkspace: React.FC = () => {
     fetchPortfolioData();
   }, [fetchPortfolioData]);
 
-  // Load Selected Assessment Details
-  const handleOpenAssessment = async (assessmentId: string) => {
+  // Load Selected Assessment Details and its Authoritative Calculation Snapshot
+  const handleOpenAssessment = async (assessmentId: string, initialTab: "summary" | "responses" = "summary") => {
     try {
       setIsLoadingDetail(true);
+      setIsLoadingSnapshot(true);
       setDetailError(null);
+      setSnapshotError(null);
       setSelectedAssessmentId(assessmentId);
+      setActiveDetailTab(initialTab);
+
       const detail = await api.getAssessment(assessmentId);
       setSelectedAssessment(detail);
+
+      const isSub =
+        detail.status === "SUBMITTED" ||
+        detail.status === "CALCULATED" ||
+        detail.status === "COMPLETED";
+
+      if (isSub) {
+        try {
+          const snap = await api.getLatestSnapshot(assessmentId);
+          setSelectedSnapshot(snap);
+        } catch (snapErr: any) {
+          if (detail.latest_snapshot) {
+            setSelectedSnapshot(detail.latest_snapshot);
+          } else {
+            setSelectedSnapshot(null);
+            setSnapshotError("Authoritative calculation snapshot is not currently available for this submitted assessment.");
+          }
+        }
+      } else {
+        setSelectedSnapshot(null);
+      }
+
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
       setDetailError(err.message || "Failed to open assessment. Access denied or assessment not found.");
       setSelectedAssessment(null);
+      setSelectedSnapshot(null);
     } finally {
       setIsLoadingDetail(false);
+      setIsLoadingSnapshot(false);
     }
   };
 
   const handleBackToPortfolio = () => {
     setSelectedAssessmentId(null);
     setSelectedAssessment(null);
+    setSelectedSnapshot(null);
     setDetailError(null);
+    setSnapshotError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -113,12 +154,20 @@ export const ConsultantWorkspace: React.FC = () => {
     const title = (ass.title || "").toLowerCase();
     const query = searchQuery.toLowerCase().trim();
 
-    const matchesSearch = query === "" || custName.includes(query) || title.includes(query) || ass.id.toLowerCase().includes(query);
+    const matchesSearch =
+      query === "" ||
+      custName.includes(query) ||
+      title.includes(query) ||
+      ass.id.toLowerCase().includes(query);
 
     if (!matchesSearch) return false;
 
     if (statusFilter === "SUBMITTED") {
-      return ass.status === "SUBMITTED" || ass.status === "CALCULATED" || ass.status === "COMPLETED";
+      return (
+        ass.status === "SUBMITTED" ||
+        ass.status === "CALCULATED" ||
+        ass.status === "COMPLETED"
+      );
     }
     if (statusFilter === "DRAFT") {
       return ass.status === "DRAFT" || ass.status === "IN_PROGRESS";
@@ -150,7 +199,9 @@ export const ConsultantWorkspace: React.FC = () => {
       q18_audit_effort: ass.response.q18_audit_effort,
       q19_documentation_effort: ass.response.q19_documentation_effort,
       q20_annual_labor_rate: ass.response.q20_annual_labor_rate,
-      q20_use_default: ass.response.q20_annual_labor_rate === null || ass.response.q20_annual_labor_rate === undefined,
+      q20_use_default:
+        ass.response.q20_annual_labor_rate === null ||
+        ass.response.q20_annual_labor_rate === undefined,
       q21_annual_mq_spend: ass.response.q21_annual_mq_spend,
       q22_migration_plans: ass.response.q22_migration_plans,
     };
@@ -232,7 +283,8 @@ export const ConsultantWorkspace: React.FC = () => {
 
   // Status Badge Helper
   const renderStatusBadge = (status: string) => {
-    const isSubmitted = status === "SUBMITTED" || status === "CALCULATED" || status === "COMPLETED";
+    const isSubmitted =
+      status === "SUBMITTED" || status === "CALCULATED" || status === "COMPLETED";
     if (isSubmitted) {
       return (
         <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]">
@@ -257,32 +309,95 @@ export const ConsultantWorkspace: React.FC = () => {
   };
 
   // ----------------------------------------------------
-  // VIEW A: READ-ONLY SUBMITTED ASSESSMENT DETAIL
+  // VIEW: SELECTED ASSESSMENT DETAIL VIEW
   // ----------------------------------------------------
   if (selectedAssessmentId) {
     const answers = getAnswersState(selectedAssessment);
-    const isSubmitted = selectedAssessment?.status === "SUBMITTED" || selectedAssessment?.status === "CALCULATED" || selectedAssessment?.status === "COMPLETED";
-    const formattedDate = selectedAssessment?.updated_at
-      ? new Date(selectedAssessment.updated_at).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
-      : "Recent";
+    const isSubmitted =
+      selectedAssessment?.status === "SUBMITTED" ||
+      selectedAssessment?.status === "CALCULATED" ||
+      selectedAssessment?.status === "COMPLETED";
+
+    const customerObj =
+      selectedAssessment?.customer ||
+      customers.find((c) => c.id === selectedAssessment?.customer_id) ||
+      null;
+
+    // Build CalculationRunResponse for ExecutiveDashboard if snapshot is present
+    const calculationRun: CalculationRunResponse | null = selectedSnapshot
+      ? {
+          snapshot_id: selectedSnapshot.id,
+          assessment_id: selectedSnapshot.assessment_id,
+          calculation_engine_version: selectedSnapshot.calculation_engine_version,
+          assessment_version: selectedSnapshot.assessment_version,
+          calculated_at: selectedSnapshot.calculated_at,
+          summary: selectedSnapshot.summary_metrics || {},
+          computed_metrics: selectedSnapshot.computed_metrics || {},
+          assumptions_used: selectedSnapshot.assumptions_used || {},
+          benchmarks_used: selectedSnapshot.benchmarks_used || {},
+          provenance_summary: selectedSnapshot.provenance_summary || {},
+        }
+      : null;
 
     return (
       <div className="space-y-6 max-w-5xl mx-auto py-2" data-testid="consultant-assessment-view">
         {/* Navigation Breadcrumb & Back CTA */}
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={handleBackToPortfolio}
-            className="inline-flex items-center space-x-2 text-xs font-bold text-[#172033] hover:text-[#008638] bg-white border border-[#CBD2DE] hover:border-[#008638] px-3.5 py-2 rounded-lg transition-colors shadow-2xs cursor-pointer"
-            aria-label="Back to Assessment Portfolio"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Portfolio</span>
-          </button>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 print:hidden">
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={handleBackToPortfolio}
+              className="inline-flex items-center space-x-2 text-xs font-bold text-[#172033] hover:text-[#008638] bg-white border border-[#CBD2DE] hover:border-[#008638] px-3.5 py-2 rounded-lg transition-colors shadow-2xs cursor-pointer"
+              aria-label="Back to Assessment Portfolio"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Portfolio</span>
+            </button>
+
+            {/* Sub-View Navigation Tabs */}
+            <div className="inline-flex rounded-lg border border-[#CBD2DE] p-0.5 bg-white shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("summary")}
+                className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+                  activeDetailTab === "summary"
+                    ? "bg-[#008638] text-white"
+                    : "text-[#667085] hover:text-[#172033]"
+                }`}
+              >
+                <Calculator className="h-3.5 w-3.5" />
+                <span>12-Section Summary</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("responses")}
+                className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+                  activeDetailTab === "responses"
+                    ? "bg-[#008638] text-white"
+                    : "text-[#667085] hover:text-[#172033]"
+                }`}
+              >
+                <FileCheck2 className="h-3.5 w-3.5" />
+                <span>Q01–Q22 Discovery Answers</span>
+              </button>
+
+              {calculationRun && (
+                <button
+                  type="button"
+                  onClick={() => setActiveDetailTab("dashboard")}
+                  className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+                    activeDetailTab === "dashboard"
+                      ? "bg-[#008638] text-white"
+                      : "text-[#667085] hover:text-[#172033]"
+                  }`}
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  <span>Executive Dashboard</span>
+                </button>
+              )}
+            </div>
+          </div>
 
           <div className="flex items-center space-x-2 text-xs text-[#667085]">
             <Lock className="h-3.5 w-3.5 text-[#008638]" />
@@ -292,7 +407,10 @@ export const ConsultantWorkspace: React.FC = () => {
 
         {/* Error Alert */}
         {detailError && (
-          <div role="alert" className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-xs text-rose-800 flex items-center space-x-3">
+          <div
+            role="alert"
+            className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-xs text-rose-800 flex items-center space-x-3"
+          >
             <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
             <span>{detailError}</span>
           </div>
@@ -302,19 +420,34 @@ export const ConsultantWorkspace: React.FC = () => {
         {isLoadingDetail && (
           <div className="rounded-2xl bg-white border border-[#E2E6EE] p-12 text-center space-y-3 shadow-xs">
             <Loader2 className="h-6 w-6 animate-spin text-[#008638] mx-auto" />
-            <p className="text-xs font-semibold text-[#667085]">Loading assessment responses...</p>
+            <p className="text-xs font-semibold text-[#667085]">Loading assessment details...</p>
           </div>
         )}
 
-        {/* Assessment Header Card */}
-        {selectedAssessment && !isLoadingDetail && (
-          <>
+        {/* SUB-VIEW 1: 12-SECTION ECONOMIC SUMMARY */}
+        {selectedAssessment && !isLoadingDetail && activeDetailTab === "summary" && (
+          <ConsultantAssessmentSummary
+            assessment={selectedAssessment}
+            snapshot={selectedSnapshot}
+            customer={customerObj}
+            answers={answers}
+            isLoadingSnapshot={isLoadingSnapshot}
+            snapshotError={snapshotError}
+            onBackToPortfolio={handleBackToPortfolio}
+            onViewDiscoveryAnswers={() => setActiveDetailTab("responses")}
+          />
+        )}
+
+        {/* SUB-VIEW 2: Q01–Q22 DISCOVERY INTAKE RESPONSES */}
+        {selectedAssessment && !isLoadingDetail && activeDetailTab === "responses" && (
+          <div className="space-y-6">
+            {/* Assessment Header Card */}
             <div className="rounded-2xl bg-white border border-[#E2E6EE] p-6 shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E2E6EE] pb-4">
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2.5">
                     <span className="text-xs font-bold text-[#008638] uppercase tracking-wider">
-                      Discovery Review
+                      Discovery Intake Review
                     </span>
                     {renderStatusBadge(selectedAssessment.status)}
                   </div>
@@ -335,50 +468,21 @@ export const ConsultantWorkspace: React.FC = () => {
                 </div>
               </div>
 
-              {/* Assessment Context Metadata Bar */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="flex items-center space-x-2.5 p-2.5 rounded-lg bg-[#F7F8FA] border border-[#E2E6EE]">
-                  <Building2 className="h-4 w-4 text-[#008638] shrink-0" />
-                  <div className="min-w-0">
-                    <span className="text-[10px] text-[#667085] block uppercase font-semibold">Customer</span>
-                    <span className="font-bold text-[#172033] truncate block">
-                      {getCustomerName(selectedAssessment.customer_id, selectedAssessment.customer)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2.5 p-2.5 rounded-lg bg-[#F7F8FA] border border-[#E2E6EE]">
-                  <Calendar className="h-4 w-4 text-[#008638] shrink-0" />
-                  <div className="min-w-0">
-                    <span className="text-[10px] text-[#667085] block uppercase font-semibold">Updated Date</span>
-                    <span className="font-bold text-[#172033] truncate block">{formattedDate}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2.5 p-2.5 rounded-lg bg-[#F7F8FA] border border-[#E2E6EE]">
-                  <Hash className="h-4 w-4 text-[#008638] shrink-0" />
-                  <div className="min-w-0">
-                    <span className="text-[10px] text-[#667085] block uppercase font-semibold">Assessment ID</span>
-                    <span className="font-mono text-[11px] text-[#172033] font-semibold truncate block">
-                      {selectedAssessment.id}
-                    </span>
-                  </div>
-                </div>
+              {/* Read-Only Notice */}
+              <div className="rounded-xl bg-[#EEF8F0] border border-[#A8E2B5] p-3.5 text-xs text-[#008638] flex items-center space-x-2.5">
+                <ShieldCheck className="h-4 w-4 shrink-0" />
+                <span>
+                  <strong>Consultant Portfolio Review:</strong> All 22 respondent discovery answers are displayed below in read-only form. Client submissions are immutable.
+                </span>
               </div>
-            </div>
-
-            {/* Read-Only Notice */}
-            <div className="rounded-xl bg-[#EEF8F0] border border-[#A8E2B5] p-3.5 text-xs text-[#008638] flex items-center space-x-2.5">
-              <ShieldCheck className="h-4 w-4 shrink-0" />
-              <span>
-                <strong>Consultant Portfolio Review:</strong> All 22 respondent discovery answers are displayed below in read-only form. Client submissions are immutable.
-              </span>
             </div>
 
             {/* Grouped Canonical 7 Sections */}
             <div className="space-y-6">
               {SECTIONS.map((section) => {
-                const sectionQuestions = (section.questionIds || []).map((qId) => QUESTIONS[qId]).filter(Boolean);
+                const sectionQuestions = (section.questionIds || [])
+                  .map((qId) => QUESTIONS[qId])
+                  .filter(Boolean);
 
                 return (
                   <div
@@ -392,9 +496,7 @@ export const ConsultantWorkspace: React.FC = () => {
                           {section.id}
                         </span>
                         <div>
-                          <h2 className="text-xs font-bold text-[#172033]">
-                            {section.title}
-                          </h2>
+                          <h2 className="text-xs font-bold text-[#172033]">{section.title}</h2>
                           <p className="text-[11px] text-[#667085]">{section.subtitle}</p>
                         </div>
                       </div>
@@ -407,9 +509,13 @@ export const ConsultantWorkspace: React.FC = () => {
                     <div className="divide-y divide-[#E2E6EE]">
                       {sectionQuestions.map((q) => {
                         const answerText = formatAnswerDisplay(q, answers);
-                        const isUnanswered = answerText === "Not answered" || answerText === "Not provided";
-                        const isUnknown = answerText.includes("Unknown") || answerText.includes("Not sure");
-                        const isExactOverride = answerText.includes("Exact Override") || answerText.includes("Exact Target");
+                        const isUnanswered =
+                          answerText === "Not answered" || answerText === "Not provided";
+                        const isUnknown =
+                          answerText.includes("Unknown") || answerText.includes("Not sure");
+                        const isExactOverride =
+                          answerText.includes("Exact Override") ||
+                          answerText.includes("Exact Target");
 
                         return (
                           <div key={q.id} className="p-4 sm:p-5 hover:bg-[#FAFBFD] transition-colors">
@@ -419,9 +525,7 @@ export const ConsultantWorkspace: React.FC = () => {
                                   <span className="px-2 py-0.5 rounded bg-[#F0F2F6] text-[#5B6579] font-mono text-[11px] font-bold border border-[#E2E6EE]">
                                     {q.code}
                                   </span>
-                                  <h3 className="text-xs font-bold text-[#172033]">
-                                    {q.title}
-                                  </h3>
+                                  <h3 className="text-xs font-bold text-[#172033]">{q.title}</h3>
                                 </div>
                                 <p className="text-xs text-[#667085] leading-relaxed">
                                   {q.questionText}
@@ -453,14 +557,30 @@ export const ConsultantWorkspace: React.FC = () => {
                 );
               })}
             </div>
-          </>
+          </div>
         )}
+
+        {/* SUB-VIEW 3: EXECUTIVE DASHBOARD & SCENARIO SANDBOX */}
+        {selectedAssessment &&
+          !isLoadingDetail &&
+          activeDetailTab === "dashboard" &&
+          calculationRun && (
+            <div className="space-y-6">
+              <ExecutiveDashboard
+                calculation={calculationRun}
+                customer={customerObj}
+                assessment={selectedAssessment}
+                answers={answers}
+                onReturnToWizard={() => setActiveDetailTab("summary")}
+              />
+            </div>
+          )}
       </div>
     );
   }
 
   // ----------------------------------------------------
-  // VIEW B: CONSULTANT PORTFOLIO TABLE / LIST
+  // VIEW: CONSULTANT PORTFOLIO TABLE / LIST
   // ----------------------------------------------------
   const submittedCount = assessments.filter(
     (a) => a.status === "SUBMITTED" || a.status === "CALCULATED" || a.status === "COMPLETED"
@@ -477,21 +597,21 @@ export const ConsultantWorkspace: React.FC = () => {
               <Shield className="h-3.5 w-3.5 mr-1" />
               Advisory &amp; Review Workspace
             </span>
-            <span className="text-xs text-[#667085] font-medium">
-              Consultant Persona
-            </span>
+            <span className="text-xs text-[#667085] font-medium">Consultant Persona</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172033] tracking-tight">
             Customer &amp; Assessment Portfolio
           </h1>
           <p className="text-sm text-[#667085] max-w-3xl leading-relaxed">
-            Welcome to the Consultant Engagement Workspace. Review client-submitted Q01–Q22 discovery responses and track authorized customer assessment lifecycles across your partner tenant.
+            Welcome to the Consultant Engagement Workspace. Review client-submitted Q01–Q22 discovery responses, inspect authoritative 12-section economic summaries, and access scenario models across your authorized customer tenant scope.
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
           <div className="rounded-xl bg-[#F8FAFC] p-3.5 border border-[#E2E6EE] text-right">
-            <div className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider">Active Tenant Scope</div>
+            <div className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider">
+              Active Tenant Scope
+            </div>
             <div className="text-xs font-bold text-[#172033] font-mono mt-0.5">
               {user?.tenant_id ? `${user.tenant_id.slice(0, 13)}...` : "Partner Scope"}
             </div>
@@ -502,22 +622,30 @@ export const ConsultantWorkspace: React.FC = () => {
       {/* Metric Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">Total Assessments</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">
+            Total Assessments
+          </span>
           <div className="text-2xl font-extrabold text-[#172033]">{assessments.length}</div>
         </div>
 
         <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#008638]">Submitted &amp; Finalized</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#008638]">
+            Submitted &amp; Finalized
+          </span>
           <div className="text-2xl font-extrabold text-[#008638]">{submittedCount}</div>
         </div>
 
         <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-700">Draft / In Progress</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-700">
+            Draft / In Progress
+          </span>
           <div className="text-2xl font-extrabold text-amber-700">{draftCount}</div>
         </div>
 
         <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">Active Customers</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">
+            Active Customers
+          </span>
           <div className="text-2xl font-extrabold text-[#172033]">{customers.length}</div>
         </div>
       </div>
@@ -588,7 +716,10 @@ export const ConsultantWorkspace: React.FC = () => {
 
         {/* Error Alert */}
         {error && (
-          <div role="alert" className="p-4 bg-rose-50 border-b border-rose-200 text-xs text-rose-800 flex items-center justify-between">
+          <div
+            role="alert"
+            className="p-4 bg-rose-50 border-b border-rose-200 text-xs text-rose-800 flex items-center justify-between"
+          >
             <div className="flex items-center space-x-2">
               <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
               <span>{error}</span>
@@ -681,20 +812,16 @@ export const ConsultantWorkspace: React.FC = () => {
                       </td>
 
                       {/* Status */}
-                      <td className="py-4 px-4">
-                        {renderStatusBadge(ass.status)}
-                      </td>
+                      <td className="py-4 px-4">{renderStatusBadge(ass.status)}</td>
 
                       {/* Date */}
-                      <td className="py-4 px-4 text-[#667085] font-medium">
-                        {formattedDate}
-                      </td>
+                      <td className="py-4 px-4 text-[#667085] font-medium">{formattedDate}</td>
 
                       {/* Action */}
                       <td className="py-4 px-4 sm:px-6 text-right">
                         <button
                           type="button"
-                          onClick={() => handleOpenAssessment(ass.id)}
+                          onClick={() => handleOpenAssessment(ass.id, "summary")}
                           className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-[#008638] text-white font-bold text-xs hover:bg-[#006B2D] transition-colors shadow-2xs cursor-pointer"
                           aria-label={`Open Assessment for ${custName}`}
                         >
