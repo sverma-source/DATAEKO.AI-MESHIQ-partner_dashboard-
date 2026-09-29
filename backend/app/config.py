@@ -106,6 +106,20 @@ class Settings(BaseSettings):
     # Maximum Request Payload Size (Defense against payload flooding / memory exhaustion)
     MAX_REQUEST_BODY_BYTES: int = 2 * 1024 * 1024  # 2 MB default
 
+    # Server-Side Email Configuration (Batch E Infrastructure)
+    EMAIL_ENABLED: bool = False
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_USE_TLS: bool = True
+    EMAIL_FROM_ADDRESS: str = "noreply@dataeko.ai"
+    EMAIL_FROM_NAME: str = "DATAEKO × meshIQ Assessment Platform"
+
+    # Server-Side Test Distribution Recipients (Placeholders for dev/test)
+    TEST_RECIPIENT_ROOP: Optional[str] = None
+    TEST_RECIPIENT_SUMIT: Optional[str] = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -158,6 +172,16 @@ class Settings(BaseSettings):
             raise ValueError(
                 f"DB_POOL_TIMEOUT must be between 1 and 300 seconds (got {self.DB_POOL_TIMEOUT})."
             )
+
+        # Email configuration validation
+        if not (1 <= self.SMTP_PORT <= 65535):
+            raise ValueError(f"SMTP_PORT must be between 1 and 65535 (got {self.SMTP_PORT}).")
+
+        if self.EMAIL_ENABLED:
+            if not self.SMTP_HOST or not self.SMTP_HOST.strip():
+                raise ValueError("SMTP_HOST must be specified when EMAIL_ENABLED is True.")
+            if not self.EMAIL_FROM_ADDRESS or "@" not in self.EMAIL_FROM_ADDRESS:
+                raise ValueError(f"EMAIL_FROM_ADDRESS must be a valid email address (got '{self.EMAIL_FROM_ADDRESS}').")
 
         # Validate trusted proxy IP/CIDR syntax
         for proxy_entry in self.TRUSTED_PROXY_IPS:
@@ -277,6 +301,13 @@ class Settings(BaseSettings):
             "rate_limit_calculation_per_minute": self.RATE_LIMIT_CALCULATION_PER_MINUTE,
             "trusted_proxy_ips_count": len(self.TRUSTED_PROXY_IPS),
             "max_request_body_bytes": self.MAX_REQUEST_BODY_BYTES,
+            "email_enabled": self.EMAIL_ENABLED,
+            "smtp_host_configured": bool(self.SMTP_HOST and self.SMTP_HOST.strip()),
+            "smtp_port": self.SMTP_PORT,
+            "smtp_use_tls": self.SMTP_USE_TLS,
+            "email_from_address": self.EMAIL_FROM_ADDRESS,
+            "email_from_name": self.EMAIL_FROM_NAME,
+            "test_recipients_configured": bool(self.TEST_RECIPIENT_ROOP or self.TEST_RECIPIENT_SUMIT),
         }
 
 
