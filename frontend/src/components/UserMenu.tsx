@@ -58,9 +58,10 @@ export const UserMenu: React.FC = () => {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-[#F1F3F7] hover:bg-[#E2E6EE] border border-[#CBD2DE] text-[#172033] text-xs transition"
+        className="flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-[#F1F3F7] hover:bg-[#E8ECF2] border border-[#CBD2DE] text-[#172033] text-xs transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 cursor-pointer"
         aria-expanded={isOpen}
         aria-haspopup="true"
+        aria-label="User account menu"
       >
         <div className="h-6 w-6 rounded-full bg-[#EEF8F0] border border-[#A8E2B5] flex items-center justify-center text-[#008638] font-bold text-[11px]">
           {user.full_name ? user.full_name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
@@ -68,15 +69,15 @@ export const UserMenu: React.FC = () => {
         <div className="text-left hidden lg:block">
           <div className="font-semibold text-[#172033] truncate max-w-[120px]">{user.full_name || user.email}</div>
         </div>
-        <ChevronDown className="h-3.5 w-3.5 text-[#667085]" />
+        <ChevronDown className="h-3.5 w-3.5 text-[#5B6579]" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 rounded-xl bg-white border border-[#E2E6EE] shadow-xl py-2 z-50 text-xs">
+        <div className="absolute right-0 mt-2 w-64 rounded-xl bg-white border border-[#E2E6EE] shadow-lg py-2 z-50 text-xs">
           {/* User Details */}
           <div className="px-4 py-2 border-b border-[#E2E6EE]">
             <p className="font-bold text-[#172033] truncate">{user.full_name || "Enterprise User"}</p>
-            <p className="text-[#667085] truncate text-[11px]">{user.email}</p>
+            <p className="text-[#5B6579] truncate text-[11px]">{user.email}</p>
             <div className="mt-2 flex items-center justify-between">
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${getRoleBadgeStyle(
@@ -90,8 +91,8 @@ export const UserMenu: React.FC = () => {
           </div>
 
           {/* Tenant Info */}
-          <div className="px-4 py-2 border-b border-[#E2E6EE] text-[11px] text-[#667085] flex items-center space-x-2">
-            <Building className="h-3.5 w-3.5 text-[#667085] shrink-0" />
+          <div className="px-4 py-2 border-b border-[#E2E6EE] text-[11px] text-[#5B6579] flex items-center space-x-2">
+            <Building className="h-3.5 w-3.5 text-[#5B6579] shrink-0" />
             <span className="truncate">Tenant: <span className="font-mono text-[#172033]">{user.tenant_id.slice(0, 8)}...</span></span>
           </div>
 
@@ -99,7 +100,7 @@ export const UserMenu: React.FC = () => {
           <div className="pt-1">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center space-x-2 px-4 py-2 text-rose-600 hover:bg-rose-50 transition text-left font-medium"
+              className="w-full flex items-center space-x-2 px-4 py-2 text-rose-600 hover:bg-rose-50 transition-colors duration-150 text-left font-medium cursor-pointer focus:outline-none focus-visible:bg-rose-50"
             >
               <LogOut className="h-3.5 w-3.5 text-rose-500" />
               <span>Sign Out</span>

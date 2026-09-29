@@ -39,7 +39,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
   };
 
   return (
-    <nav aria-label="Assessment Sections Navigation" className="w-full bg-[#F1F3F7] border-b border-[#E2E6EE]">
+    <nav aria-label="Assessment Sections Navigation" className="w-full bg-[#F7F8FA] border-b border-[#E2E6EE]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex space-x-1.5 sm:space-x-2 overflow-x-auto py-2.5 no-scrollbar scroll-smooth">
           {sections.map((sec) => {
@@ -51,33 +51,33 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                 key={sec.id}
                 type="button"
                 onClick={() => onSelectSection(sec.id)}
-                title={sec.title}
+                title={`${sec.id}. ${sec.title} — ${stats.answered}/${stats.total} questions answered`}
                 aria-current={isActive ? "step" : undefined}
-                aria-label={`${sec.title} - ${
+                aria-label={`Section ${sec.id}: ${sec.title} — ${
                   stats.isComplete
                     ? "Completed"
                     : `${stats.answered} of ${stats.total} questions answered`
                 }`}
-                className={`group flex items-center space-x-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-2 ${
+                className={`group relative flex items-center space-x-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-semibold transition-colors duration-150 whitespace-nowrap border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 cursor-pointer ${
                   isActive
-                    ? "bg-white text-[#172033] border-[#008638] shadow-xs ring-2 ring-[#008638]/20 font-bold"
+                    ? "bg-white text-[#172033] border-[#008638] shadow-xs ring-1 ring-[#008638]/20 font-bold"
                     : stats.isComplete
-                    ? "bg-white text-[#172033] border-[#E2E6EE] hover:border-[#A8E2B5]"
+                    ? "bg-white text-[#172033] border-[#E2E6EE] hover:border-[#A8E2B5] hover:bg-[#FAFBFD]"
                     : stats.isPartial
-                    ? "bg-white/90 text-[#172033] border-amber-200/80 hover:bg-white"
-                    : "text-[#667085] bg-white/60 border-transparent hover:bg-white/90 hover:text-[#172033]"
+                    ? "bg-white text-[#172033] border-amber-300 hover:border-amber-400 hover:bg-[#FFFDF9]"
+                    : "text-[#5B6579] bg-white/70 border-[#E2E6EE] hover:bg-white hover:text-[#172033] hover:border-[#CBD2DE]"
                 }`}
               >
                 {/* Status Indicator Badge */}
                 <div
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-colors ${
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-colors duration-150 ${
                     stats.isComplete
                       ? "bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]"
                       : stats.isPartial
                       ? "bg-amber-50 text-amber-700 border border-amber-300"
                       : isActive
                       ? "bg-[#008638] text-white"
-                      : "bg-[#E2E6EE] text-[#667085]"
+                      : "bg-[#F1F3F7] text-[#5B6579] border border-[#E2E6EE]"
                   }`}
                   aria-hidden="true"
                 >
@@ -98,7 +98,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                         ? "font-extrabold text-[#172033]"
                         : stats.isComplete || stats.isPartial
                         ? "font-bold text-[#172033]"
-                        : "font-semibold text-[#475467] group-hover:text-[#172033]"
+                        : "font-semibold text-[#5B6579] group-hover:text-[#172033]"
                     }`}
                   >
                     {sec.title}
@@ -109,7 +109,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                         ? "text-[#008638] font-semibold"
                         : stats.isPartial
                         ? "text-amber-700 font-semibold"
-                        : "text-[#667085]"
+                        : "text-[#8A94A6]"
                     }`}
                   >
                     {stats.isComplete
@@ -127,9 +127,9 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
             onClick={() => onSelectSection("REVIEW")}
             aria-current={currentSectionId === "REVIEW" ? "step" : undefined}
             aria-label="Review & Submit - Assessment Summary"
-            className={`flex items-center space-x-2 px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-2 ${
+            className={`flex items-center space-x-2 px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-colors duration-150 whitespace-nowrap border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 cursor-pointer ${
               currentSectionId === "REVIEW"
-                ? "bg-white text-[#008638] border-[#008638] shadow-xs ring-2 ring-[#008638]/20"
+                ? "bg-white text-[#008638] border-[#008638] shadow-xs ring-1 ring-[#008638]/20"
                 : "text-[#172033] bg-[#EEF8F0] border-[#A8E2B5] hover:bg-[#E2F5E6]"
             }`}
           >

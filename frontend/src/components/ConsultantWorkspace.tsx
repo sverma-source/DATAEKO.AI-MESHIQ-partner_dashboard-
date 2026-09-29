@@ -588,28 +588,28 @@ export const ConsultantWorkspace: React.FC = () => {
   const draftCount = assessments.length - submittedCount;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto py-4" data-testid="consultant-portfolio-workspace">
-      {/* Workspace Header Banner */}
-      <div className="rounded-2xl bg-white p-6 sm:p-8 border border-[#E2E6EE] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center space-x-3">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]">
-              <Shield className="h-3.5 w-3.5 mr-1" />
+    <div className="space-y-6 max-w-7xl mx-auto py-3" data-testid="consultant-portfolio-workspace">
+      {/* Enterprise Page Header */}
+      <div className="rounded-2xl bg-white p-6 sm:p-7 border border-[#E2E6EE] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+        <div className="space-y-1.5 max-w-3xl">
+          <div className="flex items-center space-x-2.5">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]">
+              <Shield className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
               Advisory &amp; Review Workspace
             </span>
-            <span className="text-xs text-[#667085] font-medium">Consultant Persona</span>
+            <span className="text-xs text-[#5B6579] font-medium">Consultant Persona</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172033] tracking-tight">
             Customer &amp; Assessment Portfolio
           </h1>
-          <p className="text-sm text-[#667085] max-w-3xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#5B6579] leading-relaxed">
             Welcome to the Consultant Engagement Workspace. Review client-submitted Q01–Q22 discovery responses, inspect authoritative 12-section economic summaries, and access scenario models across your authorized customer tenant scope.
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <div className="rounded-xl bg-[#F8FAFC] p-3.5 border border-[#E2E6EE] text-right">
-            <div className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider">
+          <div className="rounded-xl bg-[#F8FAFC] px-4 py-3 border border-[#E2E6EE] text-right">
+            <div className="text-[10px] font-bold text-[#8A94A6] uppercase tracking-wider">
               Active Tenant Scope
             </div>
             <div className="text-xs font-bold text-[#172033] font-mono mt-0.5">
@@ -619,34 +619,38 @@ export const ConsultantWorkspace: React.FC = () => {
         </div>
       </div>
 
-      {/* Metric Stats Cards */}
+      {/* Enterprise Metric Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">
+        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-xs space-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#5B6579]">
             Total Assessments
           </span>
           <div className="text-2xl font-extrabold text-[#172033]">{assessments.length}</div>
+          <div className="text-[11px] text-[#8A94A6]">Across tenant scope</div>
         </div>
 
-        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
+        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-xs space-y-1">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-[#008638]">
             Submitted &amp; Finalized
           </span>
           <div className="text-2xl font-extrabold text-[#008638]">{submittedCount}</div>
+          <div className="text-[11px] text-[#008638]/80 font-medium">Ready for advisory review</div>
         </div>
 
-        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
+        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-xs space-y-1">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-700">
             Draft / In Progress
           </span>
           <div className="text-2xl font-extrabold text-amber-700">{draftCount}</div>
+          <div className="text-[11px] text-amber-600 font-medium">In client discovery</div>
         </div>
 
-        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">
+        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-xs space-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#5B6579]">
             Active Customers
           </span>
           <div className="text-2xl font-extrabold text-[#172033]">{customers.length}</div>
+          <div className="text-[11px] text-[#8A94A6]">Client organizations</div>
         </div>
       </div>
 
@@ -655,13 +659,13 @@ export const ConsultantWorkspace: React.FC = () => {
         {/* Table Filter & Search Controls */}
         <div className="p-4 sm:p-5 border-b border-[#E2E6EE] bg-[#FAFAFA] flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="relative w-full sm:w-80">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#667085]" />
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#5B6579]" aria-hidden="true" />
             <input
               type="text"
               placeholder="Search customer or assessment..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-white border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] placeholder-[#8A94A6] focus:outline-none focus:ring-2 focus:ring-[#008638]"
+              className="w-full pl-9 pr-3 py-2 bg-white border border-[#CBD2DE] rounded-lg text-xs font-medium text-[#172033] placeholder-[#8A94A6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors duration-150"
             />
           </div>
 
@@ -670,10 +674,10 @@ export const ConsultantWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStatusFilter("ALL")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   statusFilter === "ALL"
                     ? "bg-[#008638] text-white"
-                    : "text-[#667085] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033]"
                 }`}
               >
                 All ({assessments.length})
@@ -681,10 +685,10 @@ export const ConsultantWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStatusFilter("SUBMITTED")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   statusFilter === "SUBMITTED"
                     ? "bg-[#008638] text-white"
-                    : "text-[#667085] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033]"
                 }`}
               >
                 Submitted ({submittedCount})
@@ -692,10 +696,10 @@ export const ConsultantWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStatusFilter("DRAFT")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   statusFilter === "DRAFT"
                     ? "bg-[#008638] text-white"
-                    : "text-[#667085] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033]"
                 }`}
               >
                 Draft ({draftCount})
@@ -707,7 +711,8 @@ export const ConsultantWorkspace: React.FC = () => {
               onClick={fetchPortfolioData}
               disabled={isLoading}
               title="Refresh Portfolio"
-              className="p-2 rounded-lg border border-[#CBD2DE] bg-white text-[#667085] hover:text-[#172033] hover:bg-[#F1F3F7] transition-colors cursor-pointer"
+              aria-label="Refresh Portfolio"
+              className="p-2 rounded-lg border border-[#CBD2DE] bg-white text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7] transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638]"
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             </button>
@@ -727,7 +732,7 @@ export const ConsultantWorkspace: React.FC = () => {
             <button
               type="button"
               onClick={fetchPortfolioData}
-              className="text-xs font-bold text-rose-700 underline"
+              className="text-xs font-bold text-rose-700 underline cursor-pointer"
             >
               Retry
             </button>
@@ -738,7 +743,7 @@ export const ConsultantWorkspace: React.FC = () => {
         {isLoading && (
           <div className="p-12 text-center space-y-3">
             <Loader2 className="h-6 w-6 animate-spin text-[#008638] mx-auto" />
-            <p className="text-xs font-semibold text-[#667085]">Loading assessment portfolio...</p>
+            <p className="text-xs font-semibold text-[#5B6579]">Loading assessment portfolio...</p>
           </div>
         )}
 
@@ -746,7 +751,7 @@ export const ConsultantWorkspace: React.FC = () => {
         {!isLoading && filteredAssessments.length === 0 && (
           <div className="p-12 sm:p-16 text-center space-y-3">
             <div className="mx-auto h-12 w-12 rounded-full bg-[#EEF8F0] text-[#008638] flex items-center justify-center border border-[#A8E2B5]">
-              <FolderOpen className="h-6 w-6" />
+              <FolderOpen className="h-6 w-6" aria-hidden="true" />
             </div>
             <div className="space-y-1 max-w-md mx-auto">
               <h3 className="text-sm font-bold text-[#172033]">
@@ -754,7 +759,7 @@ export const ConsultantWorkspace: React.FC = () => {
                   ? `No assessments found matching "${searchQuery}"`
                   : "No assessments are currently available in your authorized workspace."}
               </h3>
-              <p className="text-xs text-[#667085] leading-relaxed">
+              <p className="text-xs text-[#5B6579] leading-relaxed">
                 {searchQuery
                   ? "Try adjusting your search terms or filter selection."
                   : "When client assessments are created or submitted within your partner tenant scope, they will appear here for advisory review."}
@@ -768,7 +773,7 @@ export const ConsultantWorkspace: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-[#E2E6EE] bg-[#F7F8FA] text-[#667085] uppercase tracking-wider text-[11px] font-semibold">
+                <tr className="border-b border-[#E2E6EE] bg-[#F7F8FA] text-[#5B6579] uppercase tracking-wider text-[11px] font-semibold">
                   <th className="py-3.5 px-4 sm:px-6">Customer Organization</th>
                   <th className="py-3.5 px-4">Assessment Title &amp; ID</th>
                   <th className="py-3.5 px-4">Status</th>
@@ -788,19 +793,19 @@ export const ConsultantWorkspace: React.FC = () => {
                     : "—";
 
                   return (
-                    <tr key={ass.id} className="hover:bg-[#FAFBFD] transition-colors group">
+                    <tr key={ass.id} className="interactive-row group">
                       {/* Customer */}
-                      <td className="py-4 px-4 sm:px-6 font-bold text-[#172033]">
+                      <td className="py-3.5 px-4 sm:px-6 font-bold text-[#172033]">
                         <div className="flex items-center space-x-2.5">
                           <div className="h-8 w-8 rounded-lg bg-[#F0F2F6] flex items-center justify-center text-[#5B6579] shrink-0 border border-[#E2E6EE]">
-                            <Building2 className="h-4 w-4" />
+                            <Building2 className="h-4 w-4" aria-hidden="true" />
                           </div>
                           <span className="truncate max-w-xs">{custName}</span>
                         </div>
                       </td>
 
                       {/* Title & Reference */}
-                      <td className="py-4 px-4">
+                      <td className="py-3.5 px-4">
                         <div className="space-y-0.5">
                           <div className="font-semibold text-[#172033] truncate max-w-xs">
                             {ass.title || "Enterprise IBM MQ Assessment"}
@@ -812,20 +817,20 @@ export const ConsultantWorkspace: React.FC = () => {
                       </td>
 
                       {/* Status */}
-                      <td className="py-4 px-4">{renderStatusBadge(ass.status)}</td>
+                      <td className="py-3.5 px-4">{renderStatusBadge(ass.status)}</td>
 
                       {/* Date */}
-                      <td className="py-4 px-4 text-[#667085] font-medium">{formattedDate}</td>
+                      <td className="py-3.5 px-4 text-[#5B6579] font-medium">{formattedDate}</td>
 
                       {/* Action */}
-                      <td className="py-4 px-4 sm:px-6 text-right">
+                      <td className="py-3.5 px-4 sm:px-6 text-right">
                         <button
                           type="button"
                           onClick={() => handleOpenAssessment(ass.id, "summary")}
-                          className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-[#008638] text-white font-bold text-xs hover:bg-[#006B2D] transition-colors shadow-2xs cursor-pointer"
+                          className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-[#008638] text-white font-bold text-xs hover:bg-[#006B2D] transition-colors duration-150 shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1"
                           aria-label={`Open Assessment for ${custName}`}
                         >
-                          <FileSearch className="h-3.5 w-3.5" />
+                          <FileSearch className="h-3.5 w-3.5" aria-hidden="true" />
                           <span>Open Assessment</span>
                         </button>
                       </td>

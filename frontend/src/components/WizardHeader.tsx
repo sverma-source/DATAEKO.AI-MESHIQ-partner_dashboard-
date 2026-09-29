@@ -30,24 +30,24 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
   return (
     <div className="bg-white border-b border-[#E2E6EE] px-4 py-4 sm:px-6 lg:px-8 shadow-xs">
       <div className="mx-auto max-w-7xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        {/* Section Context */}
+        {/* Section Context & Hierarchy */}
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#008638]">
             <span>Section {currentSection.id} of {totalSections}</span>
-            <span className="text-[#CBD2DE]">•</span>
+            <span className="text-[#CBD2DE]" aria-hidden="true">•</span>
             <span>{answeredCount} of {totalQuestions} Questions Answered</span>
           </div>
           <h1 className="text-xl font-extrabold text-[#172033] sm:text-2xl tracking-tight mt-0.5">
             {currentSection.title}
           </h1>
-          <p className="text-xs sm:text-sm text-[#667085] mt-0.5 max-w-2xl">{currentSection.subtitle}</p>
+          <p className="text-xs sm:text-sm text-[#5B6579] mt-0.5 max-w-2xl leading-relaxed">{currentSection.subtitle}</p>
         </div>
 
         {/* Action & Progress */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:self-center">
           {/* Progress Bar & Percentage */}
           <div className="flex items-center space-x-3 w-full sm:w-48">
-            <div className="flex-1 bg-[#F1F3F7] rounded-full h-2.5 overflow-hidden border border-[#E2E6EE]">
+            <div className="flex-1 bg-[#F1F3F7] rounded-full h-2 overflow-hidden border border-[#E2E6EE]">
               <div
                 className="bg-[#008638] h-full rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${percentage}%` }}
@@ -64,12 +64,12 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
           </div>
 
           {/* Save Status & Action */}
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1.5 text-xs text-[#667085] mr-1" aria-live="polite">
+          <div className="flex items-center space-x-2.5">
+            <div className="flex items-center space-x-1.5 text-xs text-[#5B6579] mr-1" aria-live="polite">
               {saveStatus === "saving" ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-[#008638]" />
-                  <span>Saving...</span>
+                  <span className="text-[#008638] font-semibold">Saving...</span>
                 </>
               ) : saveStatus === "initialized" ? (
                 <>
@@ -96,9 +96,9 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
               onClick={onSave}
               disabled={isSaving}
               aria-label="Save Progress"
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#CBD2DE] bg-white text-[#172033] hover:bg-[#F1F3F7] focus:outline-none focus:ring-2 focus:ring-[#008638] focus:ring-offset-1 transition-colors shadow-xs disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#CBD2DE] bg-white text-[#172033] hover:bg-[#F1F3F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 transition-colors duration-150 shadow-xs disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
-              <Save className="h-3.5 w-3.5 text-[#667085]" />
+              <Save className="h-3.5 w-3.5 text-[#5B6579]" />
               <span>Save Progress</span>
             </button>
           </div>

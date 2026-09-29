@@ -42,19 +42,38 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     overrideValue !== undefined && overrideValue !== null && overrideValue !== ""
   );
 
+  const isAnswered =
+    (selectedValue !== undefined && selectedValue !== null && selectedValue !== "") ||
+    (overrideValue !== undefined && overrideValue !== null && overrideValue !== "");
+
   return (
-    <div className="rounded-xl border border-[#E2E6EE] bg-white p-4 sm:p-5 shadow-xs transition-all hover:border-[#CBD2DE]">
+    <div
+      className={`rounded-xl border bg-white p-4 sm:p-5 shadow-xs transition-colors duration-150 ${
+        error
+          ? "border-rose-300 ring-1 ring-rose-200"
+          : isAnswered
+          ? "border-[#D4EAD8] hover:border-[#A8E2B5]"
+          : "border-[#E2E6EE] hover:border-[#CBD2DE]"
+      }`}
+    >
       {/* Top Header: Code, Title, Feeds Calculation Tag */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start space-x-2.5">
-          <span className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-md bg-[#EEF8F0] font-mono text-xs font-bold text-[#008638] border border-[#A8E2B5] mt-0.5">
+        <div className="flex items-start space-x-2.5 min-w-0">
+          <span
+            className={`flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-md font-mono text-xs font-bold mt-0.5 border ${
+              isAnswered
+                ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]"
+                : "bg-[#F1F3F7] text-[#5B6579] border-[#E2E6EE]"
+            }`}
+            aria-label={`Question code ${question.code}`}
+          >
             {question.code}
           </span>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-sm sm:text-base font-bold text-[#172033] tracking-tight leading-snug">
               {question.title}
             </h2>
-            <span className="text-[11px] text-[#667085] font-medium block mt-0.5">
+            <span className="text-[11px] text-[#5B6579] font-medium block mt-0.5">
               Theme: {question.theme}
             </span>
           </div>
@@ -66,7 +85,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             className="flex items-center space-x-1.5 rounded-full bg-[#EEF8F0] px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-[#008638] border border-[#A8E2B5] shrink-0"
             title={question.calculationNote || "Directly feeds economic engine"}
           >
-            <Calculator className="h-3 w-3 text-[#38B449]" />
+            <Calculator className="h-3 w-3 text-[#38B449]" aria-hidden="true" />
             <span className="hidden sm:inline">Feeds Calculation</span>
           </div>
         )}
@@ -84,7 +103,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           <div>
             <label
               htmlFor={`select-${question.id}`}
-              className="block text-xs font-semibold text-[#667085] mb-1"
+              className="block text-xs font-semibold text-[#5B6579] mb-1"
             >
               Select Approved Response
             </label>
@@ -96,9 +115,11 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 aria-label={`${question.code}: ${question.title}`}
                 aria-invalid={!!error}
                 aria-describedby={error ? `error-${question.id}` : undefined}
-                className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 sm:py-2.5 pr-10 text-xs sm:text-sm font-medium text-[#172033] shadow-xs transition-colors focus:outline-none focus:ring-2 focus:ring-[#008638] focus:border-[#008638] ${
+                className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 sm:py-2.5 pr-10 text-xs sm:text-sm font-medium text-[#172033] shadow-xs transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:border-[#008638] cursor-pointer ${
                   error
                     ? "border-rose-400 focus:border-rose-500 focus:ring-rose-200"
+                    : isAnswered
+                    ? "border-[#A8E2B5] hover:border-[#008638]"
                     : "border-[#CBD2DE] hover:border-slate-400"
                 }`}
               >
@@ -109,7 +130,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#667085]">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#5B6579]" aria-hidden="true">
                 <ChevronDown className="h-4 w-4" />
               </div>
             </div>
@@ -177,15 +198,15 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                       const val = e.target.value === "" ? undefined : parseFloat(e.target.value);
                       onOverrideChange(val);
                     }}
-                    className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
+                    className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638]/20 transition-colors duration-150"
                   />
                   {question.overrideUnit && (
-                    <span className="absolute right-3 text-xs font-semibold text-[#667085] pointer-events-none">
+                    <span className="absolute right-3 text-xs font-semibold text-[#5B6579] pointer-events-none">
                       {question.overrideUnit}
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-[#667085]">
+                <p className="text-[11px] text-[#5B6579]">
                   Customer verified figure overrides categorical estimate in calculation engine.
                 </p>
               </div>
@@ -222,9 +243,9 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               onClick={() => setShowSellerNotes(!showSellerNotes)}
               aria-expanded={showSellerNotes}
               aria-controls={`guidance-${question.id}`}
-              className="flex items-center space-x-1 text-xs font-semibold text-[#667085] hover:text-[#172033] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] rounded-sm"
+              className="flex items-center space-x-1.5 text-xs font-semibold text-[#5B6579] hover:text-[#172033] transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] rounded-sm"
             >
-              <HelpCircle className="h-3.5 w-3.5" />
+              <HelpCircle className="h-3.5 w-3.5 text-[#5B6579]" />
               <span>Consultant Probing &amp; Seller Guidance</span>
               {showSellerNotes ? (
                 <ChevronUp className="h-3 w-3" />
@@ -234,7 +255,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             </button>
             {showSellerNotes && (
               <div id={`guidance-${question.id}`} className="mt-2 rounded-lg bg-amber-50/80 p-3 border border-amber-200 text-xs text-amber-900 leading-relaxed">
-                <span className="font-bold block mb-0.5">Discovery Probe:</span>
+                <span className="font-bold block mb-0.5 text-amber-950">Discovery Probe:</span>
                 {question.sellerGuidance}
               </div>
             )}

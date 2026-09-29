@@ -1,28 +1,63 @@
 @import "tailwindcss";
 
 @theme {
+  /* meshIQ Core Palette */
   --color-meshiq: #38b449;
   --color-meshiq-hover: #008638;
   --color-meshiq-active: #006b2d;
   --color-meshiq-light: #8cc63e;
   --color-meshiq-subtle: #eef8f0;
   --color-meshiq-border: #a8e2b5;
+
+  /* DATAEKO Platform Palette */
   --color-dataeko: #5471d3;
   --color-dataeko-hover: #435ebf;
   --color-dataeko-light: #eef2fb;
   --color-dataeko-dark: #374b94;
+
+  /* Enterprise Surface Hierarchy */
   --color-surface-black: #000000;
   --color-surface-hero: #0d1322;
   --color-surface-charcoal: #172033;
   --color-surface-app: #f7f8fa;
   --color-surface-card: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-hover: #f4f6f9;
+  --color-surface-selected: #eef8f0;
   --color-surface-muted: #f1f3f7;
   --color-surface-subtle: #e8ecf2;
+
+  /* Borders */
   --color-border-subtle: #e2e6ee;
+  --color-border-default: #d4d9e2;
   --color-border-strong: #cbd2de;
+  --color-border-focus: #008638;
+
+  /* Typography / Content Colors */
   --color-text-primary: #172033;
-  --color-text-secondary: #667085;
-  --color-text-muted: #8f9aa8;
+  --color-text-secondary: #5b6579;
+  --color-text-muted: #8a94a6;
+
+  /* Semantic Statuses */
+  --color-success: #008638;
+  --color-success-bg: #eef8f0;
+  --color-success-border: #a8e2b5;
+  --color-warning: #b45309;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-danger: #e11d48;
+  --color-danger-bg: #fff1f2;
+  --color-danger-border: #fecdd3;
+  --color-info: #0284c7;
+  --color-info-bg: #f0f9ff;
+  --color-info-border: #bae6fd;
+
+  /* Governance / Role Accents */
+  --color-governance: #722f8a;
+  --color-governance-hover: #581c87;
+  --color-governance-bg: #faf5ff;
+  --color-governance-border: #e9d5ff;
+
   --color-accent-magenta: #c92c99;
   --color-accent-pink: #ec008c;
   --color-accent-purple: #722f8a;
@@ -45,8 +80,8 @@
   --border-subtle: #e2e6ee;
   --border-strong: #cbd2de;
   --text-primary: #172033;
-  --text-secondary: #667085;
-  --text-muted: #8f9aa8;
+  --text-secondary: #5b6579;
+  --text-muted: #8a94a6;
   --background: #f7f8fa;
   --foreground: #172033;
   --accent-magenta: #c92c99;
@@ -58,6 +93,8 @@ body {
   background-color: #f7f8fa;
   color: #172033;
   font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom subtle scrollbar */
@@ -67,4 +104,43 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Enterprise Interactive States & Hover Policy */
+.interactive-row {
+  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.interactive-row:hover {
+  background-color: #f8fafc;
+}
+
+.interactive-card {
+  transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.interactive-card:hover {
+  border-color: #cbd2de;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+}
+
+/* Accessible Keyboard Focus Ring */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid #008638;
+  outline-offset: 2px;
+}
+
+/* Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

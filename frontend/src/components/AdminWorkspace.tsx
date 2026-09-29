@@ -427,32 +427,32 @@ export const AdminWorkspace: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto py-4" data-testid="admin-workspace">
-      {/* Workspace Header Banner */}
-      <div className="rounded-2xl bg-white p-6 sm:p-8 border border-[#E2E6EE] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center space-x-3">
+    <div className="space-y-6 max-w-7xl mx-auto py-3" data-testid="admin-workspace">
+      {/* Enterprise Workspace Header Banner */}
+      <div className="rounded-2xl bg-white p-6 sm:p-7 border border-[#E2E6EE] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+        <div className="space-y-1.5 max-w-3xl">
+          <div className="flex items-center space-x-2.5">
             <span
-              className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${scopeConfig.badge}`}
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${scopeConfig.badge}`}
             >
-              <ShieldCheck className="h-3.5 w-3.5 mr-1" />
+              <ShieldCheck className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
               {scopeConfig.title}
             </span>
-            <span className="text-xs text-[#667085] font-medium">
+            <span className="text-xs text-[#5B6579] font-medium">
               {scopeConfig.personaTitle}
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172033] tracking-tight">
             Administration &amp; Governance Workspace
           </h1>
-          <p className="text-sm text-[#667085] max-w-3xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#5B6579] leading-relaxed">
             {scopeConfig.desc}
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <div className="rounded-xl bg-[#F8FAFC] p-3.5 border border-[#E2E6EE] text-right">
-            <div className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider">
+          <div className="rounded-xl bg-[#F8FAFC] px-4 py-3 border border-[#E2E6EE] text-right">
+            <div className="text-[10px] font-bold text-[#8A94A6] uppercase tracking-wider">
               {scopeConfig.scopeLabel}
             </div>
             <div className="text-xs font-bold text-[#172033] font-mono mt-0.5">
@@ -469,7 +469,7 @@ export const AdminWorkspace: React.FC = () => {
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             <span>{successMessage}</span>
           </div>
-          <button type="button" onClick={() => setSuccessMessage(null)} className="text-[#008638] hover:opacity-75">
+          <button type="button" onClick={() => setSuccessMessage(null)} className="text-[#008638] hover:opacity-75 cursor-pointer">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -482,7 +482,7 @@ export const AdminWorkspace: React.FC = () => {
             <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
             <span>{error}</span>
           </div>
-          <button type="button" onClick={() => setError(null)} className="text-rose-700 underline font-bold">
+          <button type="button" onClick={() => setError(null)} className="text-rose-700 underline font-bold cursor-pointer">
             Dismiss
           </button>
         </div>
@@ -490,32 +490,36 @@ export const AdminWorkspace: React.FC = () => {
 
       {/* Governance Summary Metrics Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">
+        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-xs space-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#5B6579]">
             Authorized Users
           </span>
           <div className="text-2xl font-extrabold text-[#172033]">{usersList.length}</div>
+          <div className="text-[11px] text-[#8A94A6]">Directory accounts</div>
         </div>
 
-        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">
+        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-xs space-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#5B6579]">
             Authorized Customers
           </span>
           <div className="text-2xl font-extrabold text-[#172033]">{customers.length}</div>
+          <div className="text-[11px] text-[#8A94A6]">Client organizations</div>
         </div>
 
-        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
+        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-xs space-y-1">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-[#008638]">
             Assessment Registry
           </span>
           <div className="text-2xl font-extrabold text-[#008638]">{assessments.length}</div>
+          <div className="text-[11px] text-[#008638]/80 font-medium">All registered instances</div>
         </div>
 
-        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-2xs space-y-1">
+        <div className="rounded-xl bg-white p-4 border border-[#E2E6EE] shadow-xs space-y-1">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-700">
             Submitted &amp; Finalized
           </span>
           <div className="text-2xl font-extrabold text-amber-700">{submittedAssessmentsCount}</div>
+          <div className="text-[11px] text-amber-600 font-medium">Completed assessments</div>
         </div>
       </div>
 
@@ -527,52 +531,52 @@ export const AdminWorkspace: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab("users")}
-              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 activeTab === "users"
                   ? "bg-[#008638] text-white"
-                  : "text-[#667085] hover:text-[#172033]"
+                  : "text-[#5B6579] hover:text-[#172033]"
               }`}
             >
-              <Users className="h-3.5 w-3.5" />
+              <Users className="h-3.5 w-3.5" aria-hidden="true" />
               <span>User Directory ({usersList.length})</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("customers")}
-              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 activeTab === "customers"
                   ? "bg-[#008638] text-white"
-                  : "text-[#667085] hover:text-[#172033]"
+                  : "text-[#5B6579] hover:text-[#172033]"
               }`}
             >
-              <Building2 className="h-3.5 w-3.5" />
+              <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Customer Directory ({customers.length})</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("assessments")}
-              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 activeTab === "assessments"
                   ? "bg-[#008638] text-white"
-                  : "text-[#667085] hover:text-[#172033]"
+                  : "text-[#5B6579] hover:text-[#172033]"
               }`}
             >
-              <Layers className="h-3.5 w-3.5" />
+              <Layers className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Assessment Registry ({assessments.length})</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("audit")}
-              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 activeTab === "audit"
                   ? "bg-[#008638] text-white"
-                  : "text-[#667085] hover:text-[#172033]"
+                  : "text-[#5B6579] hover:text-[#172033]"
               }`}
             >
-              <ScrollText className="h-3.5 w-3.5" />
+              <ScrollText className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Audit Trail &amp; Compliance</span>
             </button>
           </div>
@@ -666,14 +670,16 @@ export const AdminWorkspace: React.FC = () => {
             {filteredUsers.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <div className="mx-auto h-12 w-12 rounded-full bg-[#EEF8F0] text-[#008638] flex items-center justify-center border border-[#A8E2B5]">
-                  <Users className="h-6 w-6" />
+                  <Users className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <div className="space-y-1 max-w-md mx-auto">
                   <h3 className="text-sm font-bold text-[#172033]">
                     {userSearch ? `No users matching "${userSearch}"` : "No users found in authorized scope."}
                   </h3>
-                  <p className="text-xs text-[#667085]">
-                    User accounts created for your organization will appear here.
+                  <p className="text-xs text-[#5B6579]">
+                    {userSearch
+                      ? "Check your search query or reset the role and status filters."
+                      : "User accounts provisioned for your organization will appear here."}
                   </p>
                 </div>
               </div>
@@ -681,7 +687,7 @@ export const AdminWorkspace: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-[#E2E6EE] bg-[#F7F8FA] text-[#667085] uppercase tracking-wider text-[11px] font-semibold">
+                    <tr className="border-b border-[#E2E6EE] bg-[#F7F8FA] text-[#5B6579] uppercase tracking-wider text-[11px] font-semibold">
                       <th className="py-3.5 px-4 sm:px-6">Full Name &amp; Identity</th>
                       <th className="py-3.5 px-4">Role Assignment</th>
                       <th className="py-3.5 px-4">Account Status</th>
@@ -697,44 +703,44 @@ export const AdminWorkspace: React.FC = () => {
                         : "—";
 
                       return (
-                        <tr key={u.id} className="hover:bg-[#FAFBFD] transition-colors">
-                          <td className="py-4 px-4 sm:px-6 font-bold text-[#172033]">
+                        <tr key={u.id} className="interactive-row group">
+                          <td className="py-3.5 px-4 sm:px-6 font-bold text-[#172033]">
                             <div className="flex items-center space-x-2.5">
                               <div className="h-8 w-8 rounded-lg bg-[#F0F2F6] flex items-center justify-center text-[#5B6579] shrink-0 border border-[#E2E6EE]">
-                                <UserCheck className="h-4 w-4" />
+                                <UserCheck className="h-4 w-4" aria-hidden="true" />
                               </div>
                               <div>
                                 <span className="block truncate max-w-xs">{u.full_name || "Enterprise User"}</span>
-                                <span className="font-mono text-[10px] text-[#667085] block">{u.email}</span>
+                                <span className="font-mono text-[10px] text-[#8A94A6] block">{u.email}</span>
                               </div>
                             </div>
                           </td>
 
-                          <td className="py-4 px-4">
+                          <td className="py-3.5 px-4">
                             <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
                               {u.role}
                             </span>
                           </td>
 
-                          <td className="py-4 px-4">
+                          <td className="py-3.5 px-4">
                             {u.is_active ? (
                               <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]">
-                                <CheckCircle2 className="h-3 w-3" />
+                                <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
                                 <span>Active</span>
                               </span>
                             ) : (
                               <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200">
-                                <UserX className="h-3 w-3" />
+                                <UserX className="h-3 w-3" aria-hidden="true" />
                                 <span>Deactivated</span>
                               </span>
                             )}
                           </td>
 
-                          <td className="py-4 px-4 font-mono text-[10px] text-[#667085]">
+                          <td className="py-3.5 px-4 font-mono text-[10px] text-[#8A94A6]">
                             {u.tenant_id ? `${u.tenant_id.slice(0, 10)}...` : "System"}
                           </td>
 
-                          <td className="py-4 px-4 text-[#667085] font-medium">{regDate}</td>
+                          <td className="py-3.5 px-4 text-[#5B6579] font-medium">{regDate}</td>
 
                           <td className="py-4 px-4 sm:px-6 text-right space-x-1.5">
                             {canProvisionUsers && (
