@@ -152,6 +152,7 @@ async def create_user(
         tenant_id=target_tenant_id,
         customer_id=target_customer_id,
         is_active=False,
+        auth_version=1,
     )
     db.add(new_user)
     await db.flush()
@@ -264,7 +265,7 @@ async def update_user(
     if current_user.role in [Role.CUSTOMER_USER.value, Role.CONSULTANT.value]:
         raise PermissionDeniedError("You do not have permission to update users.")
 
-    # 2. Fetch target user within administrator's authorized scope
+    # 2. Fetch target user within administrator's authorized scope (with row locking)
     if current_user.role == Role.CUSTOMER_ADMIN.value:
         if not current_user.customer_id:
             raise PermissionDeniedError("Customer administrator has no assigned customer organization scope.")
@@ -272,9 +273,9 @@ async def update_user(
             User.id == user_id,
             User.tenant_id == current_user.tenant_id,
             User.customer_id == current_user.customer_id,
-        )
+        ).with_for_update()
     else:
-        stmt = select(User).where(User.id == user_id, User.tenant_id == tenant_id)
+        stmt = select(User).where(User.id == user_id, User.tenant_id == tenant_id).with_for_update()
 
     res = await db.execute(stmt)
     target_user = res.scalar_one_or_none()
@@ -325,8 +326,14 @@ async def update_user(
         )
 
     if payload.is_active is not None and payload.is_active != target_user.is_active:
+        was_active = target_user.is_active
         target_user.is_active = payload.is_active
         updated_fields.append("is_active")
+
+        # Increment session auth_version upon deactivation (TRUE -> FALSE) to invalidate active JWTs
+        if was_active and not target_user.is_active:
+            target_user.auth_version = (target_user.auth_version or 1) + 1
+
         event_name = "USER_ACTIVATED" if target_user.is_active else "USER_DEACTIVATED"
         await log_audit_event(
             session=db,
@@ -336,7 +343,7 @@ async def update_user(
             resource_type="User",
             resource_id=target_user.id,
             status="SUCCESS",
-            details={"email": target_user.email, "is_active": target_user.is_active},
+            details={"email": target_user.email, "is_active": target_user.is_active, "auth_version": target_user.auth_version},
         )
 
     if updated_fields:

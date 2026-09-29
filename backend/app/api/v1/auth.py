@@ -73,6 +73,7 @@ async def login(
         tenant_id=user.tenant_id,
         role=user.role,
         email=user.email,
+        auth_version=user.auth_version,
     )
 
     # Set HTTP-only, Secure, SameSite=Strict cookie

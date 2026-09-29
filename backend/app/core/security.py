@@ -27,9 +27,10 @@ def create_access_token(
     tenant_id: str,
     role: str,
     email: str,
+    auth_version: int = 1,
     expires_delta: Optional[timedelta] = None,
 ) -> str:
-    """Generate a signed HMAC-SHA256 JWT access token."""
+    """Generate a signed HMAC-SHA256 JWT access token with session auth_version."""
     now = datetime.now(timezone.utc)
     if expires_delta:
         expire = now + expires_delta
@@ -41,6 +42,7 @@ def create_access_token(
         "tenant_id": str(tenant_id),
         "role": str(role),
         "email": str(email),
+        "auth_version": int(auth_version),
         "exp": expire,
         "iat": now,
         "nbf": now,

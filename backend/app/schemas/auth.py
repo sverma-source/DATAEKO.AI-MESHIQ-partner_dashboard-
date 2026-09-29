@@ -25,6 +25,7 @@ class TokenPayload(BaseModel):
     tenant_id: str
     role: str
     email: str
+    auth_version: int
     exp: int
 
 

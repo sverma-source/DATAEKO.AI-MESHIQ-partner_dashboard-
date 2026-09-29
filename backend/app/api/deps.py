@@ -40,6 +40,7 @@ async def get_current_user_optional(
 ) -> Optional[User]:
     """
     Extracts and validates the current user if a token is present; returns None if anonymous.
+    Validates token signature, expiration, active status, and session auth_version.
     """
     if not token:
         return None
@@ -55,6 +56,13 @@ async def get_current_user_optional(
     stmt = select(User).where(User.id == user_id, User.is_active == True)
     res = await db.execute(stmt)
     user = res.scalar_one_or_none()
+    if not user:
+        return None
+
+    token_auth_version = payload.get("auth_version")
+    if token_auth_version is None or token_auth_version != user.auth_version:
+        return None
+
     return user
 
 
@@ -63,7 +71,7 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """
-    Strict dependency requiring an authenticated and active user.
+    Strict dependency requiring an authenticated and active user with matching auth_version.
     """
     if not token:
         raise AuthenticationError("Authentication required. Please log in.")
@@ -84,6 +92,10 @@ async def get_current_user(
         raise AuthenticationError("User associated with token does not exist.")
     if not user.is_active:
         raise AuthenticationError("User account is inactive.")
+
+    token_auth_version = payload.get("auth_version")
+    if token_auth_version is None or token_auth_version != user.auth_version:
+        raise AuthenticationError("Authentication session has been invalidated. Please log in again.")
 
     return user
 

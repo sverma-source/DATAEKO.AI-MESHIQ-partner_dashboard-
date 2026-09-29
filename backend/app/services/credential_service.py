@@ -466,8 +466,9 @@ class CredentialService:
             await db.commit()
             raise PermissionDeniedError("Account is deactivated. Please contact your system administrator.")
 
-        # Update password hash
+        # Update password hash and increment session auth_version to invalidate prior JWTs
         user.hashed_password = get_password_hash(new_password)
+        user.auth_version = (user.auth_version or 1) + 1
 
         # Mark token used
         token_record.is_used = True
@@ -482,7 +483,7 @@ class CredentialService:
             resource_type="User",
             resource_id=user.id,
             status="SUCCESS",
-            details={"email": user.email},
+            details={"email": user.email, "auth_version": user.auth_version},
             ip_address=client_ip,
         )
 

@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Optional, List
-from sqlalchemy import String, Boolean, ForeignKey, Index
+from sqlalchemy import String, Boolean, ForeignKey, Index, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
@@ -20,6 +20,7 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[str] = mapped_column(String(50), default="CONSULTANT", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    auth_version: Mapped[int] = mapped_column(Integer, default=1, server_default="1", nullable=False)
 
     # Multi-tenant foreign key
     tenant_id: Mapped[str] = mapped_column(
