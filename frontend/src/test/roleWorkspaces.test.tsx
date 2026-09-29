@@ -91,8 +91,8 @@ describe("Role-Aware Application Workspaces", () => {
       expect(screen.getByRole("heading", { name: "Administration & Governance Workspace" })).toBeInTheDocument();
     });
     expect(screen.getByText("Platform Superadmin")).toBeInTheDocument();
-    expect(screen.getByText("Platform Administration")).toBeInTheDocument();
-    expect(screen.getByText("User Management")).toBeInTheDocument();
+    expect(screen.getAllByText("Platform Administration").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("User Visibility & Identity")).toBeInTheDocument();
     expect(screen.getByText("Audit Trail & Compliance")).toBeInTheDocument();
 
     // Client wizard questions should NOT be rendered
@@ -106,7 +106,7 @@ describe("Role-Aware Application Workspaces", () => {
       expect(screen.getByRole("heading", { name: "Administration & Governance Workspace" })).toBeInTheDocument();
     });
     expect(screen.getByText("Partner Administrator")).toBeInTheDocument();
-    expect(screen.getByText("Partner Administration")).toBeInTheDocument();
+    expect(screen.getAllByText("Partner Administration").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders Admin Workspace with Customer scope when authenticated as CUSTOMER_ADMIN", async () => {
@@ -116,6 +116,6 @@ describe("Role-Aware Application Workspaces", () => {
       expect(screen.getByRole("heading", { name: "Administration & Governance Workspace" })).toBeInTheDocument();
     });
     expect(screen.getByText("Customer Administrator")).toBeInTheDocument();
-    expect(screen.getByText("Customer Administration")).toBeInTheDocument();
+    expect(screen.getAllByText("Customer Administration").length).toBeGreaterThanOrEqual(1);
   });
 });
