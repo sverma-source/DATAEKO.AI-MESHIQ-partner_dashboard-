@@ -348,3 +348,131 @@ async def test_no_secrets_in_submission_audit_or_api(client: AsyncClient, db_ses
         details_str = str(e.details_json)
         assert "super_secret_smtp_token_12345" not in details_str
 
+
+@pytest.mark.asyncio
+async def test_repeated_submission_after_email_failure_preserves_state_and_does_not_duplicate(
+    client: AsyncClient, db_session, monkeypatch
+):
+    """
+    Documents Classification B behavior:
+    - Initial submit: submission succeeds, calculation succeeds, deliverables succeed, email fails.
+    - Assessment remains SUBMITTED and snapshot is preserved.
+    - Second POST /submit:
+      - Assessment remains SUBMITTED
+      - Response editing remains blocked (409 Conflict)
+      - No duplicate snapshot is created (snapshot count remains 1)
+      - No second email attempt is dispatched
+      - Existing snapshot is returned cleanly
+    """
+    transport = InMemoryEmailTransport()
+    monkeypatch.setattr(settings, "EMAIL_ENABLED", True)
+    monkeypatch.setattr(settings, "TEST_RECIPIENT_ROOP", "r.sabbavarapu@dataeko.ai")
+    monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
+
+    cust_res = await client.post("/api/v1/customers", json={"name": "Retry Boundary Bank"})
+    cust_id = cust_res.json()["id"]
+
+    ass_res = await client.post(
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Classification B Test"}
+    )
+    assessment_id = ass_res.json()["id"]
+
+    await client.put(
+        f"/api/v1/assessments/{assessment_id}/responses",
+        json={"q03_environment_scale": "25-50 Queue Managers", "q04_weekly_admin_hours": 12.0},
+    )
+
+    # Initial submission: Email fails
+    with patch.object(EmailService, "send_email", side_effect=RuntimeError("SMTP Transport Timeout")):
+        first_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+        assert first_submit.status_code == 200
+        first_data = first_submit.json()
+        assert first_data["status"] == "SUBMITTED"
+        assert first_data["latest_snapshot"] is not None
+        first_snapshot_id = first_data["latest_snapshot"]["id"]
+
+    # Second submission: Idempotent early return
+    # Route SMTPTransport to transport to verify no emails are sent
+    monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
+    second_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    assert second_submit.status_code == 200
+    second_data = second_submit.json()
+    assert second_data["status"] == "SUBMITTED"
+    assert second_data["latest_snapshot"]["id"] == first_snapshot_id
+
+    # Verify no second email was sent
+    assert len(transport.sent_messages) == 0
+
+    # Verify responses remain immutable
+    mutation_res = await client.put(
+        f"/api/v1/assessments/{assessment_id}/responses",
+        json={"q04_weekly_admin_hours": 99.0},
+    )
+    assert mutation_res.status_code == 409
+
+    # Verify snapshot count in DB is exactly 1
+    snapshots_res = await client.get(f"/api/v1/assessments/{assessment_id}/snapshots")
+    assert snapshots_res.status_code == 200
+    assert len(snapshots_res.json()) == 1
+
+
+@pytest.mark.asyncio
+async def test_deliverable_generation_failure_audits_cleanly_and_skips_email(
+    client: AsyncClient, db_session, monkeypatch
+):
+    """
+    Verifies that if PDF/CSV deliverable generation fails:
+    - Assessment remains in SUBMITTED state (immutable)
+    - CalculationSnapshot remains preserved
+    - DELIVERABLES_GENERATION_FAILED audit event is recorded (NOT EMAIL_SEND_FAILED)
+    - Email is NOT attempted
+    - Response returns SUBMITTED with snapshot
+    """
+    transport = InMemoryEmailTransport()
+    monkeypatch.setattr(settings, "EMAIL_ENABLED", True)
+    monkeypatch.setattr(settings, "TEST_RECIPIENT_ROOP", "r.sabbavarapu@dataeko.ai")
+    monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
+    monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
+
+    cust_res = await client.post("/api/v1/customers", json={"name": "Deliverable Failure Org"})
+    cust_id = cust_res.json()["id"]
+
+    ass_res = await client.post(
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Deliverable Failure Test"}
+    )
+    assessment_id = ass_res.json()["id"]
+
+    await client.put(
+        f"/api/v1/assessments/{assessment_id}/responses",
+        json={"q03_environment_scale": "25-50 Queue Managers", "q04_weekly_admin_hours": 12.0},
+    )
+
+    # Force deliverable generation to fail
+    with patch("app.services.deliverable_service.DeliverableService.generate_pdf", side_effect=RuntimeError("Node PDF Renderer Crash")):
+        submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+        assert submit_res.status_code == 200
+        data = submit_res.json()
+        assert data["status"] == "SUBMITTED"
+        assert data["latest_snapshot"] is not None
+
+    # Verify no email was attempted
+    assert len(transport.sent_messages) == 0
+
+    # Verify DELIVERABLES_GENERATION_FAILED was logged, and EMAIL_SEND_FAILED was NOT logged
+    stmt = select(AuditEvent).where(AuditEvent.resource_id == assessment_id)
+    res = await db_session.execute(stmt)
+    events = list(res.scalars().all())
+    event_types = [e.event_type for e in events]
+    assert "DELIVERABLES_GENERATION_FAILED" in event_types
+    assert "EMAIL_SEND_FAILED" not in event_types
+    assert "EMAIL_SEND_REQUESTED" not in event_types
+    assert "EMAIL_SENT" not in event_types
+
+    # Verify responses remain immutable
+    mutation_res = await client.put(
+        f"/api/v1/assessments/{assessment_id}/responses",
+        json={"q04_weekly_admin_hours": 99.0},
+    )
+    assert mutation_res.status_code == 409
+
+

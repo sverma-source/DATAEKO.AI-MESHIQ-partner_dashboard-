@@ -208,7 +208,9 @@ class AssessmentService:
             # Stop downstream delivery if calculation fails; assessment remains submitted and finalized
             return await AssessmentService.get_assessment(db, tenant_id, assessment_id, load_details=True)
 
-        # 3. Deliverables Generation & Email Dispatch (Batch D + Batch E)
+        # 3. Deliverables Generation (Batch D)
+        pdf_bytes = None
+        csv_content = None
         try:
             # Re-fetch assessment to ensure latest calculation snapshot and relationships are loaded
             db.expire_all()
@@ -230,8 +232,25 @@ class AssessmentService:
                 details={"has_pdf": bool(pdf_bytes), "has_csv": bool(csv_content)},
             )
             await db.commit()
+        except Exception as exc:
+            logger.error("Deliverable generation failed for assessment %s: %s", assessment_id, exc)
+            await log_audit_event(
+                session=db,
+                event_type="DELIVERABLES_GENERATION_FAILED",
+                tenant_id=tenant_id,
+                user_id=user_id,
+                resource_type="Assessment",
+                resource_id=assessment_id,
+                status="FAILURE",
+                details={"error_type": type(exc).__name__, "error": str(exc)},
+            )
+            await db.commit()
+            db.expire_all()
+            # Deliverable failure halts email dispatch; assessment remains submitted and finalized
+            return await AssessmentService.get_assessment(db, tenant_id, assessment_id, load_details=True)
 
-            # Email Dispatch to Test Recipients Only
+        # 4. Email Dispatch to Test Recipients Only (Batch E)
+        try:
             svc = email_service or EmailService()
             test_recipients = svc.get_test_recipients()
 
@@ -325,7 +344,7 @@ class AssessmentService:
                 await db.commit()
 
         except Exception as exc:
-            logger.error("Deliverable generation or email dispatch failed for assessment %s: %s", assessment_id, exc)
+            logger.error("Email dispatch failed for assessment %s: %s", assessment_id, exc)
             await log_audit_event(
                 session=db,
                 event_type="EMAIL_SEND_FAILED",
