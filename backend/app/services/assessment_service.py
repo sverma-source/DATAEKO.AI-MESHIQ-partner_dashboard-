@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.errors import EntityNotFoundError
+from app.core.errors import AppError, ConflictError, EntityNotFoundError
 from app.models.assessment import Assessment, AssessmentStatus
 from app.models.assessment_response import AssessmentResponse
 from app.models.customer import Customer
@@ -98,6 +98,13 @@ class AssessmentService:
             db, tenant_id, assessment_id, load_details=True
         )
 
+        # Enforce response immutability after submission
+        if assessment.status == AssessmentStatus.SUBMITTED:
+            raise ConflictError(
+                "The assessment has been submitted and can no longer be edited.",
+                {"assessment_id": assessment_id, "status": assessment.status.value},
+            )
+
         response = assessment.response
         data = payload.model_dump(exclude_unset=True)
 
@@ -114,6 +121,31 @@ class AssessmentService:
         await db.commit()
         await db.refresh(response)
         return response
+
+    @staticmethod
+    async def submit_assessment(
+        db: AsyncSession, tenant_id: str, assessment_id: str
+    ) -> Assessment:
+        assessment = await AssessmentService.get_assessment(
+            db, tenant_id, assessment_id, load_details=True
+        )
+
+        # Idempotency: If already SUBMITTED, return existing finalized assessment
+        if assessment.status == AssessmentStatus.SUBMITTED:
+            return assessment
+
+        # Verify responses exist
+        if not assessment.response:
+            raise AppError(
+                "Assessment has no responses to submit. Please complete discovery questions before submission.",
+                {"assessment_id": assessment_id},
+            )
+
+        # Transition to SUBMITTED
+        assessment.status = AssessmentStatus.SUBMITTED
+        await db.commit()
+        await db.refresh(assessment)
+        return assessment
 
     @staticmethod
     async def delete_assessment(

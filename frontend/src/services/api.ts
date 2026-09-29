@@ -146,6 +146,12 @@ export const api = {
     });
   },
 
+  // Submit Assessment (Batch B Finalization)
+  submitAssessment: (assessmentId: string) =>
+    request<Assessment>(`/assessments/${assessmentId}/submit`, {
+      method: "POST",
+    }),
+
   // Calculate
   calculateAssessment: (assessmentId: string) =>
     request<CalculationRunResponse>(`/assessments/${assessmentId}/calculate`, {

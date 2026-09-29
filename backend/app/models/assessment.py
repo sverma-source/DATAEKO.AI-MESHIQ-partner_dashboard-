@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 class AssessmentStatus(str, enum.Enum):
     DRAFT = "DRAFT"
     IN_PROGRESS = "IN_PROGRESS"
+    SUBMITTED = "SUBMITTED"
     CALCULATED = "CALCULATED"
     COMPLETED = "COMPLETED"
     ARCHIVED = "ARCHIVED"

@@ -181,6 +181,55 @@ async def get_assessment_responses(
 
 
 @router.post(
+    "/{assessment_id}/submit",
+    response_model=AssessmentDetailResponse,
+    summary="Submit and finalize assessment discovery responses (Q01-Q22)",
+)
+async def submit_assessment_endpoint(
+    assessment_id: str,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    assessment = await AssessmentService.submit_assessment(db, tenant_id, assessment_id)
+    await log_audit_event(
+        session=db,
+        event_type="ASSESSMENT_SUBMITTED",
+        tenant_id=tenant_id,
+        user_id=current_user.id if current_user else None,
+        resource_type="Assessment",
+        resource_id=assessment.id,
+        status="SUCCESS",
+        details={
+            "assessment_id": assessment_id,
+            "customer_id": assessment.customer_id,
+            "title": assessment.title,
+            "status": assessment.status.value,
+        },
+    )
+    await db.commit()
+    latest_snapshot = (
+        assessment.calculation_snapshots[0]
+        if assessment.calculation_snapshots
+        else None
+    )
+    return AssessmentDetailResponse(
+        id=assessment.id,
+        tenant_id=assessment.tenant_id,
+        customer_id=assessment.customer_id,
+        title=assessment.title,
+        description=assessment.description,
+        status=assessment.status,
+        assessment_version=assessment.assessment_version,
+        created_at=assessment.created_at,
+        updated_at=assessment.updated_at,
+        customer=assessment.customer,
+        response=assessment.response,
+        latest_snapshot=latest_snapshot,
+    )
+
+
+@router.post(
     "/{assessment_id}/calculate",
     response_model=CalculationRunResponse,
     summary="Execute pure calculation engine & persist immutable snapshot",

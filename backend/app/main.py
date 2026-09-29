@@ -12,6 +12,7 @@ from app.core.database import AsyncSessionLocal, engine
 from app.core.errors import (
     AppError,
     AuthenticationError,
+    ConflictError,
     EntityNotFoundError,
     PayloadTooLargeError,
     PermissionDeniedError,
@@ -225,6 +226,20 @@ async def entity_not_found_handler(request: Request, exc: EntityNotFoundError):
         content={
             "detail": exc.message,
             "error_type": "EntityNotFound",
+            "details": exc.details,
+            "request_id": get_request_id(),
+        },
+        headers=_get_error_headers(),
+    )
+
+
+@app.exception_handler(ConflictError)
+async def conflict_error_handler(request: Request, exc: ConflictError):
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content={
+            "detail": exc.message,
+            "error_type": "ConflictError",
             "details": exc.details,
             "request_id": get_request_id(),
         },

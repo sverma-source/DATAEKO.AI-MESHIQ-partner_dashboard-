@@ -29,6 +29,7 @@ vi.mock("../services/api", () => ({
       assessment_version: "1.0.0",
     }),
     saveResponses: vi.fn().mockResolvedValue({ id: "resp-1", assessment_id: "ass-1" }),
+    submitAssessment: vi.fn().mockResolvedValue({ id: "ass-1", status: "SUBMITTED" }),
     calculateAssessment: vi.fn().mockResolvedValue({
       snapshot_id: "snap-1",
       assessment_id: "ass-1",
@@ -141,6 +142,7 @@ describe("AssessmentWizardPage Full Integration", () => {
 
     await waitFor(() => {
       expect(api.saveResponses).toHaveBeenCalled();
+      expect(api.submitAssessment).toHaveBeenCalled();
     });
   });
 

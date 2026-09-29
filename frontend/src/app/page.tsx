@@ -232,6 +232,8 @@ export default function AssessmentWizardPage() {
       }
 
       await api.saveResponses(targetAssessment.id, answers);
+      const finalizedAssessment = await api.submitAssessment(targetAssessment.id);
+      setCurrentAssessment(finalizedAssessment);
       setSaveStatus("saved");
     } catch (err: any) {
       setSubmissionError(err.message || "Failed to submit assessment.");
