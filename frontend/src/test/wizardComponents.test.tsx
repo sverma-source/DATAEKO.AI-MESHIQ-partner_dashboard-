@@ -306,7 +306,7 @@ describe("CustomerModal Component", () => {
 });
 
 describe("ReviewSummary Component", () => {
-  it("renders answers and allows calculation trigger", () => {
+  it("renders all responses and allows editing section", () => {
     const handleEdit = vi.fn();
     const handleSubmit = vi.fn();
 
@@ -323,34 +323,113 @@ describe("ReviewSummary Component", () => {
           q20_use_default: true,
         }}
         onEditSection={handleEdit}
-        onSubmitCalculation={handleSubmit}
-        isCalculating={false}
+        onSubmitAssessment={handleSubmit}
+        isSubmitting={false}
       />
     );
 
-    expect(screen.getByText("Ready for Engine Calculation")).toBeInTheDocument();
+    expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
     expect(screen.getByText("80 hours / quarter")).toBeInTheDocument();
     expect(screen.getByText("About weekly")).toBeInTheDocument();
 
-    const submitBtns = screen.getAllByRole("button", { name: /calculate/i });
-    fireEvent.click(submitBtns[0]);
-    expect(handleSubmit).toHaveBeenCalled();
+    const editBtns = screen.getAllByRole("button", { name: /edit section/i });
+    expect(editBtns.length).toBe(7);
+    fireEvent.click(editBtns[0]);
+    expect(handleEdit).toHaveBeenCalledWith("A");
   });
 
-  it("renders in-progress status with aria-live and aria-busy when calculation is executing", () => {
+  it("opens accessible confirmation modal on Submit Assessment click and triggers submission on confirm", () => {
+    const handleSubmit = vi.fn();
+
+    render(
+      <ReviewSummary
+        sections={SECTIONS}
+        questionsMap={QUESTIONS}
+        answers={{}}
+        onEditSection={vi.fn()}
+        onSubmitAssessment={handleSubmit}
+        isSubmitting={false}
+      />
+    );
+
+    const submitBtns = screen.getAllByRole("button", { name: /submit assessment/i });
+    expect(submitBtns.length).toBeGreaterThanOrEqual(1);
+
+    // Click Submit Assessment
+    fireEvent.click(submitBtns[0]);
+
+    // Verify confirmation modal appears with correct accessibility semantics
+    const dialog = screen.getByRole("dialog", { name: /confirm assessment submission/i });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveAttribute("aria-describedby", "confirm-submission-desc");
+    expect(screen.getByText(/once submitted, your assessment responses will be finalized/i)).toBeInTheDocument();
+
+    // Click Confirm & Submit in modal
+    const confirmBtn = screen.getByRole("button", { name: /confirm & submit/i });
+    fireEvent.click(confirmBtn);
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes confirmation modal when clicking Go Back", () => {
+    render(
+      <ReviewSummary
+        sections={SECTIONS}
+        questionsMap={QUESTIONS}
+        answers={{}}
+        onEditSection={vi.fn()}
+        onSubmitAssessment={vi.fn()}
+        isSubmitting={false}
+      />
+    );
+
+    const submitBtn = screen.getAllByRole("button", { name: /submit assessment/i })[0];
+    fireEvent.click(submitBtn);
+
+    expect(screen.getByRole("dialog", { name: /confirm assessment submission/i })).toBeInTheDocument();
+
+    const goBackBtn = screen.getByRole("button", { name: /go back and continue reviewing responses/i });
+    fireEvent.click(goBackBtn);
+
+    expect(screen.queryByRole("dialog", { name: /confirm assessment submission/i })).not.toBeInTheDocument();
+  });
+
+  it("closes confirmation modal when pressing Escape", () => {
+    render(
+      <ReviewSummary
+        sections={SECTIONS}
+        questionsMap={QUESTIONS}
+        answers={{}}
+        onEditSection={vi.fn()}
+        onSubmitAssessment={vi.fn()}
+        isSubmitting={false}
+      />
+    );
+
+    const submitBtn = screen.getAllByRole("button", { name: /submit assessment/i })[0];
+    fireEvent.click(submitBtn);
+
+    expect(screen.getByRole("dialog", { name: /confirm assessment submission/i })).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: /confirm assessment submission/i })).not.toBeInTheDocument();
+  });
+
+  it("renders in-progress status with aria-live and aria-busy when submission is processing", () => {
     const { container } = render(
       <ReviewSummary
         sections={SECTIONS}
         questionsMap={QUESTIONS}
         answers={{}}
         onEditSection={vi.fn()}
-        onSubmitCalculation={vi.fn()}
-        isCalculating={true}
+        onSubmitAssessment={vi.fn()}
+        isSubmitting={true}
       />
     );
 
     expect(container.firstChild).toHaveAttribute("aria-busy", "true");
-    expect(screen.getByText("Executing calculation engine... Generating cryptographically verified snapshot.")).toBeInTheDocument();
+    expect(screen.getByText("Submitting your assessment... Finalizing discovery responses.")).toBeInTheDocument();
   });
 
   it("renders accessible error banner with role='alert' and triggers retry action", () => {
@@ -361,19 +440,19 @@ describe("ReviewSummary Component", () => {
         questionsMap={QUESTIONS}
         answers={{}}
         onEditSection={vi.fn()}
-        onSubmitCalculation={vi.fn()}
-        isCalculating={false}
-        calculationError="Network timeout during calculation execution."
-        onRetryCalculation={handleRetry}
+        onSubmitAssessment={vi.fn()}
+        isSubmitting={false}
+        submissionError="Network timeout during assessment submission."
+        onRetrySubmission={handleRetry}
       />
     );
 
     const alertEl = screen.getByRole("alert");
     expect(alertEl).toBeInTheDocument();
     expect(alertEl).toHaveAttribute("aria-live", "assertive");
-    expect(screen.getByText("Network timeout during calculation execution.")).toBeInTheDocument();
+    expect(screen.getByText("Network timeout during assessment submission.")).toBeInTheDocument();
 
-    const retryBtn = screen.getByRole("button", { name: /retry calculation/i });
+    const retryBtn = screen.getByRole("button", { name: /retry submission/i });
     fireEvent.click(retryBtn);
     expect(handleRetry).toHaveBeenCalledTimes(1);
   });

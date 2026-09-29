@@ -168,7 +168,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     // Move to Review
     fireEvent.click(screen.getByRole("button", { name: /proceed to review/i }));
     await waitFor(() => {
-      expect(screen.getByText("Ready for Engine Calculation")).toBeInTheDocument();
+      expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
     });
   });
 
@@ -246,7 +246,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     expect((q21Input as HTMLInputElement).value).toBe("450000");
   });
 
-  it("handles calculation states (VALID, INDUSTRY_BENCHMARK, NOT_MODELED) gracefully", async () => {
+  it("reviews all responses and submits assessment via confirmation modal", async () => {
     render(<AssessmentWizardPage />);
 
     await waitFor(() => {
@@ -258,21 +258,22 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     fireEvent.click(reviewTab);
 
     await waitFor(() => {
-      expect(screen.getByText("Ready for Engine Calculation")).toBeInTheDocument();
+      expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
     });
 
-    // Submit calculation
-    const calcBtn = screen.getByRole("button", { name: /submit for calculation/i });
-    fireEvent.click(calcBtn);
+    // Submit assessment with confirmation modal
+    const submitBtn = screen.getAllByRole("button", { name: /submit assessment/i })[0];
+    fireEvent.click(submitBtn);
+
+    // Verify confirmation modal appears
+    expect(screen.getByRole("dialog", { name: /confirm assessment submission/i })).toBeInTheDocument();
+
+    // Confirm submission
+    const confirmBtn = screen.getByRole("button", { name: /confirm & submit/i });
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
-      expect(api.calculateAssessment).toHaveBeenCalled();
-      expect(screen.getByText("Assessment Economic Baseline & Scenario Results")).toBeInTheDocument();
-      // Displays formatted currency from engine response
-      expect(screen.getByText("$70,269")).toBeInTheDocument();
-      expect(screen.getByText("$1,500,000")).toBeInTheDocument();
-      // Provenance badge
-      expect(screen.getByText("Deterministic Calculation Complete")).toBeInTheDocument();
+      expect(api.saveResponses).toHaveBeenCalled();
     });
   });
 });

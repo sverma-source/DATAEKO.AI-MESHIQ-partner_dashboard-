@@ -204,6 +204,42 @@ export default function AssessmentWizardPage() {
     }
   };
 
+  // Submit Assessment Contract (Batch A: Persists responses; Batch B connects to backend submission)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+
+  const handleSubmitAssessment = async () => {
+    setIsSubmitting(true);
+    setSubmissionError(null);
+    try {
+      let targetAssessment = currentAssessment;
+      if (!targetAssessment) {
+        let custId = currentCustomer?.id;
+        if (!custId) {
+          const cust = await api.createCustomer({
+            name: "Assessment Client",
+            industry: "Financial Services",
+          });
+          setCurrentCustomer(cust);
+          custId = cust.id;
+        }
+        const ass = await api.createAssessment({
+          customer_id: custId,
+          title: "Assessment Intake Session",
+        });
+        targetAssessment = ass;
+        setCurrentAssessment(ass);
+      }
+
+      await api.saveResponses(targetAssessment.id, answers);
+      setSaveStatus("saved");
+    } catch (err: any) {
+      setSubmissionError(err.message || "Failed to submit assessment.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Section Navigation Handlers
   const currentSectionIndex = SECTIONS.findIndex((s) => s.id === currentSectionId);
   const currentSection = SECTIONS[currentSectionIndex] || SECTIONS[0];
@@ -229,7 +265,7 @@ export default function AssessmentWizardPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Execute Calculation Engine
+  // Execute Calculation Engine (Preserved for Consultant / Engine Workflows)
   const handleSubmitCalculation = async () => {
     setIsCalculating(true);
     setCalculationError(null);
@@ -615,10 +651,10 @@ export default function AssessmentWizardPage() {
               setCurrentSectionId(secId);
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            onSubmitCalculation={handleSubmitCalculation}
-            isCalculating={isCalculating}
-            calculationError={calculationError}
-            onRetryCalculation={handleSubmitCalculation}
+            onSubmitAssessment={handleSubmitAssessment}
+            isSubmitting={isSubmitting}
+            submissionError={submissionError}
+            onRetrySubmission={handleSubmitAssessment}
           />
         )}
 

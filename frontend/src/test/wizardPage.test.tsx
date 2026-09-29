@@ -125,23 +125,28 @@ describe("AssessmentWizardPage Full Integration", () => {
     fireEvent.click(reviewTab);
 
     await waitFor(() => {
-      expect(screen.getByText("Ready for Engine Calculation")).toBeInTheDocument();
+      expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
     });
 
-    // 6. Submit for calculation
-    const calcSubmitBtn = screen.getByRole("button", { name: /submit for calculation/i });
-    fireEvent.click(calcSubmitBtn);
+    // 6. Submit assessment with confirmation modal
+    const submitBtn = screen.getAllByRole("button", { name: /submit assessment/i })[0];
+    fireEvent.click(submitBtn);
+
+    // Verify confirmation modal appears
+    expect(screen.getByRole("dialog", { name: /confirm assessment submission/i })).toBeInTheDocument();
+
+    // Confirm submission in modal
+    const confirmSubmitBtn = screen.getByRole("button", { name: /confirm & submit/i });
+    fireEvent.click(confirmSubmitBtn);
 
     await waitFor(() => {
-      expect(api.calculateAssessment).toHaveBeenCalled();
-      expect(screen.getByText("Assessment Economic Baseline & Scenario Results")).toBeInTheDocument();
-      expect(screen.getByText("$45,692")).toBeInTheDocument();
+      expect(api.saveResponses).toHaveBeenCalled();
     });
   });
 
-  it("handles calculation failure with accessible in-page alert, preserving responses and supporting retry", async () => {
-    // Make calculation fail on first attempt
-    (api.calculateAssessment as any).mockRejectedValueOnce(new Error("Engine calculation timeout"));
+  it("handles submission failure with accessible in-page alert, preserving responses and supporting retry", async () => {
+    // Make save responses fail on first attempt
+    (api.saveResponses as any).mockRejectedValueOnce(new Error("Submission network timeout"));
 
     render(<AssessmentWizardPage />);
 
@@ -159,33 +164,35 @@ describe("AssessmentWizardPage Full Integration", () => {
     fireEvent.click(reviewTab);
 
     await waitFor(() => {
-      expect(screen.getByText("Ready for Engine Calculation")).toBeInTheDocument();
+      expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
     });
 
-    // 3. Click Submit for calculation
-    const calcSubmitBtn = screen.getByRole("button", { name: /submit for calculation/i });
-    fireEvent.click(calcSubmitBtn);
+    // 3. Click Submit Assessment
+    const submitBtn = screen.getAllByRole("button", { name: /submit assessment/i })[0];
+    fireEvent.click(submitBtn);
 
-    // 4. Verify calculation error is rendered with role="alert" and aria-live="assertive"
+    const confirmSubmitBtn = screen.getByRole("button", { name: /confirm & submit/i });
+    fireEvent.click(confirmSubmitBtn);
+
+    // 4. Verify submission error is rendered with role="alert" and aria-live="assertive"
     const alertElement = await screen.findByRole("alert");
     expect(alertElement).toBeInTheDocument();
     expect(alertElement).toHaveAttribute("aria-live", "assertive");
-    expect(screen.getByText(/Engine calculation timeout/i)).toBeInTheDocument();
+    expect(screen.getByText(/Submission network timeout/i)).toBeInTheDocument();
 
     // 5. Verify responses were NOT destroyed
     expect(q01Select).toHaveValue("51–100");
 
     // 6. Verify Retry button is present and functional
-    const retryBtn = screen.getByRole("button", { name: /retry calculation/i });
+    const retryBtn = screen.getByRole("button", { name: /retry submission/i });
     expect(retryBtn).toBeInTheDocument();
 
-    // 7. Click Retry Calculation
+    // 7. Click Retry Submission
     fireEvent.click(retryBtn);
 
-    // 8. Calculation succeeds on retry and transitions to Executive Dashboard
+    // 8. Submission succeeds on retry
     await waitFor(() => {
-      expect(screen.getByText("Assessment Economic Baseline & Scenario Results")).toBeInTheDocument();
-      expect(screen.getByText("$45,692")).toBeInTheDocument();
+      expect(api.saveResponses).toHaveBeenCalled();
     });
   });
 
