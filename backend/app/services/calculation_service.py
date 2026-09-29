@@ -62,7 +62,10 @@ class CalculationService:
 
     @staticmethod
     async def run_calculation(
-        db: AsyncSession, tenant_id: str, assessment_id: str
+        db: AsyncSession,
+        tenant_id: str,
+        assessment_id: str,
+        preserve_submitted_status: bool = False,
     ) -> CalculationRunResponse:
         """
         Orchestrates assessment calculation using the single source of calculation truth:
@@ -188,7 +191,8 @@ class CalculationService:
         db.add(snapshot)
 
         # 5. Update assessment status
-        assessment.status = AssessmentStatus.CALCULATED
+        if not (preserve_submitted_status and assessment.status == AssessmentStatus.SUBMITTED):
+            assessment.status = AssessmentStatus.CALCULATED
 
         await db.commit()
         await db.refresh(snapshot)

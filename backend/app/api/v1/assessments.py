@@ -192,23 +192,9 @@ async def submit_assessment_endpoint(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
-    assessment = await AssessmentService.submit_assessment(db, tenant_id, assessment_id)
-    await log_audit_event(
-        session=db,
-        event_type="ASSESSMENT_SUBMITTED",
-        tenant_id=tenant_id,
-        user_id=current_user.id if current_user else None,
-        resource_type="Assessment",
-        resource_id=assessment.id,
-        status="SUCCESS",
-        details={
-            "assessment_id": assessment_id,
-            "customer_id": assessment.customer_id,
-            "title": assessment.title,
-            "status": assessment.status.value,
-        },
+    assessment = await AssessmentService.submit_assessment(
+        db, tenant_id, assessment_id, user_id=current_user.id if current_user else None
     )
-    await db.commit()
     latest_snapshot = (
         assessment.calculation_snapshots[0]
         if assessment.calculation_snapshots
