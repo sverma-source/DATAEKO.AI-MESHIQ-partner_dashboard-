@@ -40,9 +40,9 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#E2E6EE] bg-white text-[#172033] shadow-xs">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-3 sm:gap-5 lg:gap-6 min-h-[72px] sm:min-h-[76px] py-3 sm:py-3.5">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-5 lg:px-6 gap-2 sm:gap-3 lg:gap-4 min-h-[72px] sm:min-h-[76px] py-3 sm:py-3.5">
         {/* Zone 1 (Left): Official meshIQ Logo & Platform Title */}
-        <div className="flex items-center space-x-3 sm:space-x-4 shrink-0">
+        <div className="flex items-center space-x-3 sm:space-x-3.5 shrink-0">
           <Image
             src="/meshiq-logo.png"
             alt="meshIQ"
@@ -50,33 +50,33 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
             height={135}
             unoptimized
             priority
-            className="h-7 sm:h-9 w-auto object-contain shrink-0"
+            className="h-6.5 sm:h-8 lg:h-8.5 w-auto object-contain shrink-0"
           />
-          <div className="hidden lg:block border-l border-[#E2E6EE] pl-3.5 sm:pl-4">
-            <span className="text-xs sm:text-[13px] font-bold text-[#172033] block leading-tight tracking-tight">
+          <div className="hidden 2xl:block border-l border-[#E2E6EE] pl-3 sm:pl-3.5 shrink-0">
+            <span className="text-xs sm:text-[13px] font-bold text-[#172033] block leading-tight tracking-tight whitespace-nowrap">
               Economic Assessment Platform
             </span>
-            <span className="text-[10px] sm:text-[11px] text-[#5B6579] block leading-tight font-medium mt-0.5">
+            <span className="text-[10px] sm:text-[11px] text-[#5B6579] block leading-tight font-medium mt-0.5 whitespace-nowrap">
               Enterprise Middleware Analytics
             </span>
           </div>
         </div>
 
         {/* Zone 2 (Center): Workspace Context & Active Session Identifier */}
-        <div className="hidden md:flex flex-1 max-w-xl mx-2 justify-center">
+        <div className="hidden md:flex items-center justify-center shrink-0">
           {user?.role === "CONSULTANT" ? (
             <div
-              className="group relative flex items-center space-x-2.5 bg-[#EEF8F0] hover:bg-[#E5F5E8] px-4 sm:px-5 py-2 sm:py-2.5 min-h-[44px] rounded-lg border border-[#A8E2B5] transition-colors duration-150 shadow-2xs w-full sm:w-auto cursor-default"
+              className="group relative flex items-center space-x-2 bg-[#EEF8F0] hover:bg-[#E5F5E8] px-3.5 sm:px-4 py-2 min-h-[44px] rounded-lg border border-[#A8E2B5] transition-colors duration-150 shadow-2xs cursor-default whitespace-nowrap shrink-0"
               tabIndex={0}
               aria-label="Active workspace: Consultant Workspace, Portfolio and Review"
             >
               <span className="h-2.5 w-2.5 rounded-full bg-[#008638] shrink-0" aria-hidden="true" />
-              <div className="flex items-baseline space-x-2 min-w-0">
-                <span className="text-xs sm:text-sm font-bold text-[#008638] truncate">
+              <div className="flex items-baseline space-x-1.5 sm:space-x-2">
+                <span className="text-xs sm:text-sm font-bold text-[#008638]">
                   Consultant Workspace
                 </span>
-                <span className="text-[#A8E2B5] text-xs" aria-hidden="true">•</span>
-                <span className="text-[11px] sm:text-xs text-[#006B2D] truncate max-w-[220px] font-medium">
+                <span className="text-[#A8E2B5] text-xs shrink-0 hidden xl:inline" aria-hidden="true">•</span>
+                <span className="text-[11px] sm:text-xs text-[#006B2D] font-medium hidden xl:inline">
                   Portfolio &amp; Review
                 </span>
               </div>
@@ -86,17 +86,17 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
             </div>
           ) : user?.role === "PLATFORM_ADMIN" || user?.role === "PARTNER_ADMIN" || user?.role === "CUSTOMER_ADMIN" ? (
             <div
-              className="group relative flex items-center space-x-2.5 bg-[#FAF5FF] hover:bg-[#F3E8FF] px-4 sm:px-5 py-2 sm:py-2.5 min-h-[44px] rounded-lg border border-[#E9D5FF] transition-colors duration-150 shadow-2xs w-full sm:w-auto cursor-default"
+              className="group relative flex items-center space-x-2 bg-[#FAF5FF] hover:bg-[#F3E8FF] px-3.5 sm:px-4 py-2 min-h-[44px] rounded-lg border border-[#E9D5FF] transition-colors duration-150 shadow-2xs cursor-default whitespace-nowrap shrink-0"
               tabIndex={0}
               aria-label={`Active workspace: ${user.role === "PLATFORM_ADMIN" ? "Platform Administration" : user.role === "PARTNER_ADMIN" ? "Partner Administration" : "Customer Administration"}, Governance`}
             >
               <span className="h-2.5 w-2.5 rounded-full bg-[#722F8A] shrink-0" aria-hidden="true" />
-              <div className="flex items-baseline space-x-2 min-w-0">
-                <span className="text-xs sm:text-sm font-bold text-[#722F8A] truncate">
+              <div className="flex items-baseline space-x-1.5 sm:space-x-2">
+                <span className="text-xs sm:text-sm font-bold text-[#722F8A]">
                   {user.role === "PLATFORM_ADMIN" ? "Platform Administration" : user.role === "PARTNER_ADMIN" ? "Partner Administration" : "Customer Administration"}
                 </span>
-                <span className="text-[#E9D5FF] text-xs" aria-hidden="true">•</span>
-                <span className="text-[11px] sm:text-xs text-[#581C87] truncate max-w-[220px] font-medium">
+                <span className="text-[#E9D5FF] text-xs shrink-0 hidden xl:inline" aria-hidden="true">•</span>
+                <span className="text-[11px] sm:text-xs text-[#581C87] font-medium hidden xl:inline">
                   Governance
                 </span>
               </div>
@@ -106,17 +106,17 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
             </div>
           ) : customerName ? (
             <div
-              className="group relative flex items-center space-x-2.5 bg-[#F8FAFC] hover:bg-white px-4 sm:px-5 py-2 sm:py-2.5 min-h-[44px] rounded-lg border border-[#E2E6EE] hover:border-[#CBD2DE] transition-colors duration-150 shadow-2xs w-full sm:w-auto cursor-default"
+              className="group relative flex items-center space-x-2 bg-[#F8FAFC] hover:bg-white px-3.5 sm:px-4 py-2 min-h-[44px] rounded-lg border border-[#E2E6EE] hover:border-[#CBD2DE] transition-colors duration-150 shadow-2xs cursor-default whitespace-nowrap shrink-0"
               tabIndex={0}
               aria-label={`Active Customer: ${customerName}, Assessment: ${assessmentTitle || "My Assessment"}`}
             >
               <Building2 className="h-4.5 w-4.5 text-[#008638] shrink-0" />
-              <div className="flex items-baseline space-x-2 min-w-0">
-                <span className="text-xs sm:text-sm font-bold text-[#172033] truncate">
+              <div className="flex items-baseline space-x-1.5 sm:space-x-2">
+                <span className="text-xs sm:text-sm font-bold text-[#172033] max-w-[140px] truncate">
                   {customerName}
                 </span>
-                <span className="text-[#CBD2DE] text-xs" aria-hidden="true">•</span>
-                <span className="text-[11px] sm:text-xs text-[#5B6579] truncate max-w-[200px] font-medium">
+                <span className="text-[#CBD2DE] text-xs shrink-0 hidden xl:inline" aria-hidden="true">•</span>
+                <span className="text-[11px] sm:text-xs text-[#5B6579] font-medium hidden xl:inline max-w-[140px] truncate">
                   {assessmentTitle || "My Assessment"}
                 </span>
               </div>
@@ -125,21 +125,22 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
               </div>
             </div>
           ) : (
-            <div className="hidden md:flex items-center space-x-2 text-xs text-[#5B6579] min-h-[44px] whitespace-nowrap">
-              <span className="font-semibold text-[#172033] px-4 py-2 min-h-[44px] flex items-center bg-[#F8FAFC] border border-[#E2E6EE] rounded-lg shadow-2xs">
-                IBM MQ Economic Cost &amp; Efficiency Assessment
+            <div className="hidden md:flex items-center space-x-2 text-xs text-[#5B6579] min-h-[44px] whitespace-nowrap shrink-0">
+              <span className="font-semibold text-[#172033] px-3.5 py-2 min-h-[44px] flex items-center bg-[#F8FAFC] border border-[#E2E6EE] rounded-lg shadow-2xs">
+                <span className="hidden xl:inline">IBM MQ Economic Cost &amp; Efficiency Assessment</span>
+                <span className="inline xl:hidden">IBM MQ Assessment</span>
               </span>
             </div>
           )}
         </div>
 
         {/* Zone 3 (Right): Engine Metadata, User Profile & Official DATAEKO Attribution */}
-        <div className="flex items-center space-x-2.5 sm:space-x-3.5 text-xs shrink-0">
+        <div className="flex items-center space-x-2 sm:space-x-3 text-xs shrink-0">
           {/* Subtle Technical Engine & Health Cluster */}
-          <div className="hidden sm:flex items-center space-x-2 pl-2 text-[11px]">
+          <div className="hidden lg:flex items-center space-x-1.5 sm:space-x-2 text-[11px] shrink-0">
             {/* Calculation Engine Version Indicator */}
             <div
-              className="group relative font-mono text-[10px] sm:text-[11px] text-[#5B6579] bg-[#F1F3F7] hover:bg-[#E8ECF2] px-2.5 py-1 rounded-md border border-[#E2E6EE] transition-colors duration-150 cursor-help"
+              className="group relative font-mono text-[10px] sm:text-[11px] text-[#5B6579] bg-[#F1F3F7] hover:bg-[#E8ECF2] px-2 py-0.5 rounded border border-[#E2E6EE] transition-colors duration-150 cursor-help shrink-0"
               tabIndex={0}
               aria-label={`Calculation Engine version ${engineVersion}, Deterministic Decimal arithmetic`}
             >
@@ -151,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
 
             {/* Backend Connectivity Status Indicator */}
             <div
-              className={`group relative inline-flex items-center space-x-1.5 font-medium px-2.5 py-1 rounded-md transition-colors duration-150 cursor-help ${
+              className={`group relative inline-flex items-center space-x-1.5 font-medium px-2 py-0.5 rounded transition-colors duration-150 cursor-help shrink-0 ${
                 backendHealth === "healthy"
                   ? "text-[#008638] bg-[#EEF8F0]/60 hover:bg-[#EEF8F0]"
                   : backendHealth === "checking"
@@ -181,10 +182,12 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
           </div>
 
           {/* User Menu */}
-          <UserMenu />
+          <div className="shrink-0">
+            <UserMenu />
+          </div>
 
-          {/* Official DATAEKO Partner Attribution */}
-          <div className="flex items-center pl-3 sm:pl-4 border-l border-[#E2E6EE] space-x-2 sm:space-x-2.5">
+          {/* Official DATAEKO Partner Attribution (Protected / Non-shrinking) */}
+          <div className="flex items-center pl-2 sm:pl-3 border-l border-[#E2E6EE] space-x-1.5 sm:space-x-2 shrink-0 whitespace-nowrap">
             <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-[#8A94A6] font-semibold hidden xl:inline">
               Powered by
             </span>
@@ -195,7 +198,7 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
               height={106}
               unoptimized
               priority
-              className="h-5.5 sm:h-6.5 w-auto object-contain shrink-0"
+              className="h-5 sm:h-5.5 lg:h-6 w-auto object-contain shrink-0"
             />
           </div>
         </div>

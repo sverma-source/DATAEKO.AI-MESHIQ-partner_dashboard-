@@ -150,3 +150,11 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Header Attribution Protection: Compress UserMenu text label at 1024px desktop breakpoint */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  header button[aria-label="User account menu"] .text-left {
+    display: none !important;
+  }
+}
+
