@@ -56,21 +56,78 @@ Persisted Immutable CalculationSnapshot
 
 ## 2. Current Project Status & Checkpoint
 
-The platform is under active development on the **`dev`** branch. Implementation and rigorous verification through **Batch 4D** are complete.
+The platform is under active development on the **`dev`** branch. Implementation and rigorous verification through **Batch 5A** are complete.
 
 ### Current Checkpoint Summary
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Git Checkpoint** | `7504964` (`feat: add secure user invitation lifecycle`) |
+| **Current Git Checkpoint** | `12593a7` (`feat: refine executive dashboard and results experience`) |
 | **Development Branch** | `dev` |
-| **Implementation Stage** | **Batch 4D — Secure User Invitation & Credential Lifecycle** (Complete) |
-| **Next Planned Work** | **Batch 4E — Authentication Session Hardening & Token Invalidation** |
-| **Batch 4E Status** | **PLANNED — NOT STARTED** (Explicitly deferred to next increment) |
+| **Implementation Stage** | **Batch 5A — Executive Dashboard & Results Experience** (Complete / Checkpoint Pending Push) |
+| **Next Planned Work** | **Batch 5B — Scenario Sandbox Enhancements** |
+| **Batch 5B Status** | **PLANNED — NOT STARTED** (Intentionally paused; explicitly deferred to next increment) |
 | **Deployment Status** | **Deferred** (Local development and pre-deployment validation only) |
+| **Email Status** | **Headless / Isolated** (`EMAIL_ENABLED=False`; real email delivery deferred) |
 
-> [!IMPORTANT]
-> **Stateless JWT Session Characteristic**: Current authentication uses stateless JWT sessions. Credential reset updates the user's password and prevents future authentication with the old credential. Explicit invalidation of already-issued JWT sessions is planned for Batch 4E and has not yet been implemented.
+---
+
+### BATCH 5A — EXECUTIVE DASHBOARD & RESULTS EXPERIENCE
+
+**Status:** COMPLETE / READY FOR REMOTE CHECKPOINT  
+**Implementation Commit:** `12593a77d828ff84cc72da9be80859fc8ccc051a`  
+**Scope:** Executive Dashboard and Results Experience presentation refinement.
+
+#### Implemented Features & Refinements:
+- **Executive KPI Hierarchy Refinement**: Restructured dashboard Overview tab into three logical tiers:
+  - **Tier A (Primary Economic Headline)**: Total Annual Waste card (`F_TOTAL`) and Cumulative 5-Year Impact prominently elevated with metric provenance badges.
+  - **Tier B (Secondary Economic Indicators)**: 3-column metric cards detailing Annual Operational Waste (`F_ADMIN` + `F_TROUBLESHOOTING`), Annual Downtime Waste (`F_OUTAGE`), and Operational Capacity Drag (`F_FTE`).
+  - **Tier C (Controlled meshIQ Improvement Scenario)**: Model-projected potential reclaim value and recoverable hours clearly separated from baseline facts.
+- **Controlled meshIQ Improvement Scenario Visual Separation**: Explicit visual distinction between immutable baseline calculation outputs and hypothetical/illustrative scenario projections with clear disclaimer tags (*not guaranteed cash savings or fixed ROI*).
+- **Provenance Badges & Context on Dashboard Charts**: Clear visual tags (`CALCULATED_RESULT`, `CUSTOMER_FACT`, `INDUSTRY_BENCHMARK`, `SCENARIO_PROJECTION`, `MODEL_ASSUMPTION`) applied to charts and metrics.
+- **Accessibility Improvements**: Added semantic ARIA landmark roles (`role="region"`), accessible labels (`aria-label`), and contrast-compliant typography to chart panels and data grids.
+- **Executive vs. Consultant Audit View Presentation Refinement**: Clean business labels for client executives (`viewMode === "customer"`) while preserving internal formula codes (`F_TOTAL`, `F_ADMIN`, `F_TROUBLESHOOTING`, `F_OUTAGE`, `F_FTE`) in the Consultant Audit View (`viewMode === "consultant"`).
+- **Responsive Presentation Refinements**: Fully responsive layout adjustments across mobile, tablet, and desktop viewports.
+- **Draft & Unavailable State Handling Preserved**: Robust loading skeleton, error recovery banners, and draft-state explanations preserved.
+
+#### Files Changed by Batch 5A:
+- `frontend/src/components/ExecutiveDashboard.tsx`
+- `frontend/src/components/DashboardCharts.tsx`
+- `frontend/src/test/dashboardAndScenario.test.tsx`
+
+#### Architectural & Safety Verification:
+- **Authoritative Provenance Architecture Maintained**:
+  ```text
+  Q01–Q22 Inputs
+      │
+      ▼
+  Calculation Engine (Pure Python Decimal)
+      │
+      ▼
+  CalculationSnapshot (Immutable Database Record)
+      │
+      ▼
+  ReportDataAdapter (Type-Safe Transformation)
+      │
+      ▼
+  Executive / Consultant Presentation Layer
+  ```
+- **Financial Logic Review**: All frontend financial arithmetic expressions (`adminHoursVal * 0.25`, `trbHoursVal * 0.25`, `adminHoursVal + trbHoursVal`) were audited and verified as **SAFE PRESENTATION-ONLY** decompositions; they do not alter, recalculate, or persist authoritative economic outputs.
+- **Frozen Areas Untouched**: Batch 5A introduced **ZERO** changes to the Calculation Engine, Golden Master tests (10/10), Q01–Q22 semantics, `CalculationSnapshot` schemas, backend API contracts, RBAC, tenant/customer isolation, Client ownership, authentication session invalidation, Email/SMTP, or database migrations.
+
+---
+
+### BATCH 4E — AUTHENTICATION SESSION HARDENING & SESSION INVALIDATION
+
+**Status:** COMPLETE / IMPLEMENTED & VERIFIED  
+**Implementation Commit:** `d08bb450d70235ce7ac6fd602e3d038f94f1b9cf`  
+**Scope:** Lightweight, per-user authentication versioning (`auth_version`) to instantly invalidate active JWT sessions upon credential changes.
+
+- **`User.auth_version` Invariant**: Integer counter embedded into JWT payload claims (`auth_version`) upon authentication.
+- **Instant Revocation**: Password reset, password change, and credential invalidation atomically increment `auth_version`, instantly invalidating all pre-existing JWT tokens without requiring server-side session stores or Redis.
+- **Migration 0006**: Added `auth_version` column to `users` table (`backend/alembic/versions/0006_user_auth_version.py`).
+
+---
 
 ---
 
@@ -191,6 +248,7 @@ The database schema is managed via asynchronous Alembic migrations:
 | `0003` | `0003_assessment_created_by.py` | Assessment ownership: adds `created_by_user_id` foreign key on assessments. |
 | `0004` | `0004_user_customer_id.py` | Customer scoping: adds `customer_id` foreign key on users for `CUSTOMER_ADMIN` / `CUSTOMER_USER`. |
 | `0005` | `0005_user_credential_tokens.py` | Credential lifecycle: adds token hashes and expiration timestamps for invitations and password resets. |
+| `0006` | `0006_user_auth_version.py` | Session hardening: adds `auth_version` integer column on users for instant JWT session invalidation. |
 
 ---
 
@@ -219,7 +277,7 @@ The database schema is managed via asynchronous Alembic migrations:
 
 ## 10. Automated Testing & Verification Status
 
-### Verified Test Suite Results (Batch 4D Checkpoint)
+### Verified Test Suite Results (Batch 5A Checkpoint)
 
 ```text
 ================================================================================
@@ -230,31 +288,32 @@ The database schema is managed via asynchronous Alembic migrations:
    • 11/11 Calculation Engine Precision & Boundary Tests                 PASSED
    • 10/10 API Integration & Submission Orchestration Tests              PASSED
    • 13/13 Observability, Health Probes & Structured Logging Tests       PASSED
-   • 89/89 Security & Governance Tests                                   PASSED
+   • 95/95 Security & Governance Tests                                   PASSED
            - Auth, RBAC, IDOR, Rate Limiting, Bootstrap Admin
            - Customer Scoping & Client Assessment Ownership (Batch 4C)
            - User Invitation & Password Reset Lifecycle (Batch 4D)
+           - Authentication Session Hardening & Invalidation (Batch 4E)
    -----------------------------------------------------------------------------
-   Total Backend Suite: 133/133 PASSED (100%)
+   Total Backend Suite: 139/139 PASSED (100%)
 
 2. Frontend Test Suite (Vitest 5.0):
    • 17/17 Test Files                                                    PASSED
-   • 109/109 Component, Wizard, Governance & Security Tests             PASSED
+   • 110/110 Component, Wizard, Governance & Security Tests             PASSED
    -----------------------------------------------------------------------------
-   Total Frontend Suite: 109/109 PASSED (100%)
+   Total Frontend Suite: 110/110 PASSED (100%)
 
 3. Static Analysis & Build:
    • TypeScript Static Typecheck (`tsc --noEmit`):                       0 ERRORS
    • Next.js Production Turbopack Build (`next build`):                  PASSED
 
 4. Browser QA & Smoke Verification (Chromium):
-   • Multi-Persona Smoke Tests (Admin, Consultant, Client, Invitations)   PASSED
+   • Multi-Persona Smoke Tests (Admin, Consultant, Client, Expiry):      5/5 PASSED
    • Critical Console Errors:                                            0 ERRORS
 
 5. Database Migration Lifecycle:
-   • Alembic Upgrade (0001 -> 0005):                                     PASSED
-   • Alembic Downgrade (0005 -> 0001):                                   PASSED
-   • Alembic Re-Upgrade (0001 -> 0005):                                  PASSED
+   • Alembic Upgrade (0001 -> 0006):                                     PASSED
+   • Alembic Downgrade (0006 -> 0001):                                   PASSED
+   • Alembic Re-Upgrade (0001 -> 0006):                                  PASSED
 ================================================================================
 ```
 
@@ -280,23 +339,28 @@ The database schema is managed via asynchronous Alembic migrations:
 | **Batch 4B** | `8726245` | `feat: add user and customer governance mutations` | Customer create/edit, user create, activation/deactivation. |
 | **Batch 4C** | `0c4c3fb` | `feat: add customer-scoped user governance` | `User.customer_id`, customer admin scoping, invariant enforcement. |
 | **Batch 4D** | `7504964` | `feat: add secure user invitation lifecycle` | Invitation tokens, SHA-256 token hashing, password reset, rate limits. |
+| **Batch 4E** | `d08bb45` | `feat: harden authentication session invalidation` | Per-user `auth_version`, token claim, instant credential revocation. |
+| **Batch 5A** | `12593a7` | `feat: refine executive dashboard and results experience` | Executive KPI hierarchy, scenario separation, chart provenance badges. |
 
 ---
 
 ## 12. Planned Next Increments & Deferred Work
 
-### Next Planned Increment: Batch 4E
-- **Scope**: Authentication Session Hardening & Password-Reset Token Invalidation.
-- **Key Deliverables**:
-  - JWT session versioning / token revocation timestamps (`token_valid_after`).
-  - Explicit invalidation of active sessions upon password reset or credential revocation.
-  - Server-side token blacklisting / session revocation checks in authentication middleware.
-- **Status**: **PLANNED — NOT STARTED**.
+### Current Checkpoint: Batch 5A
+- **Status**: **COMPLETE / READY FOR REMOTE CHECKPOINT**.
+- **Scope**: Executive Dashboard and Results Experience presentation refinement.
+
+### Next Planned Increment: Batch 5B
+- **Scope**: Scenario Sandbox Enhancements (Interactive sensitivity modeling, multi-lever comparison presets, export alignment).
+- **Status**: **PLANNED — NOT STARTED** (Development intentionally paused after Batch 5A checkpoint).
 
 ### Production Deployment Status
 - **Status**: **DEFERRED**.
 - **Branch**: `dev`.
 - Container topology definitions (`docker-compose.prod.yml`) and Nginx configurations (`nginx/default.conf`) are maintained in the repository for production readiness, but live deployment is intentionally deferred.
+
+### Email Delivery Status
+- **Status**: **HEADLESS / TEST-MODE ISOLATED** (`EMAIL_ENABLED=False`). Real SMTP delivery remains deferred until explicitly authorized.
 
 ---
 
