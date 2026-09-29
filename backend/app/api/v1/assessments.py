@@ -52,6 +52,10 @@ async def create_assessment(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+        if current_user.customer_id and payload.customer_id != current_user.customer_id:
+            raise PermissionDeniedError("Clients cannot create assessments for other customer organizations.")
+
     user_id = current_user.id if current_user else None
     assessment = await AssessmentService.create_assessment(
         db, tenant_id, payload, created_by_user_id=user_id

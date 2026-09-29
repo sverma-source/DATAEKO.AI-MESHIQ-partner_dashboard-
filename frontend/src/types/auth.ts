@@ -11,6 +11,7 @@ export interface User {
   full_name?: string;
   role: Role;
   tenant_id: string;
+  customer_id?: string | null;
   is_active: boolean;
   created_at: string;
   updated_at?: string;

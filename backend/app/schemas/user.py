@@ -9,6 +9,7 @@ class UserBase(BaseModel):
     role: str = "CONSULTANT"
     is_active: bool = True
     tenant_id: str
+    customer_id: Optional[str] = None
 
 
 class UserCreate(BaseModel):
@@ -17,6 +18,7 @@ class UserCreate(BaseModel):
     full_name: str
     role: str = "CUSTOMER_USER"
     tenant_id: Optional[str] = None
+    customer_id: Optional[str] = None
 
 
 class UserUpdate(BaseModel):

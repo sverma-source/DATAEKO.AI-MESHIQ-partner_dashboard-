@@ -30,6 +30,7 @@ from app.core.middleware import (
 from app.core.rbac import Role
 from app.core.security import get_password_hash
 from app.models.base import Base
+from app.models.customer import Customer
 from app.models.tenant import Tenant
 from app.models.user import User
 
@@ -58,6 +59,24 @@ async def lifespan(app: FastAPI):
                 )
                 session.add(tenant)
                 await session.flush()
+
+            # Ensure default customer exists
+            cust_stmt = select(Customer).where(Customer.tenant_id == DEFAULT_TENANT_ID)
+            cust_res = await session.execute(cust_stmt)
+            default_customer = cust_res.scalars().first()
+            if not default_customer:
+                default_customer = Customer(
+                    id="00000000-0000-0000-0000-000000000001",
+                    tenant_id=DEFAULT_TENANT_ID,
+                    name="Acme Financial Corporation",
+                    industry="Financial Services",
+                    primary_contact_name="Acme Lead",
+                    primary_contact_email="lead@acme.corp",
+                )
+                session.add(default_customer)
+                await session.flush()
+
+            default_cust_id = default_customer.id
 
             # Seed default development users if they don't exist
             user_stmt = select(User).where(User.email == "consultant@dataeko.ai")
@@ -90,7 +109,8 @@ async def lifespan(app: FastAPI):
 
             client_stmt = select(User).where(User.email == "client@dataeko.ai")
             client_res = await session.execute(client_stmt)
-            if not client_res.scalar_one_or_none():
+            client_user = client_res.scalar_one_or_none()
+            if not client_user:
                 client_user = User(
                     id="00000000-0000-0000-0000-000000000007",
                     email="client@dataeko.ai",
@@ -98,9 +118,12 @@ async def lifespan(app: FastAPI):
                     full_name="Assessment Client",
                     role=Role.CUSTOMER_USER.value,
                     tenant_id=DEFAULT_TENANT_ID,
+                    customer_id=default_cust_id,
                     is_active=True,
                 )
                 session.add(client_user)
+            elif not client_user.customer_id:
+                client_user.customer_id = default_cust_id
 
             partner_stmt = select(User).where(User.email == "partner_admin@dataeko.ai")
             partner_res = await session.execute(partner_stmt)
@@ -117,16 +140,27 @@ async def lifespan(app: FastAPI):
 
             cust_admin_stmt = select(User).where(User.email == "customer_admin@dataeko.ai")
             cust_admin_res = await session.execute(cust_admin_stmt)
-            if not cust_admin_res.scalar_one_or_none():
+            cust_admin_user = cust_admin_res.scalar_one_or_none()
+            if not cust_admin_user:
                 cust_admin_user = User(
                     email="customer_admin@dataeko.ai",
                     hashed_password=get_password_hash("CustomerAdmin123!"),
                     full_name="Customer Administrator",
                     role=Role.CUSTOMER_ADMIN.value,
                     tenant_id=DEFAULT_TENANT_ID,
+                    customer_id=default_cust_id,
                     is_active=True,
                 )
                 session.add(cust_admin_user)
+            elif not cust_admin_user.customer_id:
+                cust_admin_user.customer_id = default_cust_id
+
+            # Also check existing customer_admin_a@acme.com if present
+            acme_admin_stmt = select(User).where(User.email == "customer_admin_a@acme.com")
+            acme_admin_res = await session.execute(acme_admin_stmt)
+            acme_admin = acme_admin_res.scalar_one_or_none()
+            if acme_admin and not acme_admin.customer_id:
+                acme_admin.customer_id = default_cust_id
 
             await session.commit()
 

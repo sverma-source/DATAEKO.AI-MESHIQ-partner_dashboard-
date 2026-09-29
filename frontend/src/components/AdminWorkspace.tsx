@@ -95,6 +95,7 @@ export const AdminWorkspace: React.FC = () => {
     email: "",
     role: "CUSTOMER_USER" as Role,
     password: "",
+    customer_id: "",
   });
   const [isSubmittingUser, setIsSubmittingUser] = useState<boolean>(false);
   const [userFormError, setUserFormError] = useState<string | null>(null);
@@ -124,14 +125,18 @@ export const AdminWorkspace: React.FC = () => {
           personaTitle: "Partner Administrator",
           desc: "Tenant-level governance over authorized customer accounts, user directory provisioning, assessment registries, and security logs within your partner tenant scope.",
         };
-      case "CUSTOMER_ADMIN":
+      case "CUSTOMER_ADMIN": {
+        const scopedCust = customers.find((c) => c.id === user?.customer_id);
         return {
-          title: "Customer Administration",
+          title: scopedCust ? `${scopedCust.name} Administration` : "Customer Administration",
           badge: "bg-slate-100 text-slate-800 border-slate-300",
-          scopeLabel: "Customer Organization Scope",
+          scopeLabel: scopedCust ? `Org: ${scopedCust.name}` : "Customer Organization Scope",
           personaTitle: "Customer Administrator",
-          desc: "Organization-level governance and read-only visibility for your authorized customer organization, user visibility, and submitted assessment records.",
+          desc: scopedCust
+            ? `Organization-level governance for ${scopedCust.name}. Manage authorized client respondent accounts and review submitted assessment records.`
+            : "Organization-level governance for your authorized customer organization, user visibility, and submitted assessment records.",
         };
+      }
       default:
         return {
           title: "System Administration",
@@ -141,10 +146,10 @@ export const AdminWorkspace: React.FC = () => {
           desc: "Administrative governance and platform compliance oversight.",
         };
     }
-  }, [user?.role]);
+  }, [user?.role, user?.customer_id, customers]);
 
   // Authority Checks
-  const canProvisionUsers = user?.role === "PLATFORM_ADMIN" || user?.role === "PARTNER_ADMIN";
+  const canProvisionUsers = user?.role === "PLATFORM_ADMIN" || user?.role === "PARTNER_ADMIN" || user?.role === "CUSTOMER_ADMIN";
   const canCreateCustomer = user?.role === "PLATFORM_ADMIN" || user?.role === "PARTNER_ADMIN" || user?.role === "CONSULTANT";
   const canUpdateCustomer = user?.role === "PLATFORM_ADMIN" || user?.role === "PARTNER_ADMIN" || user?.role === "CUSTOMER_ADMIN" || user?.role === "CONSULTANT";
   const canReadAudit = user?.role === "PLATFORM_ADMIN" || user?.role === "PARTNER_ADMIN" || user?.role === "CONSULTANT";
@@ -225,6 +230,9 @@ export const AdminWorkspace: React.FC = () => {
 
   // Filtered Customers
   const filteredCustomers = customers.filter((c) => {
+    if (user?.role === "CUSTOMER_ADMIN" && user.customer_id && c.id !== user.customer_id) {
+      return false;
+    }
     const q = customerSearch.toLowerCase().trim();
     if (!q) return true;
     return (
@@ -237,6 +245,9 @@ export const AdminWorkspace: React.FC = () => {
 
   // Filtered Assessments
   const filteredAssessments = assessments.filter((a) => {
+    if (user?.role === "CUSTOMER_ADMIN" && user.customer_id && a.customer_id !== user.customer_id) {
+      return false;
+    }
     const q = assessmentSearch.toLowerCase().trim();
     const matchesQuery =
       !q ||
@@ -356,16 +367,23 @@ export const AdminWorkspace: React.FC = () => {
 
     try {
       setIsSubmittingUser(true);
-      await api.createUser({
+      const payload: any = {
         full_name: provisionForm.full_name.trim(),
         email: provisionForm.email.trim(),
-        role: provisionForm.role,
+        role: user?.role === "CUSTOMER_ADMIN" ? "CUSTOMER_USER" : provisionForm.role,
         password: provisionForm.password,
-      });
+      };
+      if (user?.role === "CUSTOMER_ADMIN") {
+        payload.customer_id = user.customer_id;
+      } else if (provisionForm.customer_id && (provisionForm.role === "CUSTOMER_ADMIN" || provisionForm.role === "CUSTOMER_USER")) {
+        payload.customer_id = provisionForm.customer_id;
+      }
+
+      await api.createUser(payload);
 
       setSuccessMessage(`User account for ${provisionForm.email} provisioned successfully.`);
       setIsProvisionUserOpen(false);
-      setProvisionForm({ full_name: "", email: "", role: "CUSTOMER_USER", password: "" });
+      setProvisionForm({ full_name: "", email: "", role: "CUSTOMER_USER", password: "", customer_id: "" });
       await fetchGovernanceData();
     } catch (err: any) {
       if (err.status === 409 || err.message?.includes("already exists")) {
@@ -639,7 +657,7 @@ export const AdminWorkspace: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setUserFormError(null);
-                    setProvisionForm({ full_name: "", email: "", role: assignableRoles[0] || "CUSTOMER_USER", password: "" });
+                    setProvisionForm({ full_name: "", email: "", role: assignableRoles[0] || "CUSTOMER_USER", password: "", customer_id: user?.customer_id || "" });
                     setIsProvisionUserOpen(true);
                   }}
                   className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-[#008638] text-white font-bold text-xs hover:bg-[#006B2D] transition shadow-xs cursor-pointer shrink-0"
@@ -1229,18 +1247,54 @@ export const AdminWorkspace: React.FC = () => {
                 <label className="block text-[11px] font-bold text-[#172033] uppercase mb-1">
                   Role Assignment *
                 </label>
-                <select
-                  value={provisionForm.role}
-                  onChange={(e) => setProvisionForm({ ...provisionForm, role: e.target.value as Role })}
-                  className="w-full px-3 py-2 bg-white border border-[#CBD2DE] rounded-lg font-medium text-[#172033] focus:outline-none focus:ring-2 focus:ring-[#008638]"
-                >
-                  {assignableRoles.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
+                {user?.role === "CUSTOMER_ADMIN" ? (
+                  <div className="w-full px-3 py-2 bg-[#F7F8FA] border border-[#CBD2DE] rounded-lg font-semibold text-[#172033] text-xs">
+                    CUSTOMER_USER (Client Respondent)
+                  </div>
+                ) : (
+                  <select
+                    value={provisionForm.role}
+                    onChange={(e) => setProvisionForm({ ...provisionForm, role: e.target.value as Role })}
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2DE] rounded-lg font-medium text-[#172033] focus:outline-none focus:ring-2 focus:ring-[#008638]"
+                  >
+                    {assignableRoles.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
+
+              {/* Customer Organization Scope Field */}
+              {user?.role === "CUSTOMER_ADMIN" ? (
+                <div>
+                  <label className="block text-[11px] font-bold text-[#172033] uppercase mb-1">
+                    Customer Organization Scope
+                  </label>
+                  <div className="w-full px-3 py-2 bg-[#F7F8FA] border border-[#CBD2DE] rounded-lg font-semibold text-[#172033] text-xs">
+                    {customers.find((c) => c.id === user.customer_id)?.name || "Current Customer Organization"}
+                  </div>
+                </div>
+              ) : (provisionForm.role === "CUSTOMER_ADMIN" || provisionForm.role === "CUSTOMER_USER") && customers.length > 0 ? (
+                <div>
+                  <label className="block text-[11px] font-bold text-[#172033] uppercase mb-1">
+                    Assigned Customer Organization
+                  </label>
+                  <select
+                    value={provisionForm.customer_id}
+                    onChange={(e) => setProvisionForm({ ...provisionForm, customer_id: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2DE] rounded-lg font-medium text-[#172033] focus:outline-none focus:ring-2 focus:ring-[#008638]"
+                  >
+                    <option value="">-- No Customer Organization --</option>
+                    {customers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} {c.industry ? `(${c.industry})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
 
               <div>
                 <label className="block text-[11px] font-bold text-[#172033] uppercase mb-1">

@@ -6,6 +6,7 @@ from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 if TYPE_CHECKING:
     from app.models.tenant import Tenant
     from app.models.assessment import Assessment
+    from app.models.user import User
 
 
 class Customer(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -24,4 +25,7 @@ class Customer(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     tenant: Mapped["Tenant"] = relationship("Tenant", back_populates="customers")
     assessments: Mapped[List["Assessment"]] = relationship(
         "Assessment", back_populates="customer", cascade="all, delete-orphan"
+    )
+    users: Mapped[List["User"]] = relationship(
+        "User", back_populates="customer"
     )

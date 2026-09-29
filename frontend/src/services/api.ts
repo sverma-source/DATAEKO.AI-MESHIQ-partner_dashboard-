@@ -101,17 +101,18 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
-  // Users & Administration (Batch 4B)
-  listUsers: (params?: { search?: string; role?: string; is_active?: boolean }) => {
+  // Users & Administration (Batch 4B/4C)
+  listUsers: (params?: { search?: string; role?: string; is_active?: boolean; customer_id?: string }) => {
     const query = new URLSearchParams();
     if (params?.search) query.set("search", params.search);
     if (params?.role) query.set("role", params.role);
     if (params?.is_active !== undefined) query.set("is_active", String(params.is_active));
+    if (params?.customer_id) query.set("customer_id", params.customer_id);
     const qs = query.toString() ? `?${query.toString()}` : "";
     return request<User[]>(`/users${qs}`);
   },
 
-  createUser: (data: { email: string; full_name: string; role: string; password?: string }) =>
+  createUser: (data: { email: string; full_name: string; role: string; password?: string; customer_id?: string }) =>
     request<User>("/users", {
       method: "POST",
       body: JSON.stringify(data),
