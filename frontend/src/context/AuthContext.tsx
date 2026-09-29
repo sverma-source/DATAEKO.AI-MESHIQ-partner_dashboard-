@@ -12,7 +12,7 @@ interface AuthContextType extends AuthState {
   refreshUser: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -102,25 +102,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 const defaultAuthContext: AuthContextType = {
   user: {
-    id: "00000000-0000-0000-0000-000000000002",
-    email: "consultant@dataeko.ai",
-    full_name: "Lead MQ Consultant",
-    role: "CONSULTANT",
+    id: "00000000-0000-0000-0000-000000000005",
+    email: "client@acme.com",
+    full_name: "Acme Client Lead",
+    role: "CUSTOMER_USER",
     tenant_id: "00000000-0000-0000-0000-000000000001",
     is_active: true,
     created_at: new Date().toISOString(),
   },
   permissions: [
-    "customer:create",
     "customer:read",
-    "customer:update",
     "assessment:create",
     "assessment:read",
     "assessment:update",
-    "assessment:calculate",
-    "snapshot:read",
-    "report:generate",
-    "audit:read",
   ],
   isAuthenticated: true,
   isLoading: false,

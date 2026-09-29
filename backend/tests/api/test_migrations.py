@@ -9,8 +9,10 @@ def test_alembic_upgrade_and_downgrade_cycle(tmp_path):
     db_file = tmp_path / "test_migration.db"
     db_url = f"sqlite+aiosqlite:///{db_file}"
 
-    alembic_cfg = Config("backend/alembic.ini")
-    alembic_cfg.set_main_option("script_location", "backend/alembic")
+    ini_path = "backend/alembic.ini" if os.path.exists("backend/alembic.ini") else "alembic.ini"
+    script_loc = "backend/alembic" if os.path.exists("backend/alembic") else "alembic"
+    alembic_cfg = Config(ini_path)
+    alembic_cfg.set_main_option("script_location", script_loc)
     alembic_cfg.set_main_option("sqlalchemy.url", db_url)
 
     # 1. Test upgrade to head

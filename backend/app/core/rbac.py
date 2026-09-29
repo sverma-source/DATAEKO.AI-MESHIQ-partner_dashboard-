@@ -85,10 +85,9 @@ ROLE_PERMISSIONS: Dict[Role, Set[Permission]] = {
     },
     Role.CUSTOMER_USER: {
         Permission.CUSTOMER_READ,
+        Permission.ASSESSMENT_CREATE,
         Permission.ASSESSMENT_READ,
         Permission.ASSESSMENT_UPDATE,
-        Permission.SNAPSHOT_READ,
-        Permission.REPORT_GENERATE,
     },
 }
 

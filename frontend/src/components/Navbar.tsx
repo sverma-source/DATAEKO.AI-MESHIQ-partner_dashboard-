@@ -5,6 +5,7 @@ import Image from "next/image";
 import { api } from "../services/api";
 import { Activity, Building2, CheckCircle2, ShieldAlert } from "lucide-react";
 import { UserMenu } from "./UserMenu";
+import { useAuth } from "../context/AuthContext";
 
 interface NavbarProps {
   customerName?: string;
@@ -12,6 +13,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle }) => {
+  const { user } = useAuth();
   const [backendHealth, setBackendHealth] = useState<"checking" | "healthy" | "disconnected">("checking");
   const [engineVersion, setEngineVersion] = useState<string>("1.0.0");
 
@@ -62,7 +64,33 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
 
         {/* Center: Dominant Customer & Workspace Context */}
         <div className="flex-1 max-w-xl mx-2 flex justify-center">
-          {customerName ? (
+          {user?.role === "CONSULTANT" ? (
+            <div className="flex items-center space-x-2.5 bg-[#EEF8F0] px-3.5 py-1.5 rounded-lg border border-[#A8E2B5] shadow-2xs w-full sm:w-auto">
+              <span className="h-2 w-2 rounded-full bg-[#008638]" />
+              <div className="flex items-baseline space-x-2 min-w-0">
+                <span className="text-xs sm:text-sm font-bold text-[#008638] truncate">
+                  Consultant Workspace
+                </span>
+                <span className="text-[#A8E2B5] text-xs">•</span>
+                <span className="text-[11px] text-[#006B2D] truncate max-w-[220px] font-medium">
+                  Portfolio &amp; Review
+                </span>
+              </div>
+            </div>
+          ) : user?.role === "PLATFORM_ADMIN" || user?.role === "PARTNER_ADMIN" || user?.role === "CUSTOMER_ADMIN" ? (
+            <div className="flex items-center space-x-2.5 bg-[#FAF5FF] px-3.5 py-1.5 rounded-lg border border-[#E9D5FF] shadow-2xs w-full sm:w-auto">
+              <span className="h-2 w-2 rounded-full bg-[#722F8A]" />
+              <div className="flex items-baseline space-x-2 min-w-0">
+                <span className="text-xs sm:text-sm font-bold text-[#722F8A] truncate">
+                  {user.role === "PLATFORM_ADMIN" ? "Platform Administration" : user.role === "PARTNER_ADMIN" ? "Partner Administration" : "Customer Administration"}
+                </span>
+                <span className="text-[#E9D5FF] text-xs">•</span>
+                <span className="text-[11px] text-[#581C87] truncate max-w-[220px] font-medium">
+                  Governance
+                </span>
+              </div>
+            </div>
+          ) : customerName ? (
             <div className="flex items-center space-x-2.5 bg-[#F8FAFC] px-3.5 py-1.5 rounded-lg border border-[#E2E6EE] shadow-2xs w-full sm:w-auto">
               <Building2 className="h-4 w-4 text-[#008638] shrink-0" />
               <div className="flex items-baseline space-x-2 min-w-0">
@@ -71,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
                 </span>
                 <span className="text-[#CBD2DE] text-xs">•</span>
                 <span className="text-[11px] text-[#667085] truncate max-w-[200px] font-medium">
-                  {assessmentTitle || "IBM MQ Discovery"}
+                  {assessmentTitle || "My Assessment"}
                 </span>
               </div>
             </div>

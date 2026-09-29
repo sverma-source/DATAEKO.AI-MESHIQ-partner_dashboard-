@@ -21,6 +21,8 @@ import { QuestionCard } from "../components/QuestionCard";
 import { ReviewSummary } from "../components/ReviewSummary";
 import { SubmittedResponsesView } from "../components/SubmittedResponsesView";
 import { ExecutiveDashboard } from "../components/ExecutiveDashboard";
+import { ConsultantWorkspace } from "../components/ConsultantWorkspace";
+import { AdminWorkspace } from "../components/AdminWorkspace";
 import { CustomerModal } from "../components/CustomerModal";
 import { QUESTIONS, SECTIONS } from "../data/questionCatalog";
 import { api } from "../services/api";
@@ -125,10 +127,10 @@ export default function AssessmentWizardPage() {
       const urlAssessmentId = params.get("assessment_id");
       if (urlAssessmentId) {
         loadAssessmentById(urlAssessmentId);
-      } else if (user?.role === "CUSTOMER_USER") {
+      } else if (user?.role === "CUSTOMER_USER" && typeof api.listAssessments === "function") {
         api.listAssessments()
           .then((assList) => {
-            if (assList.length > 0) {
+            if (assList && assList.length > 0) {
               loadAssessmentById(assList[0].id);
             }
           })
@@ -410,6 +412,67 @@ export default function AssessmentWizardPage() {
     return cust;
   };
 
+  const isConsultant = user?.role === "CONSULTANT";
+  const isAdmin = user?.role === "PLATFORM_ADMIN" || user?.role === "PARTNER_ADMIN" || user?.role === "CUSTOMER_ADMIN";
+
+  if (isConsultant) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033]">
+          <Navbar />
+          <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+            <ConsultantWorkspace />
+          </main>
+          <footer className="py-5 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full border-t border-[#E2E6EE] flex flex-col sm:flex-row items-center justify-between text-xs text-[#667085] gap-3">
+            <div className="flex items-center space-x-2 text-xs">
+              <span>meshIQ Enterprise Economic Cost &amp; Efficiency Assessment</span>
+            </div>
+            <div className="flex items-center space-x-2 text-xs font-medium text-[#667085] tracking-tight">
+              <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
+              <Image
+                src="/dataeko-logo.png"
+                alt="DATAEKO.AI"
+                width={638}
+                height={106}
+                unoptimized
+                className="h-5 sm:h-6 w-auto object-contain shrink-0"
+              />
+            </div>
+          </footer>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isAdmin) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033]">
+          <Navbar />
+          <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+            <AdminWorkspace />
+          </main>
+          <footer className="py-5 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full border-t border-[#E2E6EE] flex flex-col sm:flex-row items-center justify-between text-xs text-[#667085] gap-3">
+            <div className="flex items-center space-x-2 text-xs">
+              <span>meshIQ Enterprise Economic Cost &amp; Efficiency Assessment</span>
+            </div>
+            <div className="flex items-center space-x-2 text-xs font-medium text-[#667085] tracking-tight">
+              <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
+              <Image
+                src="/dataeko-logo.png"
+                alt="DATAEKO.AI"
+                width={638}
+                height={106}
+                unoptimized
+                className="h-5 sm:h-6 w-auto object-contain shrink-0"
+              />
+            </div>
+          </footer>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033]">
@@ -478,20 +541,16 @@ export default function AssessmentWizardPage() {
                 <div className="flex items-center space-x-2 text-[#172033]">
                   <Building2 className="h-4 w-4 text-[#38B449] shrink-0" />
                   <span>
-                    {user?.role === "CUSTOMER_USER"
-                      ? "Enterprise Assessment Intake — Answer the discovery questions below."
-                      : "Working in draft mode. Click Select/Create Customer to link this session to a verified enterprise account."}
+                    Enterprise Assessment Intake — Answer the discovery questions below or select your customer account.
                   </span>
                 </div>
-                {user?.role !== "CUSTOMER_USER" && (
-                  <button
-                    type="button"
-                    onClick={() => setIsCustomerModalOpen(true)}
-                    className="px-3 py-1.5 rounded-md bg-[#008638] text-white font-semibold hover:bg-[#006B2D] transition-colors shrink-0 shadow-xs cursor-pointer"
-                  >
-                    Select Customer
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setIsCustomerModalOpen(true)}
+                  className="px-3 py-1.5 rounded-md bg-[#008638] text-white font-semibold hover:bg-[#006B2D] transition-colors shrink-0 shadow-xs cursor-pointer"
+                >
+                  Select Customer
+                </button>
               </div>
             ) : (
               <div className="flex items-center justify-between rounded-xl bg-white p-3.5 border border-[#E2E6EE] text-xs shadow-xs">
@@ -506,15 +565,13 @@ export default function AssessmentWizardPage() {
                     )}
                   </span>
                 </div>
-                {user?.role !== "CUSTOMER_USER" && (
-                  <button
-                    type="button"
-                    onClick={() => setIsCustomerModalOpen(true)}
-                    className="px-3 py-1.5 rounded-md border border-[#CBD2DE] text-[#172033] font-medium hover:bg-[#F1F3F7] transition-colors shrink-0 text-xs"
-                  >
-                    Switch Customer / Assessment
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setIsCustomerModalOpen(true)}
+                  className="px-3 py-1.5 rounded-md border border-[#CBD2DE] text-[#172033] font-medium hover:bg-[#F1F3F7] transition-colors shrink-0 text-xs cursor-pointer"
+                >
+                  Switch Customer / Assessment
+                </button>
               </div>
             )}
 

@@ -16,6 +16,7 @@ vi.mock("../services/api", () => ({
       { id: "cust-1", name: "Apex Financial", industry: "Banking" },
       { id: "cust-2", name: "Beta Corp", industry: "Technology" },
     ]),
+    listAssessments: vi.fn().mockResolvedValue([]),
     createCustomer: vi.fn().mockResolvedValue({
       id: "cust-new",
       name: "New Corp",

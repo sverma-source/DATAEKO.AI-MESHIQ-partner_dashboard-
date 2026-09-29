@@ -209,3 +209,45 @@ async def test_client_user_assessment_ownership_and_visibility(
     assert get_detail_consultant.json()["latest_snapshot"] is not None
     assert "computed_metrics" in get_detail_consultant.json()["latest_snapshot"]
     assert "summary_metrics" in get_detail_consultant.json()["latest_snapshot"]
+
+
+def test_canonical_role_permissions_matrix():
+    """Validates the exact RBAC permission sets for all 5 canonical roles."""
+    from app.core.rbac import Role, Permission, has_permission, ROLE_PERMISSIONS
+
+    # CUSTOMER_USER (Client)
+    assert has_permission(Role.CUSTOMER_USER.value, Permission.CUSTOMER_READ) is True
+    assert has_permission(Role.CUSTOMER_USER.value, Permission.ASSESSMENT_CREATE) is True
+    assert has_permission(Role.CUSTOMER_USER.value, Permission.ASSESSMENT_READ) is True
+    assert has_permission(Role.CUSTOMER_USER.value, Permission.ASSESSMENT_UPDATE) is True
+    assert has_permission(Role.CUSTOMER_USER.value, Permission.SNAPSHOT_READ) is False
+    assert has_permission(Role.CUSTOMER_USER.value, Permission.REPORT_GENERATE) is False
+    assert has_permission(Role.CUSTOMER_USER.value, Permission.ASSESSMENT_CALCULATE) is False
+    assert has_permission(Role.CUSTOMER_USER.value, Permission.AUDIT_READ) is False
+    assert has_permission(Role.CUSTOMER_USER.value, Permission.TENANT_MANAGE) is False
+
+    # CONSULTANT
+    assert has_permission(Role.CONSULTANT.value, Permission.CUSTOMER_CREATE) is True
+    assert has_permission(Role.CONSULTANT.value, Permission.CUSTOMER_READ) is True
+    assert has_permission(Role.CONSULTANT.value, Permission.ASSESSMENT_CALCULATE) is True
+    assert has_permission(Role.CONSULTANT.value, Permission.SNAPSHOT_READ) is True
+    assert has_permission(Role.CONSULTANT.value, Permission.REPORT_GENERATE) is True
+    assert has_permission(Role.CONSULTANT.value, Permission.AUDIT_READ) is True
+    assert has_permission(Role.CONSULTANT.value, Permission.TENANT_MANAGE) is False
+
+    # CUSTOMER_ADMIN
+    assert has_permission(Role.CUSTOMER_ADMIN.value, Permission.CUSTOMER_READ) is True
+    assert has_permission(Role.CUSTOMER_ADMIN.value, Permission.ASSESSMENT_CALCULATE) is True
+    assert has_permission(Role.CUSTOMER_ADMIN.value, Permission.SNAPSHOT_READ) is True
+    assert has_permission(Role.CUSTOMER_ADMIN.value, Permission.REPORT_GENERATE) is True
+    assert has_permission(Role.CUSTOMER_ADMIN.value, Permission.AUDIT_READ) is False
+
+    # PARTNER_ADMIN
+    assert has_permission(Role.PARTNER_ADMIN.value, Permission.CUSTOMER_CREATE) is True
+    assert has_permission(Role.PARTNER_ADMIN.value, Permission.AUDIT_READ) is True
+    assert has_permission(Role.PARTNER_ADMIN.value, Permission.TENANT_MANAGE) is True
+
+    # PLATFORM_ADMIN
+    assert has_permission(Role.PLATFORM_ADMIN.value, Permission.CUSTOMER_CREATE) is True
+    assert has_permission(Role.PLATFORM_ADMIN.value, Permission.AUDIT_READ) is True
+    assert has_permission(Role.PLATFORM_ADMIN.value, Permission.TENANT_MANAGE) is True
