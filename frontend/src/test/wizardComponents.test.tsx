@@ -27,7 +27,7 @@ describe("WizardHeader Component", () => {
       />
     );
 
-    expect(screen.getByText("Section A of 7")).toBeInTheDocument();
+    expect(screen.getByText("Section 1 of 7")).toBeInTheDocument();
     expect(screen.getByText("11 of 22 Questions Answered")).toBeInTheDocument();
     expect(screen.getByText("50%")).toBeInTheDocument();
     expect(screen.getByText("Progress saved")).toBeInTheDocument();
@@ -35,6 +35,29 @@ describe("WizardHeader Component", () => {
     const saveBtn = screen.getByRole("button", { name: /save progress/i });
     fireEvent.click(saveBtn);
     expect(handleSave).toHaveBeenCalledTimes(1);
+  });
+
+  it("communicates numeric position across all 7 assessment sections", () => {
+    SECTIONS.forEach((section, index) => {
+      const sectionNum = index + 1;
+      const { unmount } = render(
+        <WizardHeader
+          currentSection={section}
+          currentSectionIndex={sectionNum}
+          totalSections={7}
+          answeredCount={0}
+          totalQuestions={22}
+          saveStatus="initialized"
+          onSave={vi.fn()}
+          isSaving={false}
+        />
+      );
+
+      expect(screen.getByText(`Section ${sectionNum} of 7`)).toBeInTheDocument();
+      // Canonical section title remains unchanged
+      expect(screen.getByText(section.title)).toBeInTheDocument();
+      unmount();
+    });
   });
 
   it("renders Draft initialized state distinctly on brand new assessments", () => {

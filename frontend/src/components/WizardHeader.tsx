@@ -33,7 +33,7 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
         {/* Section Context & Hierarchy */}
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#008638]">
-            <span>Section {currentSection.id} of {totalSections}</span>
+            <span>Section {currentSectionIndex} of {totalSections}</span>
             <span className="text-[#CBD2DE]" aria-hidden="true">•</span>
             <span>{answeredCount} of {totalQuestions} Questions Answered</span>
           </div>
