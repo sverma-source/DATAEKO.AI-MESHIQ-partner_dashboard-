@@ -19,6 +19,7 @@ import { WizardHeader } from "../components/WizardHeader";
 import { SectionNavigation } from "../components/SectionNavigation";
 import { QuestionCard } from "../components/QuestionCard";
 import { ReviewSummary } from "../components/ReviewSummary";
+import { SubmittedResponsesView } from "../components/SubmittedResponsesView";
 import { ExecutiveDashboard } from "../components/ExecutiveDashboard";
 import { CustomerModal } from "../components/CustomerModal";
 import { QUESTIONS, SECTIONS } from "../data/questionCatalog";
@@ -99,6 +100,9 @@ export default function AssessmentWizardPage() {
           q22_migration_plans: ass.response.q22_migration_plans,
         };
         setAnswers(mapped);
+      }
+      if (ass.status === "SUBMITTED") {
+        setCurrentSectionId("SUBMITTED");
       }
       if (typeof window !== "undefined") {
         const url = new URL(window.location.href);
@@ -234,7 +238,14 @@ export default function AssessmentWizardPage() {
       await api.saveResponses(targetAssessment.id, answers);
       const finalizedAssessment = await api.submitAssessment(targetAssessment.id);
       setCurrentAssessment(finalizedAssessment);
+      setCurrentSectionId("SUBMITTED");
       setSaveStatus("saved");
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("assessment_id", targetAssessment.id);
+        window.history.replaceState({}, "", url.toString());
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
       setSubmissionError(err.message || "Failed to submit assessment.");
     } finally {
@@ -401,7 +412,7 @@ export default function AssessmentWizardPage() {
         />
 
       {/* Main Wizard Header */}
-      {currentSectionId !== "CALCULATED" && (
+      {currentSectionId !== "CALCULATED" && currentSectionId !== "SUBMITTED" && (
         <>
           <WizardHeader
             currentSection={currentSection}
@@ -451,7 +462,7 @@ export default function AssessmentWizardPage() {
         )}
 
         {/* State A: Section Questions Form (Sections A through G) */}
-        {currentSectionId !== "REVIEW" && currentSectionId !== "CALCULATED" && (
+        {currentSectionId !== "REVIEW" && currentSectionId !== "CALCULATED" && currentSectionId !== "SUBMITTED" && (
           <div className="space-y-6 max-w-4xl mx-auto">
             {/* Session Actions Banner */}
             {!currentAssessment ? (
@@ -671,6 +682,17 @@ export default function AssessmentWizardPage() {
               setCurrentSectionId("REVIEW");
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
+          />
+        )}
+
+        {/* State D: Customer Finalized & Read-Only Submitted Responses View */}
+        {currentSectionId === "SUBMITTED" && currentAssessment && (
+          <SubmittedResponsesView
+            assessment={currentAssessment}
+            customer={currentCustomer}
+            sections={SECTIONS}
+            questionsMap={QUESTIONS}
+            answers={answers}
           />
         )}
       </main>

@@ -1,6 +1,7 @@
 export type AssessmentStatus =
   | "DRAFT"
   | "IN_PROGRESS"
+  | "SUBMITTED"
   | "CALCULATED"
   | "COMPLETED"
   | "ARCHIVED";

@@ -143,6 +143,8 @@ describe("AssessmentWizardPage Full Integration", () => {
     await waitFor(() => {
       expect(api.saveResponses).toHaveBeenCalled();
       expect(api.submitAssessment).toHaveBeenCalled();
+      expect(screen.getByText("Assessment Submitted")).toBeInTheDocument();
+      expect(screen.getByText("ASSESSMENT SUBMITTED & FINALIZED")).toBeInTheDocument();
     });
   });
 
