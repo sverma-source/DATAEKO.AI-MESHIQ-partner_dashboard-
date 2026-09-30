@@ -62,6 +62,9 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   const [viewMode, setViewMode] = useState<"customer" | "consultant">("customer");
   const [isReportViewOpen, setIsReportViewOpen] = useState<boolean>(false);
   const [isShowMathOpen, setIsShowMathOpen] = useState<boolean>(false);
+  const [mathTarget, setMathTarget] = useState<
+    "total_quantified_labor_cost" | "potential_financial_exposure"
+  >("total_quantified_labor_cost");
 
   // Authorized roles for calculation transparency: CONSULTANT, PLATFORM_ADMIN, PARTNER_ADMIN
   const isAuthorizedForMath =
@@ -105,8 +108,8 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
     ? Number(loadedRateMetric.value)
     : 86.53846153846154;
 
-  // Single-Event Exposure Hierarchy
-  const exposureMetric = metrics.representative_single_event_exposure;
+  // Single-Event Exposure Hierarchy (canonical potential_financial_exposure with fallback to representative_single_event_exposure)
+  const exposureMetric = metrics.potential_financial_exposure || metrics.representative_single_event_exposure;
   const isExposureBenchmark =
     exposureMetric?.provenance === "INDUSTRY_BENCHMARK" ||
     exposureMetric?.state === "INDUSTRY_BENCHMARK" ||
@@ -385,7 +388,10 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                       {isAuthorizedForMath && (
                         <button
                           type="button"
-                          onClick={() => setIsShowMathOpen(true)}
+                          onClick={() => {
+                            setMathTarget("total_quantified_labor_cost");
+                            setIsShowMathOpen(true);
+                          }}
                           data-testid="show-the-math-btn"
                           className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#008638] hover:text-[#006B2D] bg-[#EEF8F0] hover:bg-[#E5F5E8] px-2 py-0.5 rounded-md border border-[#A8E2B5] transition-colors cursor-pointer shadow-2xs"
                           aria-label="Show the Math for Operational Labor Cost"
@@ -473,22 +479,42 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               {/* Secondary Card 1: Representative Single-Event Exposure */}
               <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-amber-500 bg-white p-6 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
                       Single-Event Exposure
                     </span>
-                    <ProvenanceBadge
-                      provenance={isExposureBenchmark ? "INDUSTRY_BENCHMARK" : "CALCULATED_RESULT"}
-                      state={exposureMetric?.state || "VALID"}
-                      formulaCode={viewMode === "consultant" ? "EXPOSURE = D_HOURS × R_IMPACT" : undefined}
-                    />
+                    <div className="flex items-center space-x-2">
+                      {isAuthorizedForMath && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMathTarget("potential_financial_exposure");
+                            setIsShowMathOpen(true);
+                          }}
+                          data-testid="show-the-math-exposure-btn"
+                          className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#008638] hover:text-[#006B2D] bg-[#EEF8F0] hover:bg-[#E5F5E8] px-2 py-0.5 rounded-md border border-[#A8E2B5] transition-colors cursor-pointer shadow-2xs"
+                          aria-label="Show the Math for Single-Event Financial Exposure"
+                        >
+                          <Calculator className="h-3 w-3 mr-0.5" />
+                          <span>Show the Math</span>
+                        </button>
+                      )}
+                      <ProvenanceBadge
+                        provenance={isExposureBenchmark ? "INDUSTRY_BENCHMARK" : (exposureMetric?.provenance || "CALCULATED_RESULT")}
+                        state={exposureMetric?.state || "VALID"}
+                        formulaCode={viewMode === "consultant" ? (exposureMetric?.formula_code || "EXPOSURE_SINGLE = D_HOURS * R_IMPACT") : undefined}
+                      />
+                    </div>
                   </div>
                   <div className="mt-3 flex items-baseline justify-between">
-                    <span className="text-3xl font-black text-[#172033] font-mono">
-                      {metrics.representative_single_event_exposure?.state === "NOT_MODELED" ||
-                      metrics.representative_single_event_exposure?.state === "INSUFFICIENT_DATA"
+                    <span
+                      className="text-3xl font-black text-[#172033] font-mono"
+                      data-testid="dashboard-financial-exposure"
+                    >
+                      {exposureMetric?.state === "NOT_MODELED" ||
+                      exposureMetric?.state === "INSUFFICIENT_DATA"
                         ? "—"
-                        : formatCurrency(summary.representative_single_event_exposure)}
+                        : formatCurrency(summary.representative_single_event_exposure ?? exposureMetric?.value)}
                     </span>
                     <span className="text-xs font-semibold text-[#667085]">/ event</span>
                   </div>
@@ -829,11 +855,28 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               </div>
 
               <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200">
-                <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                  Representative Single-Event Exposure
-                </span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                    Representative Single-Event Exposure
+                  </span>
+                  {isAuthorizedForMath && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMathTarget("potential_financial_exposure");
+                        setIsShowMathOpen(true);
+                      }}
+                      data-testid="show-the-math-exposure-tab-btn"
+                      className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#008638] hover:text-[#006B2D] bg-white hover:bg-[#EEF8F0] px-2 py-0.5 rounded-md border border-[#A8E2B5] transition-colors cursor-pointer shadow-2xs"
+                      aria-label="Show the Math for Single-Event Financial Exposure"
+                    >
+                      <Calculator className="h-3 w-3 mr-0.5" />
+                      <span>Show the Math</span>
+                    </button>
+                  )}
+                </div>
                 <div className="mt-2 text-2xl font-black text-amber-950 font-mono">
-                  {formatCurrency(summary.representative_single_event_exposure)}
+                  {formatCurrency(summary.representative_single_event_exposure ?? exposureMetric?.value)}
                 </div>
                 <p className="text-[11px] text-amber-900 mt-1 font-bold">
                   Exposure for one single major outage event.
@@ -1040,6 +1083,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           calculation={calculation}
           customerName={customer?.name}
           answers={answers}
+          targetMetricKey={mathTarget}
         />
       )}
     </div>

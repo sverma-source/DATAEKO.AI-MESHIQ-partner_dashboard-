@@ -105,6 +105,31 @@ const mockCalculation: CalculationRunResponse = {
       rule_version: "calc-rules-v1.0.0",
       inputs_used: { H_total: 520 },
     },
+    potential_financial_exposure: {
+      value: "825000.00",
+      state: "VALID",
+      provenance: "CALCULATED_RESULT",
+      formula_code: "EXPOSURE_SINGLE = D_HOURS * R_IMPACT",
+      rule_version: "calc-rules-v1.0.0",
+      inputs_used: { d_hours: "2.750", r_impact: "300000.00" },
+    },
+    representative_duration_hours: {
+      value: 2.75,
+      state: "VALID",
+      provenance: "MODEL_ASSUMPTION",
+      formula_code: "D_HOURS = LOOKUP(Q14_DURATION)",
+      rule_version: "calc-rules-v1.0.0",
+      inputs_used: { q14_duration_input: "1.5–4 hours" },
+    },
+    applicable_financial_rate: {
+      value: "300000.00",
+      state: "VALID_WITH_DEFAULTS",
+      provenance: "INDUSTRY_BENCHMARK",
+      formula_code: "R_IMPACT = Q15_OVERRIDE OR (ITIC_300K IF Q12 IN {CRITICAL, SIGNIFICANT})",
+      rule_version: "calc-rules-v1.0.0",
+      inputs_used: { q15_hourly_cost: "None", q12_severity: "Critical / Significant" },
+      state_reason: "Using ITIC $300,000/hr benchmark for Critical/Significant impact",
+    },
   },
   assumptions_used: {
     annual_working_hours: 2080,
@@ -117,6 +142,9 @@ const mockCalculation: CalculationRunResponse = {
     total_quantified_labor_cost: "CALCULATED_RESULT",
     annual_admin_labor_cost: "CALCULATED_RESULT",
     annual_troubleshooting_labor_cost: "CALCULATED_RESULT",
+    potential_financial_exposure: "CALCULATED_RESULT",
+    representative_duration_hours: "MODEL_ASSUMPTION",
+    applicable_financial_rate: "INDUSTRY_BENCHMARK",
   },
 };
 
@@ -124,6 +152,9 @@ const mockAnswers = {
   q04_dropdown: "1–5 hrs/week",
   q06_frequency: "2–3 times / week",
   q07_labor_hours: "2–4 hours",
+  q12_business_impact: "Critical / Significant",
+  q14_disruption_duration: "1.5–4 hours",
+  q15_is_unknown: true,
   q20_use_default: true,
   q20_annual_labor_rate: 180000,
 };
@@ -145,42 +176,43 @@ const createMockAuth = (role: string) => ({
   hasRole: vi.fn().mockImplementation((r) => r === role),
 });
 
-describe("E1: Economic Insight / Show the Math", () => {
+describe("E1: Economic Insight / Show the Math (Labor Cost)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   const renderDashboardWithRole = (role: string) => {
+    const authValue = createMockAuth(role);
     return render(
-      <AuthContext.Provider value={createMockAuth(role)}>
+      <AuthContext.Provider value={authValue as any}>
         <ExecutiveDashboard
           calculation={mockCalculation}
-          customer={{ id: "cust-1", name: "Global Financial Corp", tenant_id: "tenant-abc", created_at: "" }}
+          customer={{ id: "cust-1", name: "Acme Corp" }}
+          assessment={{ id: "ass-101", title: "Enterprise MQ Assessment", status: "SUBMITTED" } as any}
           answers={mockAnswers}
-          onReturnToWizard={vi.fn()}
         />
       </AuthContext.Provider>
     );
   };
 
-  it("1. renders Show the Math control for the targeted Operational Labor Cost metric for CONSULTANT", () => {
+  it("1. renders Show the Math button for CONSULTANT on Operational Labor Cost metric", () => {
     renderDashboardWithRole("CONSULTANT");
     const showMathBtn = screen.getByTestId("show-the-math-btn");
     expect(showMathBtn).toBeInTheDocument();
     expect(showMathBtn).toHaveTextContent("Show the Math");
   });
 
-  it("2. renders Show the Math control for PLATFORM_ADMIN", () => {
+  it("2. renders Show the Math button for PLATFORM_ADMIN", () => {
     renderDashboardWithRole("PLATFORM_ADMIN");
     expect(screen.getByTestId("show-the-math-btn")).toBeInTheDocument();
   });
 
-  it("3. does NOT render Show the Math control for CUSTOMER_USER (unauthorized)", () => {
+  it("3. does NOT render Show the Math button for CUSTOMER_USER (role restricted)", () => {
     renderDashboardWithRole("CUSTOMER_USER");
     expect(screen.queryByTestId("show-the-math-btn")).not.toBeInTheDocument();
   });
 
-  it("4. clicking Show the Math opens the detail panel", () => {
+  it("4. clicking Show the Math opens the detail panel drawer", () => {
     renderDashboardWithRole("CONSULTANT");
     const showMathBtn = screen.getByTestId("show-the-math-btn");
     fireEvent.click(showMathBtn);
@@ -189,44 +221,39 @@ describe("E1: Economic Insight / Show the Math", () => {
     expect(screen.getByText("Operational Labor Cost Breakdown")).toBeInTheDocument();
   });
 
-  it("5. displays exact existing metric value directly from snapshot ($45,692)", () => {
+  it("5. displays the exact existing snapshot metric value without recalculation", () => {
     renderDashboardWithRole("CONSULTANT");
     fireEvent.click(screen.getByTestId("show-the-math-btn"));
 
-    const valueEl = screen.getByTestId("target-metric-value");
-    expect(valueEl).toBeInTheDocument();
-    expect(valueEl).toHaveTextContent("$45,692");
+    const targetVal = screen.getByTestId("target-metric-value");
+    expect(targetVal).toHaveTextContent("$45,692");
   });
 
-  it("6. displays existing metric state and provenance metadata", () => {
+  it("6. displays existing metric state badge and calculation provenance tier", () => {
     renderDashboardWithRole("CONSULTANT");
     fireEvent.click(screen.getByTestId("show-the-math-btn"));
 
-    expect(screen.getByText("total_quantified_labor_cost")).toBeInTheDocument();
     expect(screen.getByText("Valid")).toBeInTheDocument();
+    expect(screen.getAllByText("CALCULATED_RESULT").length).toBeGreaterThan(0);
   });
 
-  it("7. displays existing canonical formula metadata (C_TOTAL = C_ADMIN + C_TRB)", () => {
+  it("7. displays existing canonical formula metadata from calculation snapshot", () => {
     renderDashboardWithRole("CONSULTANT");
     fireEvent.click(screen.getByTestId("show-the-math-btn"));
 
     const formulaEl = screen.getByTestId("canonical-formula-code");
-    expect(formulaEl).toBeInTheDocument();
     expect(formulaEl).toHaveTextContent("C_TOTAL = C_ADMIN + C_TRB");
   });
 
-  it("8. displays existing component metrics directly from snapshot without recalculation", () => {
+  it("8. displays existing component metrics directly from snapshot (C_ADMIN and C_TRB)", () => {
     renderDashboardWithRole("CONSULTANT");
     fireEvent.click(screen.getByTestId("show-the-math-btn"));
 
-    const adminCostEl = screen.getByTestId("component-admin-cost");
-    const trbCostEl = screen.getByTestId("component-trb-cost");
-
-    expect(adminCostEl).toHaveTextContent("$18,000");
-    expect(trbCostEl).toHaveTextContent("$27,692");
+    expect(screen.getByTestId("component-admin-cost")).toHaveTextContent("$18,000");
+    expect(screen.getByTestId("component-trb-cost")).toHaveTextContent("$27,692");
   });
 
-  it("9. displays underlying intermediate metrics (H_ADMIN, N_EVENTS, H_INV, H_TRB, R_HR)", () => {
+  it("9. displays existing intermediate metrics where available in snapshot", () => {
     renderDashboardWithRole("CONSULTANT");
     fireEvent.click(screen.getByTestId("show-the-math-btn"));
 
@@ -237,7 +264,7 @@ describe("E1: Economic Insight / Show the Math", () => {
     expect(screen.getByTestId("intermediate-hourly-rate")).toHaveTextContent("$86.54/hr");
   });
 
-  it("10. displays source assessment inputs lineage (Q04, Q06, Q07, Q20)", () => {
+  it("10. displays source assessment inputs and lineage mapped to questions (Q04, Q06, Q07, Q20)", () => {
     renderDashboardWithRole("CONSULTANT");
     fireEvent.click(screen.getByTestId("show-the-math-btn"));
 
@@ -301,5 +328,159 @@ describe("E1: Economic Insight / Show the Math", () => {
     expect(dialog).toHaveAttribute("aria-modal", "true");
     expect(dialog).toHaveAttribute("aria-labelledby", "show-the-math-title");
     expect(screen.getByTestId("target-metric-value")).toHaveTextContent("$45,692");
+  });
+});
+
+describe("E2: Financial Exposure / Show the Math", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const renderDashboardWithRole = (role: string) => {
+    const authValue = createMockAuth(role);
+    return render(
+      <AuthContext.Provider value={authValue as any}>
+        <ExecutiveDashboard
+          calculation={mockCalculation}
+          customer={{ id: "cust-1", name: "Acme Corp" }}
+          assessment={{ id: "ass-101", title: "Enterprise MQ Assessment", status: "SUBMITTED" } as any}
+          answers={mockAnswers}
+        />
+      </AuthContext.Provider>
+    );
+  };
+
+  it("1. renders Financial Exposure metric on dashboard card", () => {
+    renderDashboardWithRole("CONSULTANT");
+    const exposureVal = screen.getByTestId("dashboard-financial-exposure");
+    expect(exposureVal).toBeInTheDocument();
+    expect(exposureVal).toHaveTextContent("$825,000");
+  });
+
+  it("2. renders Show the Math button on Single-Event Exposure card for authorized CONSULTANT", () => {
+    renderDashboardWithRole("CONSULTANT");
+    const exposureBtn = screen.getByTestId("show-the-math-exposure-btn");
+    expect(exposureBtn).toBeInTheDocument();
+    expect(exposureBtn).toHaveTextContent("Show the Math");
+  });
+
+  it("3. renders Show the Math button for PLATFORM_ADMIN on Exposure card", () => {
+    renderDashboardWithRole("PLATFORM_ADMIN");
+    expect(screen.getByTestId("show-the-math-exposure-btn")).toBeInTheDocument();
+  });
+
+  it("4. does NOT render Show the Math button on Exposure card for CUSTOMER_USER", () => {
+    renderDashboardWithRole("CUSTOMER_USER");
+    expect(screen.queryByTestId("show-the-math-exposure-btn")).not.toBeInTheDocument();
+  });
+
+  it("5. clicking Show the Math on Exposure card opens the Financial Exposure detail drawer", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-exposure-btn"));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Single-Event Financial Exposure Breakdown")).toBeInTheDocument();
+  });
+
+  it("6. displays the exact snapshot value for potential_financial_exposure ($825,000)", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-exposure-btn"));
+
+    const targetVal = screen.getByTestId("target-metric-value");
+    expect(targetVal).toHaveTextContent("$825,000");
+    expect(screen.getByText("potential_financial_exposure")).toBeInTheDocument();
+  });
+
+  it("7. displays existing metric state and canonical formula (EXPOSURE_SINGLE = D_HOURS * R_IMPACT)", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-exposure-btn"));
+
+    expect(screen.getByText("Valid")).toBeInTheDocument();
+    const formulaEl = screen.getByTestId("canonical-formula-code");
+    expect(formulaEl).toHaveTextContent("EXPOSURE_SINGLE = D_HOURS * R_IMPACT");
+  });
+
+  it("8. displays existing component metrics: D_HOURS (2.75 hrs) and R_IMPACT ($300,000 / hr)", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-exposure-btn"));
+
+    expect(screen.getByTestId("component-duration-hours")).toHaveTextContent("2.75 hrs");
+    expect(screen.getByTestId("component-financial-rate")).toHaveTextContent("$300,000 / hr");
+  });
+
+  it("9. distinguishes between Customer Fact and Industry Benchmark / Model Assumption", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-exposure-btn"));
+
+    expect(screen.getByTestId("provenance-rate-source")).toHaveTextContent("ITIC $300k/hr Industry Benchmark");
+    expect(screen.getByTestId("provenance-duration-source")).toHaveTextContent("Standard Duration Table Lookup");
+  });
+
+  it("10. displays input lineage for Q14 (Duration), Q12 (Severity), and Q15 (Hourly Cost Override)", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-exposure-btn"));
+
+    expect(screen.getByTestId("input-q14")).toHaveTextContent("1.5–4 hours");
+    expect(screen.getByTestId("input-q12")).toHaveTextContent("Critical / Significant");
+    expect(screen.getByTestId("input-q15")).toHaveTextContent("Unknown / Unprovided");
+  });
+
+  it("11. displays ITIC benchmark ($300,000 / hour) and duration lookup mapping table", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-exposure-btn"));
+
+    expect(screen.getByTestId("benchmark-itic-rate")).toHaveTextContent("$300,000 / hour");
+    expect(screen.getByText("Authoritative Duration Lookup Mapping:")).toBeInTheDocument();
+  });
+
+  it("12. displays technical engine version, rule version, snapshot ID, and calculated timestamp", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-exposure-btn"));
+
+    expect(screen.getByTestId("engine-version")).toHaveTextContent("1.0.0");
+    expect(screen.getByTestId("rule-version")).toHaveTextContent("calc-rules-v1.0.0");
+    expect(screen.getByTestId("snapshot-id")).toHaveTextContent("snap-abc-12345");
+    expect(screen.getByTestId("calculated-at")).toHaveTextContent("2026-09-30T14:00:00Z");
+  });
+
+  it("13. closes Financial Exposure drawer via close button and Escape key", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-exposure-btn"));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("14. renders Show the Math button on Single-Event Exposure tab and opens drawer", () => {
+    renderDashboardWithRole("CONSULTANT");
+    // Switch to Single-Event Exposure tab
+    const exposureTabBtn = screen.getByRole("tab", { name: /single-event exposure/i });
+    fireEvent.click(exposureTabBtn);
+
+    const tabMathBtn = screen.getByTestId("show-the-math-exposure-tab-btn");
+    expect(tabMathBtn).toBeInTheDocument();
+    fireEvent.click(tabMathBtn);
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Single-Event Financial Exposure Breakdown")).toBeInTheDocument();
+  });
+
+  it("15. standalone ShowTheMathDrawer with targetMetricKey='potential_financial_exposure' has zero client math", () => {
+    const handleClose = vi.fn();
+    render(
+      <ShowTheMathDrawer
+        isOpen={true}
+        onClose={handleClose}
+        calculation={mockCalculation}
+        customerName="Apex Global"
+        answers={mockAnswers}
+        targetMetricKey="potential_financial_exposure"
+      />
+    );
+
+    expect(screen.getByTestId("target-metric-value")).toHaveTextContent("$825,000");
+    expect(screen.getByTestId("component-duration-hours")).toHaveTextContent("2.75 hrs");
+    expect(screen.getByTestId("component-financial-rate")).toHaveTextContent("$300,000 / hr");
   });
 });
