@@ -40,6 +40,7 @@ import { DashboardCharts } from "./DashboardCharts";
 import { ScenarioSandbox } from "./ScenarioSandbox";
 import { ExecutiveReportView } from "./report/ExecutiveReportView";
 import { ShowTheMathDrawer, MathTargetMetricKey } from "./ShowTheMathDrawer";
+import { ExecutiveEconomicNarrative } from "./ExecutiveEconomicNarrative";
 import { useAuth } from "../context/AuthContext";
 
 interface ExecutiveDashboardProps {
@@ -360,6 +361,17 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           tabIndex={0}
           className="space-y-8 focus:outline-hidden"
         >
+          {/* Executive Economic Narrative (E4) */}
+          <ExecutiveEconomicNarrative
+            calculation={calculation}
+            onShowMath={(target) => {
+              setMathTarget(target);
+              setIsShowMathOpen(true);
+            }}
+            isAuthorizedForMath={isAuthorizedForMath}
+            customerName={customer?.name || "Enterprise Client"}
+          />
+
           {/* A. PRIMARY EXECUTIVE HEADLINE: Core Economic Baseline */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
