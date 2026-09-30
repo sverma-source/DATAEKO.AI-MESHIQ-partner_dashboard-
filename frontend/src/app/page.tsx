@@ -37,6 +37,7 @@ import {
 
 export default function AssessmentWizardPage() {
   const { user, hasPermission } = useAuth();
+  const isCustomerUser = user?.role === "CUSTOMER_USER";
   // Session / Entity State
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [currentCustomer, setCurrentCustomer] = useState<Customer | null>(null);
@@ -167,17 +168,21 @@ export default function AssessmentWizardPage() {
   const handleSaveProgress = async () => {
     let targetAssessment = currentAssessment;
     if (!targetAssessment) {
-      // Auto-create assessment if not exists
-      if (!currentCustomer) {
-        setIsCustomerModalOpen(true);
+      // Auto-create assessment if not exists under authorized customer context
+      const custId = currentCustomer?.id || user?.customer_id;
+      if (!custId) {
+        if (!isCustomerUser) {
+          setIsCustomerModalOpen(true);
+        }
         return;
       }
       try {
         setIsSaving(true);
         setSaveStatus("saving");
+        const custName = currentCustomer?.name || "Enterprise Customer";
         const ass = await api.createAssessment({
-          customer_id: currentCustomer.id,
-          title: `${currentCustomer.name} - IBM MQ Economic Assessment`,
+          customer_id: custId,
+          title: `${custName} - IBM MQ Economic Assessment`,
         });
         targetAssessment = ass;
         setCurrentAssessment(ass);
@@ -221,14 +226,17 @@ export default function AssessmentWizardPage() {
     try {
       let targetAssessment = currentAssessment;
       if (!targetAssessment) {
-        let custId = currentCustomer?.id;
-        if (!custId) {
+        let custId = currentCustomer?.id || user?.customer_id;
+        if (!custId && !isCustomerUser) {
           const cust = await api.createCustomer({
             name: "Assessment Client",
             industry: "Financial Services",
           });
           setCurrentCustomer(cust);
           custId = cust.id;
+        }
+        if (!custId) {
+          throw new Error("No authorized customer organization found.");
         }
         const ass = await api.createAssessment({
           customer_id: custId,
@@ -532,18 +540,35 @@ export default function AssessmentWizardPage() {
             {!currentAssessment ? (
               <div className="flex items-center justify-between rounded-xl bg-[#EEF8F0] p-4 border border-[#A8E2B5] text-xs">
                 <div className="flex items-center space-x-2 text-[#172033]">
-                  <Building2 className="h-4 w-4 text-[#38B449] shrink-0" />
+                  <Building2 className="h-4 w-4 text-[#008638] shrink-0" />
                   <span>
-                    Enterprise Assessment Intake — Answer the discovery questions below or select your customer account.
+                    {isCustomerUser
+                      ? `Customer Organization: ${currentCustomer?.name || "Authorized Scope"} (Draft Intake Session)`
+                      : "Enterprise Assessment Intake — Answer the discovery questions below or select your customer account."}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomerModalOpen(true)}
-                  className="px-3 py-1.5 rounded-md bg-[#008638] text-white font-semibold hover:bg-[#006B2D] transition-colors shrink-0 shadow-xs cursor-pointer"
-                >
-                  Select Customer
-                </button>
+                {/* For single authorized customer, avoid presenting an unnecessary selector */}
+                {isCustomerUser && customers.length > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomerModalOpen(true)}
+                    className="px-3 py-1.5 rounded-md border border-[#CBD2DE] text-[#172033] font-medium hover:bg-[#F1F3F7] transition-colors shrink-0 text-xs cursor-pointer"
+                  >
+                    Select Customer
+                  </button>
+                ) : !isCustomerUser ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomerModalOpen(true)}
+                    className="px-3 py-1.5 rounded-md bg-[#008638] text-white font-semibold hover:bg-[#006B2D] transition-colors shrink-0 shadow-xs cursor-pointer"
+                  >
+                    Select Customer
+                  </button>
+                ) : (
+                  <span className="px-2.5 py-1 rounded bg-[#E8F5E9] text-[#008638] font-semibold text-xs border border-[#A8E2B5] shrink-0">
+                    Authorized Scope
+                  </span>
+                )}
               </div>
             ) : (
               <div className="flex items-center justify-between rounded-xl bg-white p-3.5 border border-[#E2E6EE] text-xs shadow-xs">
@@ -558,13 +583,15 @@ export default function AssessmentWizardPage() {
                     )}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomerModalOpen(true)}
-                  className="px-3 py-1.5 rounded-md border border-[#CBD2DE] text-[#172033] font-medium hover:bg-[#F1F3F7] transition-colors shrink-0 text-xs cursor-pointer"
-                >
-                  Switch Customer / Assessment
-                </button>
+                {(!isCustomerUser || customers.length > 1) && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomerModalOpen(true)}
+                    className="px-3 py-1.5 rounded-md border border-[#CBD2DE] text-[#172033] font-medium hover:bg-[#F1F3F7] transition-colors shrink-0 text-xs cursor-pointer"
+                  >
+                    Switch Customer / Assessment
+                  </button>
+                )}
               </div>
             )}
 
@@ -785,6 +812,7 @@ export default function AssessmentWizardPage() {
         customers={customers}
         onSelectCustomerAndAssessment={handleSelectCustomerAndAssessment}
         onCreateCustomer={handleCreateCustomer}
+        allowCreateCustomer={!isCustomerUser}
       />
 
       {/* Session Isolation Switch Confirmation Modal */}

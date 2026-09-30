@@ -326,6 +326,23 @@ describe("CustomerModal Component", () => {
     fireEvent.keyDown(window, { key: "Escape" });
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
+
+  it("hides create customer tab when allowCreateCustomer is false (CUSTOMER_USER mode)", () => {
+    render(
+      <CustomerModal
+        isOpen={true}
+        onClose={vi.fn()}
+        customers={[mockCustomers[0]]}
+        onSelectCustomerAndAssessment={vi.fn()}
+        allowCreateCustomer={false}
+      />
+    );
+
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: /create new customer/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/select customer account/i)).toBeInTheDocument();
+    expect(screen.getByText(/Apex Financial/i)).toBeInTheDocument();
+  });
 });
 
 describe("ReviewSummary Component", () => {

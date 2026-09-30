@@ -260,6 +260,41 @@ async def test_customer_admin_and_client_organization_scoping(client: AsyncClien
     assert ass_spoof.status_code == 403
 
     # =========================================================================
+    # P2: CUSTOMER_USER CUSTOMER SCOPING & DIRECT ACCESS 403
+    # =========================================================================
+    # Client 1 lists customers: ONLY own customer organization returned
+    client_cust_list = await client.get("/api/v1/customers", headers=h_client_1a)
+    assert client_cust_list.status_code == 200
+    c_ids = [c["id"] for c in client_cust_list.json()]
+    assert c_ids == [cust_1a.id]
+    assert cust_1b.id not in c_ids
+    assert cust_2a.id not in c_ids
+
+    # Client 1 can access own customer detail
+    client_own_cust = await client.get(f"/api/v1/customers/{cust_1a.id}", headers=h_client_1a)
+    assert client_own_cust.status_code == 200
+    assert client_own_cust.json()["name"] == "Acme Corp A"
+
+    # Client 1 CANNOT access unauthorized customer detail -> 403 Forbidden
+    client_unauth_cust = await client.get(f"/api/v1/customers/{cust_1b.id}", headers=h_client_1a)
+    assert client_unauth_cust.status_code == 403
+    assert "Access to this customer organization is forbidden." in client_unauth_cust.json()["detail"]
+
+    # Consultant retains full tenant customer list
+    consultant_cust_list = await client.get("/api/v1/customers", headers=h_consultant)
+    assert consultant_cust_list.status_code == 200
+    cons_c_ids = [c["id"] for c in consultant_cust_list.json()]
+    assert cust_1a.id in cons_c_ids
+    assert cust_1b.id in cons_c_ids
+
+    # Platform admin retains full tenant customer list
+    admin_cust_list = await client.get("/api/v1/customers", headers=h_plat)
+    assert admin_cust_list.status_code == 200
+    adm_c_ids = [c["id"] for c in admin_cust_list.json()]
+    assert cust_1a.id in adm_c_ids
+    assert cust_1b.id in adm_c_ids
+
+    # =========================================================================
     # REQ 27-28: AUDIT EVENTS SAFEGUARDED
     # =========================================================================
     audit_stmt = select(AuditEvent).where(AuditEvent.event_type == "USER_CUSTOMER_ASSIGNED")

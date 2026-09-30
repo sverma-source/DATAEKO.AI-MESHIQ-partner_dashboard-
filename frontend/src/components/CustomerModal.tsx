@@ -9,7 +9,8 @@ interface CustomerModalProps {
   onClose: () => void;
   customers: Customer[];
   onSelectCustomerAndAssessment: (customerId: string, assessmentTitle: string) => Promise<void>;
-  onCreateCustomer: (data: { name: string; industry: string; primary_contact_email?: string }) => Promise<Customer>;
+  onCreateCustomer?: (data: { name: string; industry: string; primary_contact_email?: string }) => Promise<Customer>;
+  allowCreateCustomer?: boolean;
 }
 
 export const CustomerModal: React.FC<CustomerModalProps> = ({
@@ -18,6 +19,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   customers,
   onSelectCustomerAndAssessment,
   onCreateCustomer,
+  allowCreateCustomer = true,
 }) => {
   const [mode, setMode] = useState<"select" | "create">("select");
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>(customers[0]?.id || "");
@@ -98,6 +100,11 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       let targetCustId = selectedCustomerId || (customers.length > 0 ? customers[0].id : "");
 
       if (mode === "create") {
+        if (!allowCreateCustomer || !onCreateCustomer) {
+          setError("Customer creation is not permitted.");
+          setIsLoading(false);
+          return;
+        }
         if (!newCustName.trim()) {
           setError("Customer Name is required.");
           setIsLoading(false);
@@ -172,43 +179,45 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
           )}
 
           {/* Mode Switcher */}
-          <div
-            role="tablist"
-            aria-label="Customer configuration mode"
-            className="flex rounded-lg bg-[#F1F3F7] p-1 text-xs font-semibold border border-[#E2E6EE]"
-          >
-            <button
-              ref={initialFocusRef}
-              type="button"
-              role="tab"
-              id="tab-existing-customer"
-              aria-selected={mode === "select"}
-              aria-controls="panel-existing-customer"
-              onClick={() => setMode("select")}
-              className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
-                mode === "select"
-                  ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
-                  : "text-[#667085] hover:text-[#172033]"
-              }`}
+          {allowCreateCustomer && (
+            <div
+              role="tablist"
+              aria-label="Customer configuration mode"
+              className="flex rounded-lg bg-[#F1F3F7] p-1 text-xs font-semibold border border-[#E2E6EE]"
             >
-              Existing Customer ({customers.length})
-            </button>
-            <button
-              type="button"
-              role="tab"
-              id="tab-create-customer"
-              aria-selected={mode === "create"}
-              aria-controls="panel-create-customer"
-              onClick={() => setMode("create")}
-              className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
-                mode === "create"
-                  ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
-                  : "text-[#667085] hover:text-[#172033]"
-              }`}
-            >
-              + Create New Customer
-            </button>
-          </div>
+              <button
+                ref={initialFocusRef}
+                type="button"
+                role="tab"
+                id="tab-existing-customer"
+                aria-selected={mode === "select"}
+                aria-controls="panel-existing-customer"
+                onClick={() => setMode("select")}
+                className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
+                  mode === "select"
+                    ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
+                    : "text-[#667085] hover:text-[#172033]"
+                }`}
+              >
+                Existing Customer ({customers.length})
+              </button>
+              <button
+                type="button"
+                role="tab"
+                id="tab-create-customer"
+                aria-selected={mode === "create"}
+                aria-controls="panel-create-customer"
+                onClick={() => setMode("create")}
+                className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
+                  mode === "create"
+                    ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
+                    : "text-[#667085] hover:text-[#172033]"
+                }`}
+              >
+                + Create New Customer
+              </button>
+            </div>
+          )}
 
           {mode === "select" ? (
             <div id="panel-existing-customer" role="tabpanel" aria-labelledby="tab-existing-customer">

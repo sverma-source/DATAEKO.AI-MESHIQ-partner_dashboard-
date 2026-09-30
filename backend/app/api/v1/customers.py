@@ -1,8 +1,15 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_current_tenant_id, get_db, require_permission, require_role
+from app.api.deps import (
+    get_current_tenant_id,
+    get_current_user_optional,
+    get_db,
+    require_permission,
+    require_role,
+)
 from app.core.audit import log_audit_event
+from app.core.errors import EntityNotFoundError, PermissionDeniedError
 from app.core.rbac import Permission, Role
 from app.models.user import User
 from app.schemas.customer import CustomerCreate, CustomerResponse, CustomerUpdate
@@ -48,7 +55,17 @@ async def list_customers(
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    # Enforce customer scoping for CUSTOMER_USER: only return authorized assigned organization
+    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+        if not current_user.customer_id:
+            return []
+        try:
+            customer = await CustomerService.get_customer(db, tenant_id, current_user.customer_id)
+            return [customer]
+        except EntityNotFoundError:
+            return []
     return await CustomerService.list_customers(db, tenant_id, skip=skip, limit=limit)
 
 
@@ -61,7 +78,12 @@ async def get_customer(
     customer_id: str,
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
+    # Enforce boundary: CUSTOMER_USER cannot retrieve unauthorized customer organizations
+    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+        if not current_user.customer_id or customer_id != current_user.customer_id:
+            raise PermissionDeniedError("Access to this customer organization is forbidden.")
     return await CustomerService.get_customer(db, tenant_id, customer_id)
 
 
