@@ -377,6 +377,186 @@ class EmailService:
 
         return attachments
 
+    @staticmethod
+    def validate_recipient_email(email: Optional[str]) -> Optional[str]:
+        """
+        Validates and sanitizes a single recipient email address.
+        Returns the sanitized, lowercase email if valid.
+        Returns None if email is empty, not a string, contains spaces/control characters/CRLF,
+        or fails basic email syntax.
+        """
+        if not email or not isinstance(email, str):
+            return None
+        cleaned = email.strip()
+        if not cleaned:
+            return None
+        if "\n" in cleaned or "\r" in cleaned:
+            return None
+        if any(c in cleaned for c in (" ", "\t", "\x00")):
+            return None
+        if "@" not in cleaned or cleaned.startswith("@") or cleaned.endswith("@"):
+            return None
+        user_part, sep, domain_part = cleaned.partition("@")
+        if not user_part or not domain_part or "." not in domain_part or domain_part.endswith("."):
+            return None
+        return cleaned.lower()
+
+    @staticmethod
+    def create_client_submission_email(
+        recipient_email: str,
+        recipient_name: Optional[str],
+        customer_name: str,
+        assessment_title: str,
+        assessment_id: str,
+        responses: List[dict],
+    ) -> EmailMessage:
+        """
+        Dedicated client confirmation email builder.
+        Provides plain text and HTML versions.
+        Contains ONLY:
+        - customer/client identity
+        - submission confirmation
+        - finalized Q01-Q22 responses
+        Strictly contains NO attachments, NO CalculationSnapshot metrics,
+        NO economic metrics, NO PDF, NO CSV, NO internal recipients, and NO SMTP info.
+        """
+        display_name = recipient_name.strip() if recipient_name and recipient_name.strip() else customer_name
+
+        # Build Plain Text Body
+        lines = [
+            f"Dear {display_name},",
+            "",
+            "Thank you for submitting your IBM MQ Discovery Assessment.",
+            "Below is a record of your finalized responses (Q01–Q22) submitted for evaluation.",
+            "",
+            f"Customer Organization: {customer_name}",
+            f"Assessment Title: {assessment_title}",
+            f"Assessment Reference ID: {assessment_id}",
+            "",
+            "============================================================",
+            "FINALIZED DISCOVERY RESPONSES (Q01–Q22)",
+            "============================================================",
+            "",
+        ]
+
+        current_section = None
+        for item in responses:
+            section = item.get("section") or "Discovery Questions"
+            if section != current_section:
+                current_section = section
+                lines.append(f"\n--- {current_section} ---")
+
+            q_id = item.get("question_id", "")
+            title = item.get("title", "")
+            resp_val = item.get("response", "")
+            exact_val = item.get("exact_value", "")
+
+            if exact_val and str(exact_val).strip():
+                val_str = f"{resp_val} (Specified: {exact_val})"
+            else:
+                val_str = resp_val or "Not answered"
+
+            lines.append(f"[{q_id}] {title}: {val_str}")
+
+        lines.extend([
+            "",
+            "============================================================",
+            "This confirmation has been sent to your registered address for your records.",
+            "— DATAEKO × meshIQ Assessment Platform Team",
+        ])
+        text_body = "\n".join(lines)
+
+        # Build HTML Body
+        html_rows = []
+        current_section = None
+        for item in responses:
+            section = item.get("section") or "Discovery Questions"
+            if section != current_section:
+                current_section = section
+                html_rows.append(
+                    f"<tr><td colspan='3' style='background-color: #F1F5F9; font-weight: bold; "
+                    f"color: #1E293B; padding: 10px 12px; font-size: 13px; text-transform: uppercase; "
+                    f"letter-spacing: 0.5px;'>{section}</td></tr>"
+                )
+
+            q_id = item.get("question_id", "")
+            title = item.get("title", "")
+            resp_val = item.get("response", "")
+            exact_val = item.get("exact_value", "")
+
+            if exact_val and str(exact_val).strip():
+                val_str = f"<strong>{resp_val}</strong> <span style='color: #64748B;'>({exact_val})</span>"
+            else:
+                val_str = f"<strong>{resp_val or 'Not answered'}</strong>"
+
+            html_rows.append(
+                f"<tr style='border-bottom: 1px solid #E2E8F0;'>"
+                f"<td style='padding: 8px 12px; font-weight: bold; color: #008638; width: 60px;'>{q_id}</td>"
+                f"<td style='padding: 8px 12px; color: #334155;'>{title}</td>"
+                f"<td style='padding: 8px 12px; color: #0F172A;'>{val_str}</td>"
+                f"</tr>"
+            )
+
+        rows_html = "\n".join(html_rows)
+
+        html_body = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Assessment Submission Confirmation</title>
+</head>
+<body style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F8FAFC; color: #1E293B;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 680px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px; border: 1px solid #E2E8F0; overflow: hidden;">
+    <tr>
+      <td style="background-color: #172033; padding: 24px; color: #FFFFFF;">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 600;">DATAEKO × meshIQ</h1>
+        <p style="margin: 4px 0 0 0; font-size: 13px; color: #94A3B8;">Discovery Assessment Submission Confirmation</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 24px;">
+        <p style="margin-top: 0; font-size: 15px; color: #334155;">Dear <strong>{display_name}</strong>,</p>
+        <p style="font-size: 14px; line-height: 1.5; color: #475569;">
+          Thank you for submitting your IBM MQ Discovery Assessment. Your finalized responses (Q01–Q22) have been securely recorded.
+        </p>
+        <div style="background-color: #F8FAFC; border-left: 4px solid #008638; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0;">
+          <p style="margin: 0 0 4px 0; font-size: 13px;"><strong>Customer:</strong> {customer_name}</p>
+          <p style="margin: 0 0 4px 0; font-size: 13px;"><strong>Assessment:</strong> {assessment_title}</p>
+          <p style="margin: 0; font-size: 13px;"><strong>Reference ID:</strong> <code>{assessment_id}</code></p>
+        </div>
+
+        <h3 style="font-size: 14px; color: #1E293B; margin: 24px 0 12px 0;">Finalized Discovery Responses</h3>
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background-color: #E2E8F0; text-align: left;">
+              <th style="padding: 8px 12px; color: #475569;">ID</th>
+              <th style="padding: 8px 12px; color: #475569;">Question</th>
+              <th style="padding: 8px 12px; color: #475569;">Response</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows_html}
+          </tbody>
+        </table>
+
+        <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 28px 0 16px 0;" />
+        <p style="font-size: 11px; color: #94A3B8; margin: 0;">
+          This confirmation was generated automatically by the DATAEKO × meshIQ Assessment Platform for your organization.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+        return EmailMessage(
+            recipients=[recipient_email],
+            subject=f"DATAEKO × meshIQ Assessment Submission Confirmation: {assessment_title}",
+            text_body=text_body,
+            html_body=html_body,
+            attachments=[],
+        )
+
     async def send_email(
         self,
         message: EmailMessage,
@@ -423,3 +603,4 @@ class EmailService:
             self.settings,
         )
         return success
+

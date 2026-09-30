@@ -260,7 +260,7 @@ async def submit_assessment_endpoint(
     check_assessment_access(existing, user_id, user_role)
 
     assessment = await AssessmentService.submit_assessment(
-        db, tenant_id, assessment_id, user_id=user_id
+        db, tenant_id, assessment_id, user_id=user_id, current_user=current_user
     )
 
     # For CUSTOMER_USER, sanitize latest_snapshot = None
