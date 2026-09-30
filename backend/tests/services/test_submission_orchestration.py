@@ -10,6 +10,12 @@ from app.services.assessment_service import AssessmentService
 from app.services.email_service import InMemoryEmailTransport, EmailService
 
 
+@pytest.fixture(autouse=True)
+def isolate_orchestration_transport(monkeypatch):
+    """Ensure submission orchestration tests use deterministic non-network transport."""
+    monkeypatch.setattr(settings, "EMAIL_TRANSPORT_TYPE", "smtp")
+
+
 @pytest.mark.asyncio
 async def test_submission_orchestration_full_success(client: AsyncClient, db_session, monkeypatch, auth_headers: dict):
     """

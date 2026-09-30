@@ -48,10 +48,12 @@ def mock_email_env(monkeypatch):
     transport = InMemoryEmailTransport()
     monkeypatch.setattr(settings, "EMAIL_ENABLED", True)
     monkeypatch.setattr(settings, "EMAIL_DISTRIBUTION_MODE", "test")
+    monkeypatch.setattr(settings, "EMAIL_TRANSPORT_TYPE", "smtp")
     monkeypatch.setattr(settings, "SMTP_HOST", "smtp.test.internal")
     monkeypatch.setattr(settings, "TEST_RECIPIENT_ROOP", "r.sabbavarapu@dataeko.ai")
     monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "s.verma@dataeko.ai")
     monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
+    monkeypatch.setattr("app.services.email_service.GmailAPITransport.send", transport.send)
     return transport
 
 

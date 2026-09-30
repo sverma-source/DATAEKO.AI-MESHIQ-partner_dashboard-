@@ -2,6 +2,15 @@ import pytest
 from app.config import Settings, is_placeholder_or_low_entropy_secret
 
 
+@pytest.fixture(autouse=True)
+def isolate_production_config_env():
+    """Isolate production config validation tests from local developer .env file."""
+    original_env_file = Settings.model_config.get("env_file")
+    Settings.model_config["env_file"] = None
+    yield
+    Settings.model_config["env_file"] = original_env_file
+
+
 # 1. Environment Canonical Validation
 def test_environment_validation_accepts_canonical():
     for env in ["development", "test"]:
