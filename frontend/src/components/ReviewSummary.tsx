@@ -313,7 +313,7 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
               onClick={handleOpenConfirm}
               disabled={submitting}
               aria-label="Submit Assessment"
-              className="inline-flex items-center justify-center space-x-2.5 rounded-xl bg-[#008638] px-7 py-4 text-sm font-extrabold text-white shadow-lg hover:bg-[#006B2D] focus:outline-none focus:ring-2 focus:ring-[#008638] focus:ring-offset-2 focus:ring-offset-[#0D1322] transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center space-x-2.5 rounded-xl bg-[#008638] px-7 py-4 text-sm font-extrabold text-white shadow-lg hover:bg-[#006B2D] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#008638] focus:ring-offset-2 focus:ring-offset-[#0D1322] transition-all duration-150 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <FileCheck className="h-4 w-4" />
               <span>{submitting ? "Submitting Assessment..." : "Submit Assessment"}</span>
@@ -345,7 +345,7 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
               <button
                 type="button"
                 onClick={() => onEditSection(section.id)}
-                className="inline-flex items-center space-x-1.5 text-xs font-semibold text-[#172033] hover:text-[#008638] transition-colors px-3 py-1.5 rounded-lg border border-[#CBD2DE] hover:border-[#38B449] bg-white shadow-xs cursor-pointer"
+                className="inline-flex items-center space-x-1.5 text-xs font-semibold text-[#172033] hover:text-[#008638] transition-colors duration-150 px-3 py-1.5 rounded-lg border border-[#CBD2DE] hover:border-[#38B449] hover:bg-[#EEF8F0]/40 bg-white shadow-xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638]"
               >
                 <Edit3 className="h-3.5 w-3.5 text-[#008638]" />
                 <span>Edit Section</span>

@@ -194,7 +194,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
               type="button"
               onClick={() => handleManualScroll("left")}
               aria-label="Scroll section navigation left"
-              className="pointer-events-auto ml-1 sm:ml-2 h-7 w-7 rounded-full bg-white border border-[#CBD2DE] text-[#172033] shadow-xs flex items-center justify-center hover:bg-[#F1F3F7] hover:border-[#008638] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors cursor-pointer"
+              className="pointer-events-auto ml-1 sm:ml-2 h-7 w-7 rounded-full bg-white border border-[#CBD2DE] text-[#172033] shadow-xs flex items-center justify-center hover:bg-[#EEF8F0] hover:border-[#008638] hover:text-[#008638] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4 text-[#172033]" />
             </button>
@@ -208,7 +208,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
               type="button"
               onClick={() => handleManualScroll("right")}
               aria-label="Scroll section navigation right"
-              className="pointer-events-auto mr-1 sm:mr-2 h-7 w-7 rounded-full bg-white border border-[#CBD2DE] text-[#172033] shadow-xs flex items-center justify-center hover:bg-[#F1F3F7] hover:border-[#008638] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors cursor-pointer"
+              className="pointer-events-auto mr-1 sm:mr-2 h-7 w-7 rounded-full bg-white border border-[#CBD2DE] text-[#172033] shadow-xs flex items-center justify-center hover:bg-[#EEF8F0] hover:border-[#008638] hover:text-[#008638] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors cursor-pointer"
             >
               <ChevronRight className="h-4 w-4 text-[#172033]" />
             </button>
@@ -242,10 +242,10 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                   isActive
                     ? "bg-white text-[#172033] border-[#008638] shadow-xs ring-1 ring-[#008638]/20 font-bold"
                     : stats.isComplete
-                    ? "bg-white text-[#172033] border-[#E2E6EE] hover:border-[#A8E2B5] hover:bg-[#FAFBFD]"
+                    ? "bg-white text-[#172033] border-[#E2E6EE] hover:border-[#38B449] hover:bg-[#EEF8F0]/40 hover:shadow-2xs"
                     : stats.isPartial
-                    ? "bg-white text-[#172033] border-amber-300 hover:border-amber-400 hover:bg-[#FFFDF9]"
-                    : "text-[#5B6579] bg-white/70 border-[#E2E6EE] hover:bg-white hover:text-[#172033] hover:border-[#CBD2DE]"
+                    ? "bg-white text-[#172033] border-amber-300 hover:border-amber-500 hover:bg-amber-50/50 hover:shadow-2xs"
+                    : "text-[#5B6579] bg-white/70 border-[#E2E6EE] hover:bg-white hover:text-[#172033] hover:border-[#008638]/60 hover:shadow-2xs"
                 }`}
               >
                 {/* Status Indicator Badge */}
@@ -312,7 +312,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
             className={`flex items-center space-x-2 px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-colors duration-150 whitespace-nowrap border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 cursor-pointer ${
               currentSectionId === "REVIEW"
                 ? "bg-white text-[#008638] border-[#008638] shadow-xs ring-1 ring-[#008638]/20"
-                : "text-[#172033] bg-[#EEF8F0] border-[#A8E2B5] hover:bg-[#E2F5E6]"
+                : "text-[#172033] bg-[#EEF8F0] border-[#A8E2B5] hover:bg-[#E2F5E6] hover:border-[#008638] hover:shadow-2xs"
             }`}
           >
             <FileCheck className="h-4 w-4 text-[#008638]" aria-hidden="true" />

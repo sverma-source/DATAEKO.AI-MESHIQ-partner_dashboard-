@@ -133,8 +133,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                   error
                     ? "border-rose-400 focus:border-rose-500 focus:ring-rose-200"
                     : isAnswered
-                    ? "border-[#A8E2B5] hover:border-[#008638]"
-                    : "border-[#CBD2DE] hover:border-slate-400"
+                    ? "border-[#A8E2B5] hover:border-[#008638] hover:bg-[#FBFDFB]"
+                    : "border-[#CBD2DE] hover:border-[#008638] hover:bg-[#FBFDFB]"
                 }`}
               >
                 <option value="">-- Choose an assessment response --</option>
@@ -159,7 +159,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 type="button"
                 onClick={() => setOverrideToggled(!useOverrideMode)}
                 aria-expanded={useOverrideMode}
-                className="text-xs font-semibold text-[#008638] hover:text-[#006B2D] flex items-center space-x-1.5 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] rounded-sm"
+                className="text-xs font-semibold text-[#008638] hover:text-[#006B2D] hover:bg-[#EEF8F0] px-2 py-1 -ml-2 rounded-md flex items-center space-x-1.5 transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638]"
               >
                 <Sparkles className="h-3.5 w-3.5 text-[#008638]" />
                 <span>
@@ -173,10 +173,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 <button
                   type="button"
                   onClick={() => onDefaultToggle(!useDefault)}
-                  className={`text-[11px] px-2.5 py-0.5 rounded-md border font-semibold transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
+                  className={`text-[11px] px-2.5 py-0.5 rounded-md border font-semibold transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                     useDefault
-                      ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]"
-                      : "bg-[#F1F3F7] text-[#667085] border-[#CBD2DE]"
+                      ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5] hover:bg-[#E2F5E6] hover:border-[#008638]"
+                      : "bg-[#F1F3F7] text-[#667085] border-[#CBD2DE] hover:bg-[#E8ECF2] hover:text-[#172033] hover:border-[#94A3B8]"
                   }`}
                 >
                   {useDefault ? "Using Model Default ($180k/yr)" : "Using Custom Salary"}
@@ -212,7 +212,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                       const val = e.target.value === "" ? undefined : parseFloat(e.target.value);
                       onOverrideChange(val);
                     }}
-                    className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638]/20 transition-colors duration-150"
+                    className="w-full rounded-lg border border-[#CBD2DE] hover:border-[#94A3B8] focus:border-[#008638] bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#172033] shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638]/20 transition-colors duration-150"
                   />
                   {question.overrideUnit && (
                     <span className="absolute right-3 text-xs font-semibold text-[#5B6579] pointer-events-none">
@@ -257,7 +257,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               onClick={() => setShowSellerNotes(!showSellerNotes)}
               aria-expanded={showSellerNotes}
               aria-controls={`guidance-${question.id}`}
-              className="flex items-center space-x-1.5 text-xs font-semibold text-[#5B6579] hover:text-[#172033] transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] rounded-sm"
+              className="flex items-center space-x-1.5 text-xs font-semibold text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7] px-2 py-1 -ml-2 rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638]"
             >
               <HelpCircle className="h-3.5 w-3.5 text-[#5B6579]" />
               <span>Consultant Probing &amp; Seller Guidance</span>

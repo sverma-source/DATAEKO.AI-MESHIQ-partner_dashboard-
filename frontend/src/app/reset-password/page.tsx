@@ -204,15 +204,15 @@ function ResetPasswordContent() {
       </div>
 
       {/* Quiet Enterprise Attribution (Bottom-Right) */}
-      <div className="mt-8 sm:mt-0 sm:absolute sm:bottom-6 sm:right-6 flex items-center justify-center sm:justify-end space-x-2 text-slate-400 select-none z-20 pointer-events-auto">
-        <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Powered by</span>
+      <div className="mt-8 sm:mt-0 sm:absolute sm:bottom-6 sm:right-6 flex items-center justify-center sm:justify-end space-x-1.5 text-xs text-slate-400 select-none z-20 pointer-events-auto">
+        <span className="text-[10px] text-slate-400 font-normal">Powered by</span>
         <Image
           src="/dataeko-logo.png"
           alt="DATAEKO"
           width={2048}
           height={375}
           unoptimized
-          className="w-24 sm:w-28 lg:w-32 h-auto shrink-0"
+          className="w-14 sm:w-16 h-auto shrink-0"
         />
       </div>
     </div>

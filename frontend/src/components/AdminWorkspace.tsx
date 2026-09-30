@@ -596,7 +596,7 @@ export const AdminWorkspace: React.FC = () => {
               className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 activeTab === "users"
                   ? "bg-[#008638] text-white"
-                  : "text-[#5B6579] hover:text-[#172033]"
+                  : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
               }`}
             >
               <Users className="h-3.5 w-3.5" aria-hidden="true" />
@@ -609,7 +609,7 @@ export const AdminWorkspace: React.FC = () => {
               className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 activeTab === "customers"
                   ? "bg-[#008638] text-white"
-                  : "text-[#5B6579] hover:text-[#172033]"
+                  : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
               }`}
             >
               <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -622,7 +622,7 @@ export const AdminWorkspace: React.FC = () => {
               className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 activeTab === "assessments"
                   ? "bg-[#008638] text-white"
-                  : "text-[#5B6579] hover:text-[#172033]"
+                  : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
               }`}
             >
               <Layers className="h-3.5 w-3.5" aria-hidden="true" />
@@ -635,7 +635,7 @@ export const AdminWorkspace: React.FC = () => {
               className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                 activeTab === "audit"
                   ? "bg-[#008638] text-white"
-                  : "text-[#5B6579] hover:text-[#172033]"
+                  : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
               }`}
             >
               <ScrollText className="h-3.5 w-3.5" aria-hidden="true" />

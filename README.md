@@ -76,6 +76,44 @@ The platform is under active development on the **`dev`** branch. The critical *
 
 ---
 
+### UI REFINEMENT BATCH — BRANDING, HOVER STATES & LOGIN SIMPLIFICATION
+
+**Status:** COMPLETE / VISUALLY QA-TESTED & APPROVED (Roop / Teammate 2)
+**Scope:** Frontend-only UI refinements focusing on header branding balance, subtle attribution, interactive hover states, and login simplification.
+
+#### Completed Refinements:
+- **Top-Right Header Logo Removal**: Removed the DATAEKO logo from the top-right header area in `Navbar.tsx`. The header structure focuses on the meshIQ platform identity and active workspace context, while DATAEKO remains represented through the bottom attribution. Spacing and alignment remain balanced across all viewports without awkward empty space.
+- **Subtle Bottom Attribution**: Retained the "Powered by DATAEKO" attribution at the bottom of the page across all application views (`page.tsx`, `login/page.tsx`, `forgot-password/page.tsx`, `reset-password/page.tsx`, `accept-invitation/page.tsx`, `ExecutiveReportView.tsx`), reducing text font size and visual weight while preserving the official, unmodified DATAEKO logo asset with accessible contrast.
+- **Standardized Interactive Hover Highlighting**: Added immediate, visible hover feedback across interactive options following the meshIQ visual design system:
+  - Assessment dropdown `<select>` options gain green border and background highlighting on hover.
+  - Section navigation tabs, scroll controls, and review triggers gain distinct green/amber hover accents.
+  - Action buttons (`Previous Section`, `Save Draft`, `Next Section`, `Submit Assessment`, `Edit Section`, workspace tabs, and modals) gain explicit hover and shadow transitions.
+  - Interactive table rows and selectable cards feature refined hover feedback (`#f1f5f9` / border accent).
+  - Preserved all active, selected, and disabled states without altering click behavior or selection logic.
+- **Login Page Simplification**: Completely removed two unnecessary technical/marketing copy lines from `login/page.tsx`:
+  - *"Access deterministic assessment discovery, calculation modeling, and reporting"*
+  - *"Protected by signed JSON Web Tokens (HTTP-only SameSite cookies) and Multi-Tenant RBAC isolation."*
+- **Rebalanced Spacing**: Rebalanced vertical layout spacing on the login page (`mt-6 sm:mt-7`) to ensure an intentional, clean, enterprise visual presentation.
+- **Visual QA**: Successfully validated via manual browser visual QA in the local Roop / Teammate 2 development environment at `http://localhost:3000/login`.
+
+#### Validation & Quality Gate:
+- **Frontend Test Suite**: 194/194 tests passed (`npm test` in `frontend/`).
+- **TypeScript Typecheck**: 0 errors (`npx tsc --noEmit` in `frontend/`).
+- **Production Build**: Production build succeeded cleanly (`npm run build`).
+- **Golden Masters**: 10/10 passed (`PYTHONPATH=. .venv/bin/pytest tests/calculation_engine/test_golden_masters.py`).
+
+#### Protected-Area Verification:
+- Calculation engine: **NO CHANGES**
+- Calculation formulas, constants, thresholds, multipliers: **NO CHANGES**
+- Q01–Q22 semantics, mappings, and schemas: **NO CHANGES**
+- Database models and Alembic migrations: **NO CHANGES**
+- Authentication and session logic: **NO CHANGES**
+- RBAC and tenant isolation logic: **NO CHANGES**
+- Email delivery and Gmail OAuth implementation: **NO CHANGES**
+- Golden Master reference tests: **NO CHANGES**
+
+---
+
 ### P0 SECURITY & P1 SAVE/RESUME REMEDIATION (BATCH COMPLETE)
 
 **Status:** COMPLETE / VERIFIED / COMMITTED (`1b03e1a`)  
@@ -477,8 +515,8 @@ When running in `ENVIRONMENT=development`, pre-seeded development accounts are a
 The dashboard implements the modern **meshIQ visual identity** combined with enterprise **DATAEKO** platform branding:
 
 - **Color Palette**: meshIQ Green (`#00D26A` / `#059669`) action signals, Black/Dark Charcoal (`#0B0F17` / `#111827`) structural surfaces, and clean light neutral cards.
-- **Official Logos**: Official meshIQ and DATAEKO logo assets prominently placed in the application header. Official logos are not recolored or modified.
-- **Attribution**: "Powered by DATAEKO.AI" subtle application shell badge and footer attribution.
+- **Official Logos**: Official meshIQ logo asset in the application header. Official DATAEKO logo asset is preserved and displayed within the subtle bottom attribution. Official logos are not recolored, tinted, cropped, or modified.
+- **Attribution**: "Powered by [official DATAEKO logo]" subtle attribution across application footers and login shell, designed to remain understated and non-competing with primary page content.
 - **Visual Fact Differentiation**: Standardized assessment responses are clearly distinguished from exact customer facts/overrides.
 
 ---

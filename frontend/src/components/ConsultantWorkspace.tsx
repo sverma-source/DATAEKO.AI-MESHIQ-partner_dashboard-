@@ -333,7 +333,7 @@ export const ConsultantWorkspace: React.FC = () => {
             <button
               type="button"
               onClick={handleBackToPortfolio}
-              className="inline-flex items-center space-x-2 text-xs font-bold text-[#172033] hover:text-[#008638] bg-white border border-[#CBD2DE] hover:border-[#008638] px-3.5 py-2 rounded-lg transition-colors duration-150 shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1"
+              className="inline-flex items-center space-x-2 text-xs font-bold text-[#172033] hover:text-[#008638] bg-white border border-[#CBD2DE] hover:border-[#008638] hover:bg-[#EEF8F0]/30 px-3.5 py-2 rounded-lg transition-colors duration-150 shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1"
               aria-label="Back to Assessment Portfolio"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -348,7 +348,7 @@ export const ConsultantWorkspace: React.FC = () => {
                 className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   activeDetailTab === "summary"
                     ? "bg-[#008638] text-white"
-                    : "text-[#5B6579] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
                 }`}
               >
                 <Calculator className="h-3.5 w-3.5" />
@@ -361,7 +361,7 @@ export const ConsultantWorkspace: React.FC = () => {
                 className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   activeDetailTab === "responses"
                     ? "bg-[#008638] text-white"
-                    : "text-[#5B6579] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
                 }`}
               >
                 <FileCheck2 className="h-3.5 w-3.5" />
@@ -375,7 +375,7 @@ export const ConsultantWorkspace: React.FC = () => {
                   className={`inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                     activeDetailTab === "dashboard"
                       ? "bg-[#008638] text-white"
-                      : "text-[#5B6579] hover:text-[#172033]"
+                      : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
                   }`}
                 >
                   <Layers className="h-3.5 w-3.5" />
@@ -714,7 +714,7 @@ export const ConsultantWorkspace: React.FC = () => {
                 className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   statusFilter === "ALL"
                     ? "bg-[#008638] text-white"
-                    : "text-[#5B6579] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
                 }`}
               >
                 All ({assessments.length})
@@ -725,7 +725,7 @@ export const ConsultantWorkspace: React.FC = () => {
                 className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   statusFilter === "SUBMITTED"
                     ? "bg-[#008638] text-white"
-                    : "text-[#5B6579] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
                 }`}
               >
                 Submitted ({submittedCount})
@@ -736,7 +736,7 @@ export const ConsultantWorkspace: React.FC = () => {
                 className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   statusFilter === "DRAFT"
                     ? "bg-[#008638] text-white"
-                    : "text-[#5B6579] hover:text-[#172033]"
+                    : "text-[#5B6579] hover:text-[#172033] hover:bg-[#F1F3F7]"
                 }`}
               >
                 Draft ({draftCount})
@@ -873,7 +873,7 @@ export const ConsultantWorkspace: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleOpenAssessment(ass.id, "summary")}
-                          className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-[#008638] text-white font-bold text-xs hover:bg-[#006B2D] transition-colors duration-150 shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1"
+                          className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-[#008638] text-white font-bold text-xs hover:bg-[#006B2D] hover:shadow-sm transition-all duration-150 shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1"
                           aria-label={`Open Assessment for ${custName}`}
                         >
                           <FileSearch className="h-3.5 w-3.5" aria-hidden="true" />

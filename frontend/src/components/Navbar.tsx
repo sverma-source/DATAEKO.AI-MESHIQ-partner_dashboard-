@@ -139,7 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
           )}
         </div>
 
-        {/* Zone 3 (Right): Engine Metadata, User Profile & Official DATAEKO Attribution */}
+        {/* Zone 3 (Right): Engine Metadata & User Profile */}
         <div className="flex items-center space-x-2 sm:space-x-3 text-xs shrink-0">
           {/* Subtle Technical Engine & Health Cluster */}
           <div className="hidden lg:flex items-center space-x-1.5 sm:space-x-2 text-[11px] shrink-0">
@@ -189,19 +189,6 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
           {/* User Menu */}
           <div className="shrink-0">
             <UserMenu />
-          </div>
-
-          {/* Official DATAEKO Partner Attribution (Logo Only) */}
-          <div className="flex items-center pl-2 sm:pl-3 border-l border-[#E2E6EE] shrink-0 whitespace-nowrap" aria-label="DATAEKO">
-            <Image
-              src="/dataeko-logo.png"
-              alt="DATAEKO"
-              width={2048}
-              height={375}
-              unoptimized
-              priority
-              className="w-20 sm:w-24 lg:w-28 h-auto shrink-0"
-            />
           </div>
         </div>
       </div>

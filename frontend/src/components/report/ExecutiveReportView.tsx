@@ -837,15 +837,15 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
         {/* Report Footer Attribution */}
         <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
           <span>DATAEKO × meshIQ Enterprise Economic Assessment</span>
-          <div className="flex items-center space-x-2 font-medium text-slate-600 tracking-tight">
-            <span className="text-[11px] uppercase tracking-wider text-slate-500">Powered by</span>
+          <div className="flex items-center space-x-1.5 text-xs text-slate-500">
+            <span className="text-[10px] text-slate-500 font-normal">Powered by</span>
             <Image
               src="/dataeko-logo.png"
               alt="DATAEKO"
               width={2048}
               height={375}
               unoptimized
-              className="w-20 sm:w-24 h-auto shrink-0"
+              className="w-14 sm:w-16 h-auto shrink-0"
             />
           </div>
         </div>

@@ -84,12 +84,9 @@ export default function LoginPage() {
         <h2 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-[#172033]">
           Sign in to your account
         </h2>
-        <p className="mt-1.5 text-center text-xs sm:text-sm text-[#5B6579]">
-          Access deterministic assessment discovery, calculation modeling, and reporting
-        </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
+      <div className="mt-6 sm:mt-7 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
         <div className="bg-white py-8 px-6 shadow-md shadow-slate-200/60 rounded-2xl border border-[#E2E6EE] sm:px-10 relative overflow-hidden">
           {/* Crisp meshIQ Brand Hairline Accent */}
           <div
@@ -221,25 +218,18 @@ export default function LoginPage() {
             </div>
           )}
         </div>
-
-        {/* Security Notice */}
-        <div className="mt-6 text-center">
-          <p className="text-[11px] text-[#5B6579] leading-relaxed max-w-sm mx-auto">
-            Protected by signed JSON Web Tokens (HTTP-only SameSite cookies) and Multi-Tenant RBAC isolation.
-          </p>
-        </div>
       </div>
 
       {/* Quiet Enterprise Attribution (Bottom-Right) */}
-      <div className="mt-8 sm:mt-0 sm:absolute sm:bottom-6 sm:right-6 flex items-center justify-center sm:justify-end space-x-2 text-xs font-medium text-[#5B6579] select-none z-20 pointer-events-auto">
-        <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
+      <div className="mt-8 sm:mt-0 sm:absolute sm:bottom-6 sm:right-6 flex items-center justify-center sm:justify-end space-x-1.5 text-xs select-none z-20 pointer-events-auto">
+        <span className="text-[10px] text-[#64748B] font-normal">Powered by</span>
         <Image
           src="/dataeko-logo.png"
           alt="DATAEKO"
           width={2048}
           height={375}
           unoptimized
-          className="w-24 sm:w-28 lg:w-32 h-auto shrink-0"
+          className="w-14 sm:w-16 h-auto shrink-0"
         />
       </div>
     </div>

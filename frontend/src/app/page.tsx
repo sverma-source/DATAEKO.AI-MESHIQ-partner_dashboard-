@@ -430,15 +430,15 @@ export default function AssessmentWizardPage() {
             <div className="flex items-center space-x-2 text-xs">
               <span>meshIQ Enterprise Economic Cost &amp; Efficiency Assessment</span>
             </div>
-            <div className="flex items-center space-x-2 text-xs font-medium text-[#667085] tracking-tight">
-              <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
+            <div className="flex items-center space-x-1.5 text-xs text-[#667085]">
+              <span className="text-[10px] text-[#64748B] font-normal">Powered by</span>
               <Image
                 src="/dataeko-logo.png"
                 alt="DATAEKO"
                 width={2048}
                 height={375}
                 unoptimized
-                className="w-20 sm:w-24 h-auto shrink-0"
+                className="w-14 sm:w-16 h-auto shrink-0"
               />
             </div>
           </footer>
@@ -460,15 +460,15 @@ export default function AssessmentWizardPage() {
             <div className="flex items-center space-x-2 text-xs">
               <span>meshIQ Enterprise Economic Cost &amp; Efficiency Assessment</span>
             </div>
-            <div className="flex items-center space-x-2 text-xs font-medium text-[#667085] tracking-tight">
-              <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
+            <div className="flex items-center space-x-1.5 text-xs text-[#667085]">
+              <span className="text-[10px] text-[#64748B] font-normal">Powered by</span>
               <Image
                 src="/dataeko-logo.png"
                 alt="DATAEKO"
                 width={2048}
                 height={375}
                 unoptimized
-                className="w-20 sm:w-24 h-auto shrink-0"
+                className="w-14 sm:w-16 h-auto shrink-0"
               />
             </div>
           </footer>
@@ -714,7 +714,7 @@ export default function AssessmentWizardPage() {
                 type="button"
                 onClick={handlePrevSection}
                 disabled={currentSectionIndex === 0}
-                className="inline-flex items-center space-x-2 rounded-lg border border-[#CBD2DE] bg-white px-4 py-2.5 text-xs font-semibold text-[#172033] shadow-xs hover:bg-[#F1F3F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 disabled:opacity-40 transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed"
+                className="inline-flex items-center space-x-2 rounded-lg border border-[#CBD2DE] bg-white px-4 py-2.5 text-xs font-semibold text-[#172033] shadow-xs hover:bg-[#F1F3F7] hover:border-[#94A3B8] hover:text-[#008638] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-[#CBD2DE] disabled:hover:text-[#172033] transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span>Previous Section</span>
@@ -725,7 +725,7 @@ export default function AssessmentWizardPage() {
                   type="button"
                   onClick={handleSaveProgress}
                   disabled={isSaving}
-                  className="hidden sm:inline-flex items-center space-x-1.5 rounded-lg border border-[#CBD2DE] bg-white px-3.5 py-2.5 text-xs font-medium text-[#172033] hover:bg-[#F1F3F7] shadow-xs transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638]"
+                  className="hidden sm:inline-flex items-center space-x-1.5 rounded-lg border border-[#CBD2DE] bg-white px-3.5 py-2.5 text-xs font-medium text-[#172033] hover:bg-[#F1F3F7] hover:border-[#94A3B8] hover:text-[#008638] shadow-xs transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-[#CBD2DE] disabled:hover:text-[#172033] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638]"
                 >
                   <Save className="h-3.5 w-3.5 text-[#5B6579]" />
                   <span>Save Draft</span>
@@ -734,7 +734,7 @@ export default function AssessmentWizardPage() {
                 <button
                   type="button"
                   onClick={handleNextSection}
-                  className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#006B2D] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 transition-colors duration-150 cursor-pointer"
+                  className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#006B2D] hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 transition-colors duration-150 cursor-pointer"
                 >
                   <span>
                     {currentSectionIndex === SECTIONS.length - 1
@@ -796,15 +796,15 @@ export default function AssessmentWizardPage() {
         <div className="flex items-center space-x-2 text-xs">
           <span>meshIQ Enterprise Economic Cost &amp; Efficiency Assessment</span>
         </div>
-        <div className="flex items-center space-x-2 text-xs font-medium text-[#667085] tracking-tight">
-          <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
+        <div className="flex items-center space-x-1.5 text-xs text-[#667085]">
+          <span className="text-[10px] text-[#64748B] font-normal">Powered by</span>
           <Image
             src="/dataeko-logo.png"
             alt="DATAEKO"
             width={2048}
             height={375}
             unoptimized
-            className="w-20 sm:w-24 h-auto shrink-0"
+            className="w-14 sm:w-16 h-auto shrink-0"
           />
         </div>
       </footer>

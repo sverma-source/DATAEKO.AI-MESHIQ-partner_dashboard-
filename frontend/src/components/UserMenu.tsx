@@ -58,7 +58,7 @@ export const UserMenu: React.FC = () => {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-[#F1F3F7] hover:bg-[#E8ECF2] border border-[#CBD2DE] text-[#172033] text-xs transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 cursor-pointer"
+        className="flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-[#F1F3F7] hover:bg-[#E8ECF2] hover:border-[#94A3B8] border border-[#CBD2DE] text-[#172033] text-xs transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:ring-offset-1 cursor-pointer"
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label="User account menu"
@@ -100,7 +100,7 @@ export const UserMenu: React.FC = () => {
           <div className="pt-1">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center space-x-2 px-4 py-2 text-rose-600 hover:bg-rose-50 transition-colors duration-150 text-left font-medium cursor-pointer focus:outline-none focus-visible:bg-rose-50"
+              className="w-full flex items-center space-x-2 px-4 py-2 text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors duration-150 text-left font-medium cursor-pointer focus:outline-none focus-visible:bg-rose-50"
             >
               <LogOut className="h-3.5 w-3.5 text-rose-500" />
               <span>Sign Out</span>

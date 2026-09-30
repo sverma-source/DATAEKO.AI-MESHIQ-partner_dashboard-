@@ -196,7 +196,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   mode === "select"
                     ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
-                    : "text-[#667085] hover:text-[#172033]"
+                    : "text-[#667085] hover:text-[#172033] hover:bg-white/60"
                 }`}
               >
                 Existing Customer ({customers.length})
@@ -211,7 +211,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 className={`flex-1 py-1.5 rounded-md transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
                   mode === "create"
                     ? "bg-white text-[#172033] shadow-xs border border-[#CBD2DE]"
-                    : "text-[#667085] hover:text-[#172033]"
+                    : "text-[#667085] hover:text-[#172033] hover:bg-white/60"
                 }`}
               >
                 + Create New Customer
@@ -229,7 +229,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
                 aria-label="Select Customer Account"
-                className="w-full rounded-lg border border-[#CBD2DE] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20"
+                className="w-full rounded-lg border border-[#CBD2DE] hover:border-[#008638] bg-white px-3 py-2 text-sm text-[#172033] shadow-xs focus:border-[#008638] focus:outline-none focus:ring-2 focus:ring-[#008638]/20 transition-colors duration-150 cursor-pointer"
               >
                 {customers.length === 0 && <option value="">No customers found — create one</option>}
                 {customers.map((c) => (
@@ -330,7 +330,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
               type="submit"
               disabled={isLoading}
               aria-label={mode === "create" ? "Create Customer and Launch Intake Wizard" : "Select Customer and Launch Intake Wizard"}
-              className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] hover:bg-[#006B2D] px-5 py-2.5 text-xs font-bold text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008638] focus:ring-offset-2 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="inline-flex items-center space-x-2 rounded-lg bg-[#008638] hover:bg-[#006B2D] hover:shadow-md px-5 py-2.5 text-xs font-bold text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008638] focus:ring-offset-2 transition-all duration-150 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
