@@ -33,6 +33,7 @@ async def test_submission_orchestration_full_success(client: AsyncClient, db_ses
     ass_res = await client.post(
         "/api/v1/assessments",
         json={"customer_id": cust_id, "title": "2026 Production Discovery"},
+        headers=auth_headers,
     )
     assert ass_res.status_code == 201
     assessment_id = ass_res.json()["id"]
@@ -64,13 +65,18 @@ async def test_submission_orchestration_full_success(client: AsyncClient, db_ses
         "raw_responses": {"q01_scale": "51–100", "q04_admin_hours": 15},
     }
     save_res = await client.put(
-        f"/api/v1/assessments/{assessment_id}/responses", json=responses_payload
+        f"/api/v1/assessments/{assessment_id}/responses",
+        json=responses_payload,
+        headers=auth_headers,
     )
     assert save_res.status_code == 200
 
     # 4. Execute Submission via AssessmentService with injected InMemory transport
     monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
-    submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    submit_res = await client.post(
+        f"/api/v1/assessments/{assessment_id}/submit",
+        headers=auth_headers,
+    )
     assert submit_res.status_code == 200
     submitted_data = submit_res.json()
 
@@ -134,7 +140,7 @@ async def test_submission_idempotency_prevents_duplicate_delivery(client: AsyncC
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
-        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Idempotency Test"}
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Idempotency Test"}, headers=auth_headers
     )
     assessment_id = ass_res.json()["id"]
 
@@ -145,14 +151,15 @@ async def test_submission_idempotency_prevents_duplicate_delivery(client: AsyncC
             "q04_weekly_admin_hours": 8.0,
             "raw_responses": {"q01_scale": "10–25"},
         },
+        headers=auth_headers,
     )
 
-    first_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    first_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
     assert first_submit.status_code == 200
     assert len(transport.sent_messages) == 1
 
     # Second submission attempt
-    second_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    second_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
     assert second_submit.status_code == 200
     # Email count must remain 1 (no duplicate emails sent)
     assert len(transport.sent_messages) == 1
@@ -173,7 +180,7 @@ async def test_email_failure_does_not_reopen_or_rollback_submission(client: Asyn
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
-        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Email Failure Test"}
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Email Failure Test"}, headers=auth_headers
     )
     assessment_id = ass_res.json()["id"]
 
@@ -184,11 +191,12 @@ async def test_email_failure_does_not_reopen_or_rollback_submission(client: Asyn
             "q04_weekly_admin_hours": 10.0,
             "raw_responses": {"q01_scale": "10–25"},
         },
+        headers=auth_headers,
     )
 
     # Force email service to raise an exception
     with patch.object(EmailService, "send_email", side_effect=RuntimeError("Simulated SMTP Connection Refused")):
-        submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+        submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
         assert submit_res.status_code == 200
         data = submit_res.json()
         assert data["status"] == "SUBMITTED"
@@ -198,6 +206,7 @@ async def test_email_failure_does_not_reopen_or_rollback_submission(client: Asyn
     mutation_res = await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q04_weekly_admin_hours": 99.0},
+        headers=auth_headers,
     )
     assert mutation_res.status_code == 409
 
@@ -230,16 +239,17 @@ async def test_missing_test_recipients_skips_cleanly(client: AsyncClient, db_ses
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
-        "/api/v1/assessments", json={"customer_id": cust_id, "title": "No Recipient Test"}
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "No Recipient Test"}, headers=auth_headers
     )
     assessment_id = ass_res.json()["id"]
 
     await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q03_environment_scale": "10-25 Queue Managers", "q04_weekly_admin_hours": 10.0},
+        headers=auth_headers,
     )
 
-    submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
     assert submit_res.status_code == 200
     assert len(transport.sent_messages) == 0
 
@@ -273,17 +283,18 @@ async def test_calculation_failure_leaves_assessment_submitted_and_skips_email(
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
-        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Calc Failure Test"}
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Calc Failure Test"}, headers=auth_headers
     )
     assessment_id = ass_res.json()["id"]
 
     await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q03_environment_scale": "10-25 Queue Managers", "q04_weekly_admin_hours": 10.0},
+        headers=auth_headers,
     )
 
     with patch("app.services.calculation_service.calculate_assessment", side_effect=ValueError("Simulated Calculation Engine Error")):
-        submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+        submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
         assert submit_res.status_code == 200
         data = submit_res.json()
         assert data["status"] == "SUBMITTED"
@@ -306,6 +317,7 @@ async def test_calculation_failure_leaves_assessment_submitted_and_skips_email(
     mutation_res = await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q04_weekly_admin_hours": 99.0},
+        headers=auth_headers,
     )
     assert mutation_res.status_code == 409
 
@@ -326,16 +338,17 @@ async def test_no_secrets_in_submission_audit_or_api(client: AsyncClient, db_ses
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
-        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Privacy Test"}
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Privacy Test"}, headers=auth_headers
     )
     assessment_id = ass_res.json()["id"]
 
     await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q03_environment_scale": "10-25 Queue Managers", "q04_weekly_admin_hours": 10.0},
+        headers=auth_headers,
     )
 
-    submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
     assert submit_res.status_code == 200
     resp_text = submit_res.text
     assert "super_secret_smtp_token_12345" not in resp_text
@@ -373,18 +386,19 @@ async def test_repeated_submission_after_email_failure_preserves_state_and_does_
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
-        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Classification B Test"}
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Classification B Test"}, headers=auth_headers
     )
     assessment_id = ass_res.json()["id"]
 
     await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q03_environment_scale": "25-50 Queue Managers", "q04_weekly_admin_hours": 12.0},
+        headers=auth_headers,
     )
 
     # Initial submission: Email fails
     with patch.object(EmailService, "send_email", side_effect=RuntimeError("SMTP Transport Timeout")):
-        first_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+        first_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
         assert first_submit.status_code == 200
         first_data = first_submit.json()
         assert first_data["status"] == "SUBMITTED"
@@ -394,7 +408,7 @@ async def test_repeated_submission_after_email_failure_preserves_state_and_does_
     # Second submission: Idempotent early return
     # Route SMTPTransport to transport to verify no emails are sent
     monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
-    second_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    second_submit = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
     assert second_submit.status_code == 200
     second_data = second_submit.json()
     assert second_data["status"] == "SUBMITTED"
@@ -407,11 +421,12 @@ async def test_repeated_submission_after_email_failure_preserves_state_and_does_
     mutation_res = await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q04_weekly_admin_hours": 99.0},
+        headers=auth_headers,
     )
     assert mutation_res.status_code == 409
 
     # Verify snapshot count in DB is exactly 1
-    snapshots_res = await client.get(f"/api/v1/assessments/{assessment_id}/snapshots")
+    snapshots_res = await client.get(f"/api/v1/assessments/{assessment_id}/snapshots", headers=auth_headers)
     assert snapshots_res.status_code == 200
     assert len(snapshots_res.json()) == 1
 
@@ -438,18 +453,19 @@ async def test_deliverable_generation_failure_audits_cleanly_and_skips_email(
     cust_id = cust_res.json()["id"]
 
     ass_res = await client.post(
-        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Deliverable Failure Test"}
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Deliverable Failure Test"}, headers=auth_headers
     )
     assessment_id = ass_res.json()["id"]
 
     await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q03_environment_scale": "25-50 Queue Managers", "q04_weekly_admin_hours": 12.0},
+        headers=auth_headers,
     )
 
     # Force deliverable generation to fail
     with patch("app.services.deliverable_service.DeliverableService.generate_pdf", side_effect=RuntimeError("Node PDF Renderer Crash")):
-        submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+        submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
         assert submit_res.status_code == 200
         data = submit_res.json()
         assert data["status"] == "SUBMITTED"
@@ -472,6 +488,7 @@ async def test_deliverable_generation_failure_audits_cleanly_and_skips_email(
     mutation_res = await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q04_weekly_admin_hours": 99.0},
+        headers=auth_headers,
     )
     assert mutation_res.status_code == 409
 

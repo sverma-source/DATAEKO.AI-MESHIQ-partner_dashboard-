@@ -8,7 +8,7 @@ from app.models.assessment import Assessment
 
 @pytest.mark.asyncio
 async def test_transaction_rollback_on_failed_assessment_creation(
-    client: AsyncClient, db_session: AsyncSession
+    client: AsyncClient, db_session: AsyncSession, auth_headers: dict
 ):
     # Attempting to create an assessment for non-existent customer must fail cleanly without persisting partial rows
     res = await client.post(
@@ -17,6 +17,7 @@ async def test_transaction_rollback_on_failed_assessment_creation(
             "customer_id": "00000000-0000-0000-0000-000000000999",
             "title": "Should Not Exist",
         },
+        headers=auth_headers,
     )
     assert res.status_code == 404
 

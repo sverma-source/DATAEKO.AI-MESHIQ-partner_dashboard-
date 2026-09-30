@@ -11,11 +11,12 @@ async def test_assessment_response_persistence(client: AsyncClient, auth_headers
     ass_res = await client.post(
         "/api/v1/assessments",
         json={"customer_id": customer_id, "title": "Pinnacle Health Assessment"},
+        headers=auth_headers,
     )
     assessment_id = ass_res.json()["id"]
 
     # 1. Verify 404 when getting non-existent responses
-    get_empty = await client.get(f"/api/v1/assessments/{assessment_id}/responses")
+    get_empty = await client.get(f"/api/v1/assessments/{assessment_id}/responses", headers=auth_headers)
     assert get_empty.status_code == 404
 
     # 2. Save Responses (preserving exact strings and overrides)
@@ -49,7 +50,7 @@ async def test_assessment_response_persistence(client: AsyncClient, auth_headers
     }
 
     save_res = await client.put(
-        f"/api/v1/assessments/{assessment_id}/responses", json=responses_payload
+        f"/api/v1/assessments/{assessment_id}/responses", json=responses_payload, headers=auth_headers
     )
     assert save_res.status_code == 200
     saved = save_res.json()
@@ -63,7 +64,7 @@ async def test_assessment_response_persistence(client: AsyncClient, auth_headers
     assert saved["raw_responses"]["q06_selected_label"] == "Weekly (approx 50/year)"
 
     # 3. Verify Assessment Status transitioned to IN_PROGRESS
-    ass_detail = await client.get(f"/api/v1/assessments/{assessment_id}")
+    ass_detail = await client.get(f"/api/v1/assessments/{assessment_id}", headers=auth_headers)
     assert ass_detail.status_code == 200
     assert ass_detail.json()["status"] == "IN_PROGRESS"
     assert ass_detail.json()["response"]["q06_frequency_text"] == "Weekly"
@@ -71,7 +72,7 @@ async def test_assessment_response_persistence(client: AsyncClient, auth_headers
     # 4. Update partial response
     partial_update = {"q04_weekly_admin_hours": 20.0, "q06_frequency_text": "Daily"}
     update_res = await client.put(
-        f"/api/v1/assessments/{assessment_id}/responses", json=partial_update
+        f"/api/v1/assessments/{assessment_id}/responses", json=partial_update, headers=auth_headers
     )
     assert update_res.status_code == 200
     updated_resp = update_res.json()

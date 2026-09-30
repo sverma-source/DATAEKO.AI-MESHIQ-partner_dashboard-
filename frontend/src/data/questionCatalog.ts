@@ -1,4 +1,4 @@
-import { QuestionDefinition, SectionDefinition } from "../types/assessment";
+import { AssessmentResponseState, QuestionDefinition, SectionDefinition } from "../types/assessment";
 
 export const SECTIONS: SectionDefinition[] = [
   {
@@ -526,3 +526,127 @@ export const QUESTIONS: Record<string, QuestionDefinition> = {
     feedsCalculation: false,
   },
 };
+
+/**
+ * Normalizes an assessment response (structured database columns + raw_responses)
+ * into a complete, consistent client AssessmentResponseState.
+ *
+ * Guarantees:
+ * 1. Base structured fields are populated from backend columns (e.g. q03_environment_scale).
+ * 2. Any additional raw_responses (e.g. q02_staffing, overrides, conditional selections) are merged seamlessly.
+ * 3. Any recursive raw_responses nesting is stripped.
+ * 4. Dropdown values (e.g. "51-100 Queue Managers" or "51–100 Queue Managers") are normalized
+ *    to match approved question catalog option values ("51–100").
+ */
+export function normalizeResponseState(
+  response: any,
+  questionsMap: Record<string, QuestionDefinition> = QUESTIONS
+): AssessmentResponseState {
+  if (!response) {
+    return { q20_use_default: true };
+  }
+
+  // 1. Structured canonical mapping
+  const base: AssessmentResponseState = {
+    q01_scale: response.q03_environment_scale || undefined,
+    q03_staffing_model: response.q05_mq_role_split || undefined,
+    q04_admin_hours:
+      response.q04_weekly_admin_hours !== null && response.q04_weekly_admin_hours !== undefined
+        ? Number(response.q04_weekly_admin_hours)
+        : undefined,
+    q06_frequency: response.q06_frequency_text || undefined,
+    q07_labor_hours: response.q07_labor_hours_text || undefined,
+    q07_override:
+      response.q07_labor_hours_override !== null && response.q07_labor_hours_override !== undefined
+        ? Number(response.q07_labor_hours_override)
+        : undefined,
+    q08_duration: response.q08_duration_text || undefined,
+    q09_tools_count: response.q09_root_cause_categories || undefined,
+    q10_manual_tracing: response.q10_problem_types || undefined,
+    q11_productivity_constraint: response.q11_monitoring_status || undefined,
+    q12_business_impact: response.q12_business_impact || undefined,
+    q14_disruption_duration: response.q14_duration_text || undefined,
+    q15_hourly_cost_override:
+      response.q15_hourly_cost_override !== null && response.q15_hourly_cost_override !== undefined
+        ? Number(response.q15_hourly_cost_override)
+        : undefined,
+    q15_is_unknown:
+      response.q15_hourly_cost_override === null && response.raw_responses?.q15_is_unknown === true,
+    q16_cost_mandate: response.q16_config_management_method || undefined,
+    q18_audit_effort: response.q18_audit_effort || undefined,
+    q19_documentation_effort: response.q19_documentation_effort || undefined,
+    q20_annual_labor_rate:
+      response.q20_annual_labor_rate !== null && response.q20_annual_labor_rate !== undefined
+        ? Number(response.q20_annual_labor_rate)
+        : undefined,
+    q20_use_default:
+      response.q20_annual_labor_rate === null || response.q20_annual_labor_rate === undefined,
+    q21_annual_mq_spend:
+      response.q21_annual_mq_spend !== null && response.q21_annual_mq_spend !== undefined
+        ? Number(response.q21_annual_mq_spend)
+        : undefined,
+    q21_is_unknown:
+      response.q21_annual_mq_spend === null && response.raw_responses?.q21_is_unknown === true,
+    q22_migration_plans: response.q22_migration_plans || undefined,
+  };
+
+  // 2. Merge raw_responses if present
+  let merged: AssessmentResponseState = { ...base };
+  if (response.raw_responses && typeof response.raw_responses === "object") {
+    const rawCopy = { ...response.raw_responses };
+    delete (rawCopy as any).raw_responses;
+    merged = {
+      ...merged,
+      ...rawCopy,
+    };
+  }
+
+  // 3. Dropdown option normalization against catalog options
+  for (const [qCode, qDef] of Object.entries(questionsMap)) {
+    if (!qDef.options || qDef.options.length === 0) continue;
+
+    const codeLower = qCode.toLowerCase();
+    const candidateKeys = [
+      `${codeLower}_scale`,
+      `${codeLower}_staffing`,
+      `${codeLower}_staffing_model`,
+      `${codeLower}_dropdown`,
+      `${codeLower}_tech_debt`,
+      `${codeLower}_frequency`,
+      `${codeLower}_labor_hours`,
+      `${codeLower}_duration`,
+      `${codeLower}_tools_count`,
+      `${codeLower}_manual_tracing`,
+      `${codeLower}_productivity_constraint`,
+      `${codeLower}_business_impact`,
+      `${codeLower}_recent_disruptions`,
+      `${codeLower}_disruption_duration`,
+      `${codeLower}_cost_mandate`,
+      `${codeLower}_opex_reduction`,
+      `${codeLower}_audit_effort`,
+      `${codeLower}_documentation_effort`,
+      `${codeLower}_migration_plans`,
+    ];
+
+    for (const key of candidateKeys) {
+      const val = (merged as any)[key];
+      if (val !== undefined && val !== null && typeof val === "string" && val !== "") {
+        const normalizedValDash = val.replace(/[\u2013\u2014]/g, "-").trim();
+        const matched = qDef.options.find((opt) => {
+          if (opt.value === val || opt.label === val) return true;
+          const optValDash = opt.value.replace(/[\u2013\u2014]/g, "-").trim();
+          const optLabelDash = opt.label.replace(/[\u2013\u2014]/g, "-").trim();
+          if (optValDash === normalizedValDash || optLabelDash === normalizedValDash) return true;
+          if (normalizedValDash.startsWith(optValDash) || optLabelDash.startsWith(normalizedValDash)) return true;
+          return false;
+        });
+        if (matched) {
+          (merged as any)[key] = matched.value;
+        }
+      }
+    }
+  }
+
+  return merged;
+}
+

@@ -16,13 +16,14 @@ async def test_assessment_submission_lifecycle(client: AsyncClient, db_session, 
     ass_res = await client.post(
         "/api/v1/assessments",
         json={"customer_id": customer_id, "title": "2026 Core MQ Discovery"},
+        headers=auth_headers,
     )
     assert ass_res.status_code == 201
     assessment_id = ass_res.json()["id"]
     assert ass_res.json()["status"] == "DRAFT"
 
     # 2. Cannot submit assessment without any responses -> 400 Bad Request
-    bad_submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    bad_submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
     assert bad_submit_res.status_code == 400
     assert "no responses to submit" in bad_submit_res.json()["detail"].lower()
 
@@ -53,17 +54,17 @@ async def test_assessment_submission_lifecycle(client: AsyncClient, db_session, 
         "raw_responses": {"q01_scale": "51–100", "q04_admin_hours": 12},
     }
     save_res = await client.put(
-        f"/api/v1/assessments/{assessment_id}/responses", json=responses_payload
+        f"/api/v1/assessments/{assessment_id}/responses", json=responses_payload, headers=auth_headers
     )
     assert save_res.status_code == 200
 
     # Verify status is now IN_PROGRESS
-    ass_get = await client.get(f"/api/v1/assessments/{assessment_id}")
+    ass_get = await client.get(f"/api/v1/assessments/{assessment_id}", headers=auth_headers)
     assert ass_get.status_code == 200
     assert ass_get.json()["status"] == "IN_PROGRESS"
 
     # 4. Successfully submit and finalize assessment
-    submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
     assert submit_res.status_code == 200
     submitted_data = submit_res.json()
     assert submitted_data["id"] == assessment_id
@@ -74,16 +75,17 @@ async def test_assessment_submission_lifecycle(client: AsyncClient, db_session, 
     mutation_attempt = await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json={"q04_weekly_admin_hours": 99.0},
+        headers=auth_headers,
     )
     assert mutation_attempt.status_code == 409
     assert "submitted and can no longer be edited" in mutation_attempt.json()["detail"].lower()
 
     # Verify response was NOT mutated
-    get_immutable = await client.get(f"/api/v1/assessments/{assessment_id}")
+    get_immutable = await client.get(f"/api/v1/assessments/{assessment_id}", headers=auth_headers)
     assert float(get_immutable.json()["response"]["q04_weekly_admin_hours"]) == 12.0
 
     # 6. Idempotency: submitting already-submitted assessment succeeds without error or state corruption
-    repeat_submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    repeat_submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
     assert repeat_submit_res.status_code == 200
     assert repeat_submit_res.json()["status"] == "SUBMITTED"
     assert float(repeat_submit_res.json()["response"]["q04_weekly_admin_hours"]) == 12.0
@@ -101,8 +103,8 @@ async def test_assessment_submission_lifecycle(client: AsyncClient, db_session, 
 
 
 @pytest.mark.asyncio
-async def test_cross_tenant_submission_protection(client: AsyncClient):
+async def test_cross_tenant_submission_protection(client: AsyncClient, auth_headers: dict):
     # Non-existent or other-tenant assessment -> 404 Not Found
     non_existent_id = "00000000-0000-0000-0000-000000000999"
-    res = await client.post(f"/api/v1/assessments/{non_existent_id}/submit")
+    res = await client.post(f"/api/v1/assessments/{non_existent_id}/submit", headers=auth_headers)
     assert res.status_code == 404

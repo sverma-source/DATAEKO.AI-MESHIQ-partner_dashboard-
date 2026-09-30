@@ -138,34 +138,38 @@ export const api = {
 
   // Save Responses
   saveResponses: (assessmentId: string, state: AssessmentResponseState) => {
+    // Sanitize state so raw_responses is not nested inside raw_responses
+    const cleanRaw = { ...state };
+    delete (cleanRaw as any).raw_responses;
+
     // Convert frontend state format to backend AssessmentResponse schema
     const payload = {
       q01_company_name: undefined,
       q02_industry: undefined,
-      q03_environment_scale: state.q01_scale,
-      q04_weekly_admin_hours: state.q04_admin_hours,
-      q05_mq_role_split: state.q03_staffing_model,
-      q06_frequency_text: state.q06_frequency,
+      q03_environment_scale: cleanRaw.q01_scale,
+      q04_weekly_admin_hours: cleanRaw.q04_admin_hours,
+      q05_mq_role_split: cleanRaw.q03_staffing_model,
+      q06_frequency_text: cleanRaw.q06_frequency,
       q06_frequency_override: undefined,
-      q07_labor_hours_text: state.q07_labor_hours,
-      q07_labor_hours_override: state.q07_override,
-      q08_duration_text: state.q08_duration,
-      q09_root_cause_categories: state.q09_tools_count,
-      q10_problem_types: state.q10_manual_tracing,
-      q11_monitoring_status: state.q11_productivity_constraint,
-      q12_business_impact: state.q12_business_impact,
+      q07_labor_hours_text: cleanRaw.q07_labor_hours,
+      q07_labor_hours_override: cleanRaw.q07_override,
+      q08_duration_text: cleanRaw.q08_duration,
+      q09_root_cause_categories: cleanRaw.q09_tools_count,
+      q10_problem_types: cleanRaw.q10_manual_tracing,
+      q11_monitoring_status: cleanRaw.q11_productivity_constraint,
+      q12_business_impact: cleanRaw.q12_business_impact,
       q13_annual_outage_count: undefined,
-      q14_duration_text: state.q14_disruption_duration,
+      q14_duration_text: cleanRaw.q14_disruption_duration,
       q14_duration_override: undefined,
-      q15_hourly_cost_override: state.q15_is_unknown ? null : state.q15_hourly_cost_override,
-      q16_config_management_method: state.q16_cost_mandate,
+      q15_hourly_cost_override: cleanRaw.q15_is_unknown ? null : cleanRaw.q15_hourly_cost_override,
+      q16_config_management_method: cleanRaw.q16_cost_mandate,
       q17_audit_frequency: undefined,
-      q18_audit_effort: state.q18_audit_effort,
-      q19_documentation_effort: state.q19_documentation_effort,
-      q20_annual_labor_rate: state.q20_use_default ? null : state.q20_annual_labor_rate,
-      q21_annual_mq_spend: state.q21_is_unknown ? null : state.q21_annual_mq_spend,
-      q22_migration_plans: state.q22_migration_plans,
-      raw_responses: state,
+      q18_audit_effort: cleanRaw.q18_audit_effort,
+      q19_documentation_effort: cleanRaw.q19_documentation_effort,
+      q20_annual_labor_rate: cleanRaw.q20_use_default ? null : cleanRaw.q20_annual_labor_rate,
+      q21_annual_mq_spend: cleanRaw.q21_is_unknown ? null : cleanRaw.q21_annual_mq_spend,
+      q22_migration_plans: cleanRaw.q22_migration_plans,
+      raw_responses: cleanRaw,
     };
 
     return request<any>(`/assessments/${assessmentId}/responses`, {

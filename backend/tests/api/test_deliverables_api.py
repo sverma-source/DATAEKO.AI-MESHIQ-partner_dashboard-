@@ -3,6 +3,9 @@ import io
 import pytest
 from httpx import AsyncClient
 
+from app.core.rbac import Role
+from app.core.security import create_access_token
+
 
 @pytest.fixture
 def sample_payload():
@@ -80,6 +83,7 @@ async def test_csv_deliverable_generation_and_content(
     create_res = await client.post(
         "/api/v1/assessments",
         json={"customer_id": customer_id, "title": "CSV Deliverable Test"},
+        headers=auth_headers,
     )
     assert create_res.status_code == 201
     assessment_id = create_res.json()["id"]
@@ -88,13 +92,14 @@ async def test_csv_deliverable_generation_and_content(
     await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json=sample_payload,
+        headers=auth_headers,
     )
-    submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit")
+    submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
     assert submit_res.status_code == 200
     assert submit_res.json()["status"] == "SUBMITTED"
 
     # 3. Download CSV deliverable
-    csv_res = await client.get(f"/api/v1/assessments/{assessment_id}/deliverables/csv")
+    csv_res = await client.get(f"/api/v1/assessments/{assessment_id}/deliverables/csv", headers=auth_headers)
     assert csv_res.status_code == 200
     assert "text/csv" in csv_res.headers["content-type"]
     assert f'filename="assessment_{assessment_id}_responses.csv"' in csv_res.headers["content-disposition"]
@@ -149,7 +154,7 @@ async def test_csv_deliverable_generation_and_content(
     assert sections[19] == "G. Economic Inputs & Timing"  # Q20
 
     # Verify immutability: assessment status remains SUBMITTED
-    get_res = await client.get(f"/api/v1/assessments/{assessment_id}")
+    get_res = await client.get(f"/api/v1/assessments/{assessment_id}", headers=auth_headers)
     assert get_res.json()["status"] == "SUBMITTED"
 
 
@@ -169,16 +174,18 @@ async def test_pdf_deliverable_requires_calculation_snapshot(
     create_res = await client.post(
         "/api/v1/assessments",
         json={"customer_id": customer_id, "title": "PDF Pre-Calc Test"},
+        headers=auth_headers,
     )
     assessment_id = create_res.json()["id"]
 
     await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json=sample_payload,
+        headers=auth_headers,
     )
 
     # Attempt PDF generation BEFORE calculation -> must return 404 EntityNotFound
-    pdf_res = await client.get(f"/api/v1/assessments/{assessment_id}/deliverables/pdf")
+    pdf_res = await client.get(f"/api/v1/assessments/{assessment_id}/deliverables/pdf", headers=auth_headers)
     assert pdf_res.status_code == 404
     assert "CalculationSnapshot" in pdf_res.json()["detail"]
 
@@ -198,17 +205,19 @@ async def test_pdf_deliverable_generation_after_calculation(
     create_res = await client.post(
         "/api/v1/assessments",
         json={"customer_id": customer_id, "title": "PDF Post-Calc Test"},
+        headers=auth_headers,
     )
     assessment_id = create_res.json()["id"]
 
     await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json=sample_payload,
+        headers=auth_headers,
     )
-    calc_res = await client.post(f"/api/v1/assessments/{assessment_id}/calculate")
+    calc_res = await client.post(f"/api/v1/assessments/{assessment_id}/calculate", headers=auth_headers)
     assert calc_res.status_code == 200
 
-    pdf_res = await client.get(f"/api/v1/assessments/{assessment_id}/deliverables/pdf")
+    pdf_res = await client.get(f"/api/v1/assessments/{assessment_id}/deliverables/pdf", headers=auth_headers)
     assert pdf_res.status_code == 200
     assert "application/pdf" in pdf_res.headers["content-type"]
     assert f'filename="DATAEKO_meshIQ_Executive_Report_{assessment_id}.pdf"' in pdf_res.headers["content-disposition"]
@@ -221,6 +230,7 @@ async def test_deliverable_cross_tenant_isolation(
     client: AsyncClient,
     sample_payload: dict,
     auth_headers: dict,
+    db_session,
 ):
     """
     Test that deliverables are strictly isolated by tenant and reject cross-tenant requests.
@@ -231,15 +241,41 @@ async def test_deliverable_cross_tenant_isolation(
     create_res = await client.post(
         "/api/v1/assessments",
         json={"customer_id": customer_id, "title": "Tenant Isolation Test"},
+        headers=auth_headers,
     )
     assessment_id = create_res.json()["id"]
 
     await client.put(
         f"/api/v1/assessments/{assessment_id}/responses",
         json=sample_payload,
+        headers=auth_headers,
     )
 
-    foreign_headers = {"X-Tenant-ID": "foreign-tenant-9999"}
+    from app.models.tenant import Tenant
+    from app.models.user import User
+    from app.core.security import get_password_hash
+
+    foreign_tenant = Tenant(id="foreign-tenant-9999", name="Foreign Tenant", slug="foreign-tenant-9999")
+    foreign_user = User(
+        id="foreign-consultant-user",
+        email="foreign_consultant@dataeko.ai",
+        hashed_password=get_password_hash("Pass123!"),
+        full_name="Foreign Consultant",
+        role=Role.CONSULTANT.value,
+        tenant_id="foreign-tenant-9999",
+        is_active=True,
+    )
+    db_session.add_all([foreign_tenant, foreign_user])
+    await db_session.commit()
+
+    # Use a token bound to a foreign tenant
+    foreign_token = create_access_token(
+        subject="foreign-consultant-user",
+        tenant_id="foreign-tenant-9999",
+        role=Role.CONSULTANT.value,
+        email="foreign_consultant@dataeko.ai",
+    )
+    foreign_headers = {"Authorization": f"Bearer {foreign_token}"}
 
     # Cross-tenant CSV request -> 404
     csv_res = await client.get(

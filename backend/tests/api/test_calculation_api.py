@@ -11,6 +11,7 @@ async def test_calculation_api_and_snapshot_persistence(client: AsyncClient, aut
     ass_res = await client.post(
         "/api/v1/assessments",
         json={"customer_id": customer_id, "title": "Vanguard MQ Discovery Assessment"},
+        headers=auth_headers,
     )
     assessment_id = ass_res.json()["id"]
 
@@ -26,11 +27,11 @@ async def test_calculation_api_and_snapshot_persistence(client: AsyncClient, aut
         "q21_annual_mq_spend": 250000.0,
     }
     await client.put(
-        f"/api/v1/assessments/{assessment_id}/responses", json=responses_payload
+        f"/api/v1/assessments/{assessment_id}/responses", json=responses_payload, headers=auth_headers
     )
 
     # 3. Trigger Calculation via POST /api/v1/assessments/{id}/calculate
-    calc_res = await client.post(f"/api/v1/assessments/{assessment_id}/calculate")
+    calc_res = await client.post(f"/api/v1/assessments/{assessment_id}/calculate", headers=auth_headers)
     assert calc_res.status_code == 200
     calc_data = calc_res.json()
 
@@ -61,14 +62,14 @@ async def test_calculation_api_and_snapshot_persistence(client: AsyncClient, aut
     assert float(metrics["applicable_financial_rate"]["value"]) == 300000.0
 
     # 4. Verify Assessment Status updated to CALCULATED
-    ass_detail = await client.get(f"/api/v1/assessments/{assessment_id}")
+    ass_detail = await client.get(f"/api/v1/assessments/{assessment_id}", headers=auth_headers)
     assert ass_detail.status_code == 200
     assert ass_detail.json()["status"] == "CALCULATED"
     assert ass_detail.json()["latest_snapshot"]["id"] == snapshot_id
 
     # 5. List Snapshots
     snapshots_list_res = await client.get(
-        f"/api/v1/assessments/{assessment_id}/snapshots"
+        f"/api/v1/assessments/{assessment_id}/snapshots", headers=auth_headers
     )
     assert snapshots_list_res.status_code == 200
     snapshots = snapshots_list_res.json()
@@ -78,7 +79,7 @@ async def test_calculation_api_and_snapshot_persistence(client: AsyncClient, aut
 
     # 6. Get Latest Snapshot
     latest_res = await client.get(
-        f"/api/v1/assessments/{assessment_id}/snapshots/latest"
+        f"/api/v1/assessments/{assessment_id}/snapshots/latest", headers=auth_headers
     )
     assert latest_res.status_code == 200
     assert latest_res.json()["id"] == snapshot_id
@@ -92,11 +93,12 @@ async def test_calculation_with_empty_responses(client: AsyncClient, auth_header
     ass_res = await client.post(
         "/api/v1/assessments",
         json={"customer_id": customer_id, "title": "Empty Assessment"},
+        headers=auth_headers,
     )
     assessment_id = ass_res.json()["id"]
 
     # Calculate without saving responses
-    calc_res = await client.post(f"/api/v1/assessments/{assessment_id}/calculate")
+    calc_res = await client.post(f"/api/v1/assessments/{assessment_id}/calculate", headers=auth_headers)
     assert calc_res.status_code == 200
     data = calc_res.json()
     assert data["summary"]["total_operational_labor_cost"] is None

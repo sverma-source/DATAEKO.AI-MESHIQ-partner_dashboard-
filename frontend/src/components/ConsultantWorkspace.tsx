@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
-import { QUESTIONS, SECTIONS } from "../data/questionCatalog";
+import { QUESTIONS, SECTIONS, normalizeResponseState } from "../data/questionCatalog";
 import {
   Assessment,
   AssessmentResponseState,
@@ -190,33 +190,7 @@ export const ConsultantWorkspace: React.FC = () => {
   // Extract Response State from assessment details
   const getAnswersState = (ass: Assessment | null): AssessmentResponseState => {
     if (!ass || !ass.response) return { q20_use_default: true };
-    if (ass.response.raw_responses) {
-      return ass.response.raw_responses;
-    }
-    return {
-      q01_scale: ass.response.q03_environment_scale,
-      q03_staffing_model: ass.response.q05_mq_role_split,
-      q04_admin_hours: ass.response.q04_weekly_admin_hours,
-      q06_frequency: ass.response.q06_frequency_text,
-      q07_labor_hours: ass.response.q07_labor_hours_text,
-      q07_override: ass.response.q07_labor_hours_override,
-      q08_duration: ass.response.q08_duration_text,
-      q09_tools_count: ass.response.q09_root_cause_categories,
-      q10_manual_tracing: ass.response.q10_problem_types,
-      q11_productivity_constraint: ass.response.q11_monitoring_status,
-      q12_business_impact: ass.response.q12_business_impact,
-      q14_disruption_duration: ass.response.q14_duration_text,
-      q15_hourly_cost_override: ass.response.q15_hourly_cost_override,
-      q16_cost_mandate: ass.response.q16_config_management_method,
-      q18_audit_effort: ass.response.q18_audit_effort,
-      q19_documentation_effort: ass.response.q19_documentation_effort,
-      q20_annual_labor_rate: ass.response.q20_annual_labor_rate,
-      q20_use_default:
-        ass.response.q20_annual_labor_rate === null ||
-        ass.response.q20_annual_labor_rate === undefined,
-      q21_annual_mq_spend: ass.response.q21_annual_mq_spend,
-      q22_migration_plans: ass.response.q22_migration_plans,
-    };
+    return normalizeResponseState(ass.response, QUESTIONS);
   };
 
   // Helper to format human-readable response representation

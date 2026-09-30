@@ -38,13 +38,27 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   error,
 }) => {
   const [showSellerNotes, setShowSellerNotes] = useState<boolean>(false);
-  const [useOverrideMode, setUseOverrideMode] = useState<boolean>(
-    overrideValue !== undefined && overrideValue !== null && overrideValue !== ""
-  );
+
+  // Match selectedValue against options resiliently by value, label, or normalized dash
+  const matchedOption = question.options?.find((opt) => {
+    if (!selectedValue) return false;
+    if (opt.value === selectedValue || opt.label === selectedValue) return true;
+    const optValDash = opt.value.replace(/[\u2013\u2014]/g, "-").trim();
+    const optLabelDash = opt.label.replace(/[\u2013\u2014]/g, "-").trim();
+    const selValDash = String(selectedValue).replace(/[\u2013\u2014]/g, "-").trim();
+    if (optValDash === selValDash || optLabelDash === selValDash) return true;
+    if (selValDash.startsWith(optValDash) || optLabelDash.startsWith(selValDash)) return true;
+    return false;
+  });
+  const effectiveSelectedValue = matchedOption ? matchedOption.value : (selectedValue || "");
+
+  const hasOverride = overrideValue !== undefined && overrideValue !== null && overrideValue !== "";
+  const [overrideToggled, setOverrideToggled] = useState<boolean | null>(null);
+  const useOverrideMode = overrideToggled !== null ? overrideToggled : hasOverride;
 
   const isAnswered =
-    (selectedValue !== undefined && selectedValue !== null && selectedValue !== "") ||
-    (overrideValue !== undefined && overrideValue !== null && overrideValue !== "");
+    (effectiveSelectedValue !== undefined && effectiveSelectedValue !== null && effectiveSelectedValue !== "") ||
+    hasOverride;
 
   return (
     <div
@@ -110,7 +124,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             <div className="relative">
               <select
                 id={`select-${question.id}`}
-                value={selectedValue || ""}
+                value={effectiveSelectedValue}
                 onChange={(e) => onSelectOption(e.target.value)}
                 aria-label={`${question.code}: ${question.title}`}
                 aria-invalid={!!error}
@@ -143,7 +157,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             <div className="flex items-center justify-between">
               <button
                 type="button"
-                onClick={() => setUseOverrideMode(!useOverrideMode)}
+                onClick={() => setOverrideToggled(!useOverrideMode)}
                 aria-expanded={useOverrideMode}
                 className="text-xs font-semibold text-[#008638] hover:text-[#006B2D] flex items-center space-x-1.5 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] rounded-sm"
               >
