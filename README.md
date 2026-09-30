@@ -56,100 +56,57 @@ Persisted Immutable CalculationSnapshot
 
 ## 2. Current Project Status & Checkpoint
 
-The platform is under active development on the **`dev`** branch. The latest Enterprise UI and top-navigation refinements have been completed, followed by a comprehensive read-only End-to-End Product Validation pass.
+The platform is under active development on the **`dev`** branch. The critical **P0 Security** and **P1 Save/Resume Persistence** remediation batch has been completed, verified across automated and live browser tests, and pushed to the remote repository.
 
 ### Current Checkpoint Summary
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Git Checkpoint** | `f0e1e96` (`fix: preserve dataeko header attribution visibility`) |
-| **Development Branch** | `dev` |
-| **Implementation Stage** | **Enterprise UI Refinement & Read-Only E2E Product Validation** |
-| **Next Planned Work** | **Controlled Remediation Batch: P0 Authentication Boundary & P1 Save/Resume Persistence** |
-| **Next Work Status** | **PLANNED — NOT STARTED** (Remediation intentionally paused; deferred to next controlled batch) |
+| **Current Git Checkpoint** | `1b03e1a` (`fix: secure assessments and restore draft persistence`) |
+| **Authoritative Commit Hash** | `1b03e1a458a476cb26e33caf3a33fb4f1a10de89` |
+| **Development Branch** | `dev` (Synchronized with `origin/dev`) |
+| **Implementation Stage** | **P0 Security & P1 Save/Resume Remediation Complete** |
+| **P0 Authentication Boundary** | **RESOLVED** (`401 Unauthorized` enforced for all unauthenticated assessment API requests) |
+| **P1 Save/Resume Persistence** | **RESOLVED** (Reliable multi-cycle response persistence; nested payload stripping; dropdown/override resilience) |
+| **Submission Immutability** | **VERIFIED** (Read-only view preserved across reloads; `HTTP 409 Conflict` on post-finalization mutations) |
+| **Working Tree** | **Clean** (No uncommitted changes, no unpushed commits) |
+| **Next Planned Work** | **Incremental Product Roadmap Features (P2, P3, Defensible Economic Outputs, etc.)** |
 | **Deployment Status** | **Deferred** (Local development only; no production deployment performed) |
-| **Email Status** | **Headless / Isolated** (`EMAIL_ENABLED=False`; real email delivery deferred) |
+| **Email Status** | **Headless / Isolated** (`EMAIL_ENABLED=False`; no real customer email has been sent) |
 
 ---
 
-### ENTERPRISE TOP NAVIGATION & HEADER SCALE REFINEMENT
+### P0 SECURITY & P1 SAVE/RESUME REMEDIATION (BATCH COMPLETE)
 
-**Status:** COMPLETE / VERIFIED  
-**Implementation Commits:**
-- `5aa9fc5`: `feat: refine enterprise header scale`
-- `f0e1e96`: `fix: preserve dataeko header attribution visibility`
+**Status:** COMPLETE / VERIFIED / COMMITTED (`1b03e1a`)  
+**Scope:** Remediation of the two defects discovered during the read-only E2E validation.
 
-#### Implemented Features & Refinements:
-- **Enterprise Header Scale**: Expanded header height to an authoritative, spacious enterprise scale (~77px desktop / ~73px mobile) across all authenticated persona views (Client, Consultant, Platform Admin).
-- **Brand Identity & Typography**: Refined meshIQ wordmark and brand mark scaling to balance confident presentation with crisp alignment.
-- **Role/Workspace Context**: Context badge refined to `text-xs font-semibold uppercase tracking-wider` with a subtle divider dot separating brand mark from role context.
-- **Top-Right DATAEKO Attribution**: Restored full visibility of the official DATAEKO wordmark asset (`dataeko-logo.png`) in the top navigation bar, protected from clipping or truncation across all viewports.
-- **Responsive Navigation Verification**: Tested across 1440px, 1280px, 1024px, 768px, and 390px viewports with zero horizontal page overflow.
-- **Asset Integrity**: Official meshIQ and DATAEKO logo assets remain unmodified and displayed at high fidelity.
+#### 1. P0 — Authentication Boundary (RESOLVED)
+- **Vulnerability Remediated**: Replaced `get_current_user_optional` with mandatory dependency `current_user: User = Depends(get_current_user)` across all 13 assessment endpoints in `backend/app/api/v1/assessments.py`.
+- **Enforcement Verified**:
+  - `GET /api/v1/assessments` without credentials returns `401 Unauthorized` (`{"detail": "Authentication required. Please log in.", "error_type": "AuthenticationError"}`).
+  - `GET /api/v1/assessments/{assessment_id}` without credentials returns `401 Unauthorized`.
+  - Zero leakage of assessment metadata, customer records, or calculation snapshots to anonymous callers.
+  - Authenticated calls by Client, Consultant, and Admin personas return `200 OK` with proper tenant and role scoping.
 
----
+#### 2. P1 — Client Save/Resume Persistence (RESOLVED)
+- **Discrepancy Remediated**:
+  - **Recursive Payload Nesting**: Sanitized `saveResponses` in `frontend/src/services/api.ts` to strip nested `raw_responses` before persisting, eliminating recursive nesting across repeated saves.
+  - **Unified State Normalization**: Implemented `normalizeResponseState` in `frontend/src/data/questionCatalog.ts` to merge structured database columns with `raw_responses`, preserving all non-feeder fields (`q02_staffing`, `q02_override`, `q04_dropdown`, `q05_tech_debt`, `q13_recent_disruptions`, `q17_opex_reduction`, `q17_override`).
+  - **Dropdown Value vs Label Resilience**: Normalization resiliently maps stored option labels and dash/en-dash variations back to canonical option values.
+  - **Reactive Numeric Overrides**: Updated `QuestionCard.tsx` so `useOverrideMode` dynamically reflects asynchronously loaded override values without requiring manual button toggling.
+  - **Synchronized Loaders**: Replaced fragmented conditional parsing in both `page.tsx` and `ConsultantWorkspace.tsx` with `normalizeResponseState`.
+- **Persistence Verified**:
+  - Client intake responses for Section A (select options, numeric overrides, free text, booleans) persist across `Save Draft` -> page reload -> edit -> `Save Draft` -> page reload cycles with 100% value fidelity.
 
-### COMPREHENSIVE READ-ONLY E2E PRODUCT VALIDATION
+#### 3. Finalization & Immutability Regression (VERIFIED)
+- Completing assessment intake and confirming submission via the review modal transitions state to `SUBMITTED`.
+- Reloading the page with `?assessment_id=<id>` reliably preserves the read-only submitted view.
+- Direct API mutation attempts against a submitted assessment (`PUT /api/v1/assessments/{id}/responses`) strictly fail with `HTTP 409 Conflict`.
 
-**Status:** VALIDATION COMPLETE / DEFECT DISCOVERY CHECKPOINT  
-**Validation Pass:** Phases 0 through 9 (Client, Consultant, Executive, Platform Admin, Isolation, State Transitions, Provenance, Responsive, Security)  
-**Safety Principle:** Strict read-only pass. **Zero** application code, database schema, configuration, or test files were modified during this pass. No commits were created, no pushes made, and no deployments performed.
-
-#### Verified Passing Functional & Operational Areas:
-- **Consultant Workflow**: Portfolio table, search filtering, status filtering (`ALL`, `SUBMITTED`, `DRAFT`), 12-section discovery & ROI economic summary view, and discovery response inspection all operating correctly.
-- **Executive Dashboard & Output**: Headline KPI tiering (`F_TOTAL`, `F_ADMIN`, `F_TROUBLESHOOTING`, `F_OUTAGE`, `F_FTE`), dynamic provenance badges, and clean executive vs. consultant audit view toggles verified.
-- **Scenario Sandbox**: Interactive sliders initialize to model assumptions (50%, 50%, 25%, 10%); moving sliders dynamically recalculates benefits without mutating persistent assessment state; clicking "Reset" restores baseline identically.
-- **Executive Report View**: Report preview renders customer identity, assessment title, headline metrics, and branding attribution accurately without modifying underlying assessment data.
-- **Platform Admin Governance**: Governance views for Users (92 seeded accounts), Customers, Assessments, and Audit Log (50 events) operational with role-scoped filtering and modal inspection.
-- **Finalization & Immutability**: Submitted assessments transition to `SUBMITTED` state, inputs become read-only, and backend API strictly rejects subsequent mutation attempts with HTTP 409 Conflict.
-- **Calculation & Provenance Consistency**: Mathematical engine adheres to pure Python `Decimal` precision; formula provenance and industry benchmarks (`ITIC $300k/hr`) are immutably captured in `CalculationSnapshot`.
-- **Responsive Smoke**: 1440, 1280, 1024, 768, and 390px viewports verified across Login, Client, Consultant, and Admin workspaces with 0 horizontal page overflow and visible DATAEKO attribution.
-- **Authentication & Session Smoke**: Invalid and tampered JWT tokens strictly rejected (HTTP 401); login brute force rate limiting active and verified (HTTP 429 at 5 attempts/minute); `POST /auth/logout` clears session cookies.
-- **Automated Test Baseline**:
-  - Backend Suite: **139/139 PASSED** (`pytest`)
-  - Calculation Golden Masters: **10/10 PASSED** (`TC-01`–`TC-10`)
-  - Frontend Test Suite: **111/111 PASSED** (`vitest`)
-  - TypeScript Static Check: **0 ERRORS** (`tsc --noEmit`)
-  - Production Bundle: **CLEAN BUILD** (`next build`)
-
-#### Blocking Findings (Remediation NOT YET Started):
-
-> [!CAUTION]
-> The following findings are defect-discovery items identified during the read-only validation pass. Remediation has **not** started and will be addressed in a controlled implementation batch.
-
-1. **P0 — Critical: Unauthenticated Assessment API Access**
-   - **Route / Endpoints**: `GET /api/v1/assessments` and `GET /api/v1/assessments/{assessment_id}`
-   - **Observation**: Anonymous callers without authentication credentials or session cookies can list all tenant assessments and fetch full assessment details, customer metadata, and the complete calculation snapshot (`latest_snapshot`), including proprietary financial formulas.
-   - **Root Cause**: Endpoints use `Depends(get_current_user_optional)` with fallback to `DEFAULT_TENANT_ID`, while ownership checks only evaluate `CUSTOMER_USER` roles.
-   - **Planned Next Action**: Secure assessment listing and detail endpoints using mandatory authentication dependencies (`get_current_user`) and strict tenant boundaries.
-
-2. **P1 — High: Client Save/Resume Persistence Mismatch**
-   - **Route / Component**: `/` (Assessment Wizard — `page.tsx` / `api.ts`)
-   - **Observation**: When a client user answers discovery questions (e.g., Q01 Scale, Q04 Weekly Admin Hours) and saves draft progress, refreshing or reopening the assessment resets questions to empty/unselected values (`""`).
-   - **Root Cause**: Key mapping discrepancy between wizard state, `raw_responses`, and backend schema fields (`state.q01_scale` vs `q03_environment_scale`) causes deserialization failure upon reload.
-   - **Planned Next Action**: Trace and align client response payload mapping between frontend state and backend schemas without modifying calculation semantics.
-
-#### Deferred Findings (Excluded From Next Batch):
-
-1. **P2 — Medium: Client Customer Selection UX**
-   - **Observation**: Client users see all tenant customer organizations in the initial customer selection modal. Although backend authorization correctly rejects unauthorized creation with HTTP 403 Forbidden, the UI should auto-bind or restrict the list to the client's assigned organization.
-   - **Status**: Deferred to subsequent UX refinement pass.
-
-2. **P3 — Low: Section Navigation Discoverability**
-   - **Observation**: Assessment wizard sections E, F, and G overflow horizontally on viewports <= 1280px without an explicit scrollbar or visual affordance arrows.
-   - **Status**: Deferred to subsequent UX refinement pass.
-
-#### Next Development Step:
-The next implementation batch is strictly limited to:
-1. **P0 Authentication Boundary Correction**: Enforce strict authentication on `GET /api/v1/assessments` and `GET /api/v1/assessments/{id}`.
-2. **P1 Save/Resume Persistence Correction**: Align frontend/backend response field mapping so draft answers persist and reload reliably.
-
-*The P2 and P3 UI findings are explicitly excluded from the upcoming remediation batch.*
-
-#### Safety & Deployment Status:
-- **Production Deployment**: **NOT PERFORMED**.
-- **Production Services**: **NOT ACCESSED** during validation (all testing conducted against local development services on `localhost:3001` and `localhost:8000`).
-- **Readiness**: The platform remains in local development state on branch `dev`. Production readiness is explicitly withheld pending P0 and P1 remediation.
+#### Deferred Findings (Excluded From This Batch):
+- **P2 — Medium: Client Customer Selection UX**: Client users see all tenant customer organizations in the initial customer selection modal. Deferred to subsequent incremental pass.
+- **P3 — Low: Section Navigation Discoverability**: Assessment wizard sections E, F, and G overflow horizontally on viewports <= 1280px without an explicit scroll affordance. Deferred to subsequent incremental pass.
 
 ---
 
@@ -358,7 +315,7 @@ The database schema is managed via asynchronous Alembic migrations:
 
 ## 10. Automated Testing & Verification Status
 
-### Verified Test Suite Results (Batch 5A Checkpoint)
+### Verified Test Suite Results (P0/P1 Remediation Checkpoint `1b03e1a`)
 
 ```text
 ================================================================================
@@ -367,29 +324,34 @@ The database schema is managed via asynchronous Alembic migrations:
 1. Backend & Calculation Suite (pytest 9.1):
    • 10/10 Golden Master Reference Scenarios (TC-01–TC-10)               PASSED
    • 11/11 Calculation Engine Precision & Boundary Tests                 PASSED
-   • 10/10 API Integration & Submission Orchestration Tests              PASSED
+   • 13/13 API Integration & Submission Orchestration Tests              PASSED
+           - test_assessments_api.py (unauthorized 401 & auth enforcement)
+           - test_submission_orchestration.py (mutation protection & conflicts)
    • 13/13 Observability, Health Probes & Structured Logging Tests       PASSED
-   • 95/95 Security & Governance Tests                                   PASSED
+   • 94/94 Security & Governance Tests                                   PASSED
            - Auth, RBAC, IDOR, Rate Limiting, Bootstrap Admin
            - Customer Scoping & Client Assessment Ownership (Batch 4C)
            - User Invitation & Password Reset Lifecycle (Batch 4D)
            - Authentication Session Hardening & Invalidation (Batch 4E)
    -----------------------------------------------------------------------------
-   Total Backend Suite: 139/139 PASSED (100%)
+   Total Backend Suite: 141/141 PASSED (100%)
 
 2. Frontend Test Suite (Vitest 5.0):
-   • 17/17 Test Files                                                    PASSED
-   • 111/111 Component, Wizard, Governance & Security Tests             PASSED
+   • 18/18 Test Files                                                    PASSED
+   • 115/115 Component, Wizard, Governance & Security Tests             PASSED
+           - Includes responsePersistence.test.ts (P1 state normalization)
    -----------------------------------------------------------------------------
-   Total Frontend Suite: 111/111 PASSED (100%)
+   Total Frontend Suite: 115/115 PASSED (100%)
 
 3. Static Analysis & Build:
    • TypeScript Static Typecheck (`tsc --noEmit`):                       0 ERRORS
    • Next.js Production Turbopack Build (`next build`):                  PASSED
 
-4. Browser QA & Smoke Verification (Chromium):
-   • Multi-Persona Smoke Tests (Admin, Consultant, Client, Expiry):      5/5 PASSED
-   • Critical Console Errors:                                            0 ERRORS
+4. Browser QA & Targeted P0/P1 E2E Verification (Chromium / Playwright):
+   • Part 1: Anonymous Assessment API Access (P0) Blocked (HTTP 401):    PASSED
+   • Part 2: Client Section A Multi-Cycle Save/Resume Persistence (P1):  PASSED
+   • Part 3: Assessment Submission & Immutability (HTTP 409 Conflict):   PASSED
+   • Finalization & Read-Only Behavior Across Page Reloads:              PASSED
 
 5. Database Migration Lifecycle:
    • Alembic Upgrade (0001 -> 0006):                                     PASSED
@@ -428,29 +390,46 @@ The database schema is managed via asynchronous Alembic migrations:
 | **Micro UI** | `77c1110` | `fix: clarify assessment section progress label` | Numeric section progress indicators ("Section 1 of 7"). |
 | **Header Scale** | `5aa9fc5` | `feat: refine enterprise header scale` | Spacious ~77px enterprise header scale and brand mark scaling. |
 | **Header Fix** | `f0e1e96` | `fix: preserve dataeko header attribution visibility` | Top-right DATAEKO logo protected against horizontal clipping. |
+| **P0/P1 Fix** | `1b03e1a` | `fix: secure assessments and restore draft persistence` | Mandatory auth on assessment endpoints, draft state normalization, and anti-nesting. |
 
 ---
 
-## 12. Planned Next Increments & Deferred Work
+## 12. Planned Next Increments & Product Roadmap
 
-### Current Checkpoint: Enterprise UI & E2E Validation Checkpoint (`f0e1e96`)
-- **Status**: **VALIDATION COMPLETE / DEFECT DISCOVERY CHECKPOINT**.
-- **Scope**: Comprehensive read-only end-to-end product validation across all roles, workflows, calculation pipelines, and viewports.
+### Current Authoritative Checkpoint (`1b03e1a`)
+- **Authoritative Commit Hash**: `1b03e1a458a476cb26e33caf3a33fb4f1a10de89`
+- **Development Branch**: `dev` (Synchronized with `origin/dev`)
+- **Working Tree**: Clean (zero uncommitted changes, zero unpushed commits)
+- **P0 Status**: **RESOLVED** — Strict authentication dependency on all assessment routes (`401 Unauthorized` on anonymous access).
+- **P1 Status**: **RESOLVED** — Client intake response persistence and state normalization verified across multiple save/reload cycles.
+- **Submission Finalization**: **VERIFIED** — Read-only state preserved upon submission; post-submission mutations strictly rejected with `HTTP 409 Conflict`.
 
-### Next Planned Increment: Controlled Remediation Batch (P0 & P1)
-- **Scope**:
-  1. **P0 Authentication Boundary**: Enforce mandatory authentication on `GET /api/v1/assessments` and `GET /api/v1/assessments/{id}` to prevent unauthenticated assessment and snapshot leakage.
-  2. **P1 Save/Resume Persistence**: Correct client response field mapping between frontend state and backend schemas so draft responses persist and reload reliably.
-- **Status**: **PLANNED — NOT STARTED** (Development intentionally paused after validation checkpoint).
-- **Deferred**: P2 (Client customer selection UX) and P3 (Section navigation discoverability) are explicitly deferred and excluded from this batch.
+### Deferred Findings
+The following two findings from the initial E2E validation pass remain intentionally deferred and will be addressed in future incremental batches:
+1. **P2 — Client Customer Selection / Scoping UX**: Currently, client users can see other customer organizations in the customer selector dropdown. Although backend permissions prevent unauthorized actions, the UI should auto-select and scope to the client's assigned customer organization.
+2. **P3 — Section Navigation Discoverability at Narrower Widths**: On screens <= 1280px, wizard sections E, F, and G overflow horizontally without explicit visual scroll arrows or indicators.
 
-### Production Deployment Status
-- **Status**: **DEFERRED**.
-- **Branch**: `dev`.
-- Container topology definitions (`docker-compose.prod.yml`) and Nginx configurations (`nginx/default.conf`) are maintained in the repository for production readiness, but live deployment is intentionally deferred.
+### Product Roadmap Direction (Planned Future Capabilities)
 
-### Email Delivery Status
-- **Status**: **HEADLESS / TEST-MODE ISOLATED** (`EMAIL_ENABLED=False`). Real SMTP delivery remains deferred until explicitly authorized.
+> [!NOTE]
+> All items listed below represent **planned future direction** to be implemented incrementally in controlled batches. **None of these capabilities are currently implemented in the codebase.**
+
+1. **P2 Customer Selection & Scoping UX**: Dedicated client organization auto-binding, restricting customer selection to the caller's assigned organization context.
+2. **P3 Section Navigation Discoverability**: Overflow indicators, chevron scroll buttons, and responsive discoverability enhancements for assessment wizard navigation on narrower viewports.
+3. **Defensible Economic Outputs / “Show the Math”**: Interactive mathematical inspectability, per-metric derivation traces, explicit formula decomposition modals, and step-by-step audit provenance directly accessible to users in the UI.
+4. **Scenario Analysis**: Advanced sensitivity modeling, multi-scenario side-by-side comparisons (e.g., conservative vs. moderate vs. aggressive efficiency capture), custom target goal-seeking, and parameter variance simulations.
+5. **Recommendations / Action Layer**: Contextual, prioritized recommendation engine generating tactical modernization actions, operational quick wins, and risk mitigations tied directly to discovery responses.
+6. **Executive Results and Reporting**: Enhanced C-suite reporting formats, interactive boardroom presentation modes, customizable executive summaries, and multi-format deliverable exports.
+7. **Consultant Portfolio Intelligence**: Cross-customer analytics, fleet-wide benchmark comparisons, opportunity sizing, engagement scoring, and aggregate pipeline intelligence for consultants.
+8. **Workflow & Collaboration**: Multi-stakeholder review workflows, inline commentary and clarification threads on specific questions, change request workflows for finalized assessments, and collaborative sign-offs.
+9. **Customer 360**: Unified longitudinal view of a customer organization over time, tracking annual progress, historical assessment versions, value realization metrics, and maturity progression.
+10. **Enterprise Integrations & Governance**: SSO / SAML / OIDC enterprise identity provider integrations, external audit webhook streaming, enterprise secret management, and SOC 2 / ISO 27001 compliance reporting.
+
+### Safety, Deployment & Delivery Boundaries
+
+- **Production Deployment Status**: **NOT PERFORMED**. The platform remains in local development state on branch `dev`.
+- **Email Delivery Status**: **HEADLESS / TEST-MODE ISOLATED** (`EMAIL_ENABLED=False`). **No real customer email has been sent**.
+- **Roadmap Disclaimer**: Future roadmap features are not yet implemented and must not be treated as existing capabilities.
 
 ---
 
