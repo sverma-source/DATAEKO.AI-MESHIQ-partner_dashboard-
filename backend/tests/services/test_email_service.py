@@ -22,6 +22,7 @@ def get_test_settings(**kwargs) -> Settings:
         "ENVIRONMENT": "test",
         "SECRET_KEY": "a" * 32,
         "EMAIL_ENABLED": True,
+        "EMAIL_DISTRIBUTION_MODE": "test",
         "SMTP_HOST": "smtp.example.com",
         "SMTP_PORT": 587,
         "SMTP_USERNAME": "test_user",
@@ -45,10 +46,13 @@ def test_email_settings_diagnostics_safe():
     settings = get_test_settings()
     diag = settings.get_safe_diagnostics()
     assert diag["email_enabled"] is True
+    assert diag["email_distribution_mode"] == "test"
     assert diag["smtp_host_configured"] is True
     assert diag["smtp_port"] == 587
     assert diag["smtp_use_tls"] is True
     assert diag["email_from_address"] == "noreply@dataeko.ai"
+    assert diag["prod_dataeko_recipients_count"] == 0
+    assert diag["prod_meshiq_recipients_count"] == 0
     assert "super_secret_smtp_password" not in str(diag)
     assert "roop.test@example.com" not in str(diag)
 
@@ -321,3 +325,238 @@ def test_smtp_transport_connection_error_sanitized():
             transport.send(msg, settings)
 
         assert "SMTP connection failed" in str(exc_info.value)
+
+
+# ==============================================================================
+# BATCH 1: EMAIL DISTRIBUTION MODE & RECIPIENT GOVERNANCE TESTS
+# ==============================================================================
+
+def test_distribution_mode_disabled_parsing():
+    """Verifies disabled mode parses correctly and reports safe diagnostics."""
+    settings = get_test_settings(EMAIL_DISTRIBUTION_MODE="disabled")
+    assert settings.EMAIL_DISTRIBUTION_MODE == "disabled"
+    diag = settings.get_safe_diagnostics()
+    assert diag["email_distribution_mode"] == "disabled"
+
+
+def test_distribution_mode_test_parsing():
+    """Verifies test mode parses correctly and normalizes lowercase whitespace."""
+    settings = get_test_settings(EMAIL_DISTRIBUTION_MODE="  TEST  ")
+    assert settings.EMAIL_DISTRIBUTION_MODE == "test"
+
+
+def test_distribution_mode_production_parsing():
+    """Verifies production mode parses correctly with configured production recipients."""
+    settings = get_test_settings(
+        EMAIL_DISTRIBUTION_MODE="production",
+        PROD_DATAEKO_DISTRIBUTION_EMAILS=["exec@dataeko.ai", "partner-lead@dataeko.ai"],
+        PROD_MESHIQ_DISTRIBUTION_EMAILS=["delivery@meshiq.com"],
+    )
+    assert settings.EMAIL_DISTRIBUTION_MODE == "production"
+    assert settings.PROD_DATAEKO_DISTRIBUTION_EMAILS == ["exec@dataeko.ai", "partner-lead@dataeko.ai"]
+    assert settings.PROD_MESHIQ_DISTRIBUTION_EMAILS == ["delivery@meshiq.com"]
+    diag = settings.get_safe_diagnostics()
+    assert diag["email_distribution_mode"] == "production"
+    assert diag["prod_dataeko_recipients_count"] == 2
+    assert diag["prod_meshiq_recipients_count"] == 1
+
+
+def test_distribution_mode_invalid_fails_closed():
+    """Verifies that an unsupported distribution mode is rejected and fails closed."""
+    with pytest.raises(ValueError, match="Invalid EMAIL_DISTRIBUTION_MODE 'staging'"):
+        get_test_settings(EMAIL_DISTRIBUTION_MODE="staging")
+
+    with pytest.raises(ValueError, match="Invalid EMAIL_DISTRIBUTION_MODE 'arbitrary'"):
+        get_test_settings(EMAIL_DISTRIBUTION_MODE="arbitrary")
+
+
+def test_recipient_governance_test_mode_resolves_only_roop_and_sumit():
+    """Verifies test mode resolves exclusively Roop + Sumit, ignoring production recipients."""
+    settings = get_test_settings(
+        EMAIL_DISTRIBUTION_MODE="test",
+        TEST_RECIPIENT_ROOP="roop@example.com",
+        TEST_RECIPIENT_SUMIT="sumit@example.com",
+        PROD_DATAEKO_DISTRIBUTION_EMAILS=["prod_leak@dataeko.ai"],
+        PROD_MESHIQ_DISTRIBUTION_EMAILS=["prod_leak@meshiq.com"],
+    )
+    service = EmailService(settings=settings)
+    recipients = service.get_internal_recipients()
+    assert recipients == ["roop@example.com", "sumit@example.com"]
+    assert "prod_leak@dataeko.ai" not in recipients
+    assert "prod_leak@meshiq.com" not in recipients
+
+
+def test_recipient_governance_production_mode_resolves_configured_recipients():
+    """Verifies production mode resolves configured DATAEKO + meshIQ recipients."""
+    settings = get_test_settings(
+        EMAIL_DISTRIBUTION_MODE="production",
+        TEST_RECIPIENT_ROOP="roop@example.com",
+        TEST_RECIPIENT_SUMIT="sumit@example.com",
+        PROD_DATAEKO_DISTRIBUTION_EMAILS=["exec@dataeko.ai"],
+        PROD_MESHIQ_DISTRIBUTION_EMAILS=["team@meshiq.com"],
+    )
+    service = EmailService(settings=settings)
+    recipients = service.get_internal_recipients()
+    assert recipients == ["exec@dataeko.ai", "team@meshiq.com"]
+    # Roop and Sumit test addresses must NEVER appear in production resolution
+    assert "roop@example.com" not in recipients
+    assert "sumit@example.com" not in recipients
+
+
+def test_recipient_governance_production_mode_missing_recipients_fails_closed():
+    """
+    Verifies that production mode with missing recipients fails closed:
+    1. Settings validation raises ValueError when EMAIL_ENABLED=True.
+    2. EmailService.get_internal_recipients() raises EmailConfigurationError.
+    """
+    # 1. Settings validation failure when active in production without recipients
+    with pytest.raises(ValueError, match="Production email distribution mode requires configured recipients"):
+        get_test_settings(
+            EMAIL_ENABLED=True,
+            EMAIL_DISTRIBUTION_MODE="production",
+            PROD_DATAEKO_DISTRIBUTION_EMAILS=[],
+            PROD_MESHIQ_DISTRIBUTION_EMAILS=[],
+        )
+
+    # 2. Service level resolution failure (when instantiated with unconfigured prod mode)
+    unconfigured_settings = get_test_settings(
+        EMAIL_ENABLED=False,
+        EMAIL_DISTRIBUTION_MODE="production",
+        PROD_DATAEKO_DISTRIBUTION_EMAILS=[],
+        PROD_MESHIQ_DISTRIBUTION_EMAILS=[],
+    )
+    service = EmailService(settings=unconfigured_settings)
+    with pytest.raises(EmailConfigurationError, match="Production email distribution mode requires configured recipients"):
+        service.get_internal_recipients()
+
+
+@pytest.mark.asyncio
+async def test_recipient_governance_disabled_mode_produces_no_delivery():
+    """Verifies that disabled mode resolves empty recipients and safely halts/skips email delivery."""
+    settings = get_test_settings(
+        EMAIL_ENABLED=True,
+        EMAIL_DISTRIBUTION_MODE="disabled",
+    )
+    transport = InMemoryEmailTransport()
+    service = EmailService(settings=settings, transport=transport)
+
+    assert service.get_internal_recipients() == []
+    assert service.is_email_active is False
+
+    msg = EmailMessage(
+        recipients=["test@example.com"],
+        subject="Deliverables",
+        text_body="Content",
+    )
+
+    # With allow_disabled_skip=True, delivery is safely skipped with False
+    result = await service.send_email(msg, allow_disabled_skip=True)
+    assert result is False
+    assert len(transport.sent_messages) == 0
+
+    # With allow_disabled_skip=False, EmailDisabledError is raised
+    with pytest.raises(EmailDisabledError, match="EMAIL_DISTRIBUTION_MODE=disabled"):
+        await service.send_email(msg, allow_disabled_skip=False)
+
+
+def test_browser_request_cannot_override_internal_recipients():
+    """
+    Verifies that get_internal_recipients is an authoritative server-side resolution
+    that cannot be parameterized or overridden by external client/browser input.
+    """
+    settings = get_test_settings(
+        EMAIL_DISTRIBUTION_MODE="test",
+        TEST_RECIPIENT_ROOP="roop@example.com",
+        TEST_RECIPIENT_SUMIT="sumit@example.com",
+    )
+    service = EmailService(settings=settings)
+
+    # The function accepts no recipient arguments and returns only configured server recipients
+    recipients = service.get_internal_recipients()
+    assert recipients == ["roop@example.com", "sumit@example.com"]
+
+
+def test_production_recipients_cannot_be_overridden_by_test_recipients():
+    """
+    Verifies that in production mode, test recipients never override or pollute
+    production recipient lists.
+    """
+    settings = get_test_settings(
+        EMAIL_DISTRIBUTION_MODE="production",
+        TEST_RECIPIENT_ROOP="roop@example.com",
+        TEST_RECIPIENT_SUMIT="sumit@example.com",
+        PROD_DATAEKO_DISTRIBUTION_EMAILS=["prod@dataeko.ai"],
+    )
+    service = EmailService(settings=settings)
+    recipients = service.get_internal_recipients()
+    assert recipients == ["prod@dataeko.ai"]
+    assert "roop@example.com" not in recipients
+    assert "sumit@example.com" not in recipients
+
+
+def test_test_recipients_cannot_accidentally_receive_production_traffic():
+    """
+    Verifies isolation between test and production recipient channels:
+    Production channel never receives test recipients;
+    Test channel never receives production recipients.
+    """
+    test_settings = get_test_settings(
+        EMAIL_DISTRIBUTION_MODE="test",
+        TEST_RECIPIENT_ROOP="roop@test.com",
+        TEST_RECIPIENT_SUMIT="sumit@test.com",
+        PROD_DATAEKO_DISTRIBUTION_EMAILS=["prod@dataeko.ai"],
+    )
+    prod_settings = get_test_settings(
+        EMAIL_DISTRIBUTION_MODE="production",
+        TEST_RECIPIENT_ROOP="roop@test.com",
+        TEST_RECIPIENT_SUMIT="sumit@test.com",
+        PROD_DATAEKO_DISTRIBUTION_EMAILS=["prod@dataeko.ai"],
+    )
+
+    test_service = EmailService(settings=test_settings)
+    prod_service = EmailService(settings=prod_settings)
+
+    test_resolved = test_service.get_internal_recipients()
+    prod_resolved = prod_service.get_internal_recipients()
+
+    assert set(test_resolved).isdisjoint(set(prod_resolved))
+    assert "prod@dataeko.ai" not in test_resolved
+    assert "roop@test.com" not in prod_resolved
+    assert "sumit@test.com" not in prod_resolved
+
+
+def test_in_memory_email_transport_remains_functional():
+    """Verifies InMemoryEmailTransport captures, stores, and clears messages properly."""
+    transport = InMemoryEmailTransport()
+    msg1 = EmailMessage(recipients=["a@example.com"], subject="Sub 1", text_body="Body 1")
+    msg2 = EmailMessage(recipients=["b@example.com"], subject="Sub 2", text_body="Body 2")
+
+    settings = get_test_settings()
+    assert transport.send(msg1, settings) is True
+    assert transport.send(msg2, settings) is True
+
+    assert len(transport.sent_messages) == 2
+    assert transport.last_message.subject == "Sub 2"
+    assert transport.sent_messages[0].subject == "Sub 1"
+
+    transport.clear()
+    assert len(transport.sent_messages) == 0
+    assert transport.last_message is None
+
+
+def test_recipient_governance_duplicate_test_recipients_collapse_to_one():
+    """
+    Verifies that get_test_recipients and get_internal_recipients deterministically
+    deduplicate recipients when ROOP and SUMIT resolve to the same address.
+    """
+    settings = get_test_settings(
+        EMAIL_DISTRIBUTION_MODE="test",
+        TEST_RECIPIENT_ROOP="shared.mailbox@example.com",
+        TEST_RECIPIENT_SUMIT="shared.mailbox@example.com",
+    )
+    service = EmailService(settings=settings)
+
+    # Both get_test_recipients and get_internal_recipients must return the address exactly once
+    assert service.get_test_recipients() == ["shared.mailbox@example.com"]
+    assert service.get_internal_recipients() == ["shared.mailbox@example.com"]
+

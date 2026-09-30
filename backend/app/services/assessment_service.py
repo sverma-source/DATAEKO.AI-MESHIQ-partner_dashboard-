@@ -256,13 +256,13 @@ class AssessmentService:
             # Deliverable failure halts email dispatch; assessment remains submitted and finalized
             return await AssessmentService.get_assessment(db, tenant_id, assessment_id, load_details=True)
 
-        # 4. Email Dispatch to Test Recipients Only (Batch E)
+        # 4. Email Dispatch to Test/Internal Recipients (Batch 1 Hardening)
         try:
             svc = email_service or EmailService()
-            test_recipients = svc.get_test_recipients()
+            internal_recipients = svc.get_internal_recipients()
 
-            if not test_recipients:
-                logger.warning("No test recipients configured; skipping email dispatch for assessment %s", assessment_id)
+            if not internal_recipients:
+                logger.warning("No internal recipients configured; skipping email dispatch for assessment %s", assessment_id)
                 await log_audit_event(
                     session=db,
                     event_type="EMAIL_SEND_SKIPPED",
@@ -271,7 +271,7 @@ class AssessmentService:
                     resource_type="Assessment",
                     resource_id=assessment_id,
                     status="SUCCESS",
-                    details={"reason": "No test recipients configured in environment"},
+                    details={"reason": "No test recipients configured in environment (or distribution disabled)"},
                 )
                 await db.commit()
             else:
@@ -306,7 +306,7 @@ class AssessmentService:
                 )
 
                 msg = EmailMessage(
-                    recipients=test_recipients,
+                    recipients=internal_recipients,
                     subject=subject,
                     text_body=text_body,
                     html_body=html_body,
@@ -321,7 +321,7 @@ class AssessmentService:
                     resource_type="Assessment",
                     resource_id=assessment_id,
                     status="SUCCESS",
-                    details={"recipient_count": len(test_recipients)},
+                    details={"recipient_count": len(internal_recipients)},
                 )
                 await db.commit()
 
@@ -335,7 +335,7 @@ class AssessmentService:
                         resource_type="Assessment",
                         resource_id=assessment_id,
                         status="SUCCESS",
-                        details={"recipient_count": len(test_recipients)},
+                        details={"recipient_count": len(internal_recipients)},
                     )
                 else:
                     await log_audit_event(
@@ -346,7 +346,7 @@ class AssessmentService:
                         resource_type="Assessment",
                         resource_id=assessment_id,
                         status="SUCCESS",
-                        details={"reason": "EMAIL_ENABLED is false"},
+                        details={"reason": "EMAIL_ENABLED is false or distribution mode is disabled"},
                     )
                 await db.commit()
 

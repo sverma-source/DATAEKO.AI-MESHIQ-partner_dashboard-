@@ -272,13 +272,76 @@ class EmailService:
         """
         Returns the non-empty configured internal test distribution recipients.
         Used for development and QA testing without hard-coding addresses in source.
+        Deterministically deduplicates recipients if Roop and Sumit resolve to the same address.
         """
         recipients = []
         if self.settings.TEST_RECIPIENT_ROOP and self.settings.TEST_RECIPIENT_ROOP.strip():
-            recipients.append(self.settings.TEST_RECIPIENT_ROOP.strip())
+            addr = self.settings.TEST_RECIPIENT_ROOP.strip()
+            if addr not in recipients:
+                recipients.append(addr)
         if self.settings.TEST_RECIPIENT_SUMIT and self.settings.TEST_RECIPIENT_SUMIT.strip():
-            recipients.append(self.settings.TEST_RECIPIENT_SUMIT.strip())
+            addr = self.settings.TEST_RECIPIENT_SUMIT.strip()
+            if addr not in recipients:
+                recipients.append(addr)
         return recipients
+
+    def get_production_recipients(self) -> List[str]:
+        """
+        Returns the non-empty configured internal production distribution recipients
+        from DATAEKO and meshIQ distribution lists.
+        """
+        recipients = []
+        for addr in self.settings.PROD_DATAEKO_DISTRIBUTION_EMAILS:
+            cleaned = addr.strip()
+            if cleaned and cleaned not in recipients:
+                recipients.append(cleaned)
+        for addr in self.settings.PROD_MESHIQ_DISTRIBUTION_EMAILS:
+            cleaned = addr.strip()
+            if cleaned and cleaned not in recipients:
+                recipients.append(cleaned)
+        return recipients
+
+    def get_internal_recipients(self) -> List[str]:
+        """
+        Authoritative server-side recipient-resolution path for internal deliverable emails.
+        Strictly governed by EMAIL_DISTRIBUTION_MODE:
+        - 'disabled': returns [] (delivery disabled).
+        - 'test': returns ONLY test recipients (Roop + Sumit). Production recipients are NEVER returned.
+        - 'production': returns ONLY configured production recipients (DATAEKO + meshIQ).
+          Fails closed by raising EmailConfigurationError if no production recipients are configured.
+          Test recipients are NEVER returned in production mode (no fallback).
+        """
+        mode = (self.settings.EMAIL_DISTRIBUTION_MODE or "").strip().lower()
+
+        if mode == "disabled":
+            return []
+
+        if mode == "test":
+            return self.get_test_recipients()
+
+        if mode == "production":
+            prod_recipients = self.get_production_recipients()
+            if not prod_recipients:
+                raise EmailConfigurationError(
+                    "Production email distribution mode requires configured recipients in "
+                    "PROD_DATAEKO_DISTRIBUTION_EMAILS or PROD_MESHIQ_DISTRIBUTION_EMAILS. "
+                    "System fails closed to prevent unverified delivery."
+                )
+            return prod_recipients
+
+        raise EmailConfigurationError(
+            f"Invalid email distribution mode '{mode}'. Supported modes: 'disabled', 'test', 'production'."
+        )
+
+    @property
+    def is_email_active(self) -> bool:
+        """
+        Returns True if email is enabled and distribution mode is not 'disabled'.
+        """
+        return bool(
+            self.settings.EMAIL_ENABLED
+            and self.settings.EMAIL_DISTRIBUTION_MODE in ("test", "production")
+        )
 
     @staticmethod
     def create_deliverable_attachments(
@@ -336,6 +399,16 @@ class EmailService:
                 )
                 return False
             raise EmailDisabledError("Email delivery is disabled in current configuration (EMAIL_ENABLED=False).")
+
+        if self.settings.EMAIL_DISTRIBUTION_MODE == "disabled":
+            if allow_disabled_skip:
+                logger.info(
+                    "Email delivery skipped: EMAIL_DISTRIBUTION_MODE is disabled. Subject: '%s', Recipients: %d",
+                    message.subject,
+                    len(message.recipients),
+                )
+                return False
+            raise EmailDisabledError("Email delivery is disabled in current configuration (EMAIL_DISTRIBUTION_MODE=disabled).")
 
         # Validate SMTP configuration prerequisites
         if not self.settings.SMTP_HOST or not self.settings.SMTP_HOST.strip():

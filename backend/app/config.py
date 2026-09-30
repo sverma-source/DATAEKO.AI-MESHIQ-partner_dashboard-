@@ -5,6 +5,7 @@ from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 SUPPORTED_ENVIRONMENTS = {"development", "test", "production"}
+SUPPORTED_EMAIL_DISTRIBUTION_MODES = {"disabled", "test", "production"}
 
 BROAD_PRIVATE_NETWORKS = {
     ipaddress.ip_network("10.0.0.0/8"),
@@ -106,8 +107,9 @@ class Settings(BaseSettings):
     # Maximum Request Payload Size (Defense against payload flooding / memory exhaustion)
     MAX_REQUEST_BODY_BYTES: int = 2 * 1024 * 1024  # 2 MB default
 
-    # Server-Side Email Configuration (Batch E Infrastructure)
+    # Server-Side Email Configuration (Batch 1 Hardening)
     EMAIL_ENABLED: bool = False
+    EMAIL_DISTRIBUTION_MODE: str = "test"
     SMTP_HOST: Optional[str] = None
     SMTP_PORT: int = 587
     SMTP_USERNAME: Optional[str] = None
@@ -116,9 +118,13 @@ class Settings(BaseSettings):
     EMAIL_FROM_ADDRESS: str = "noreply@dataeko.ai"
     EMAIL_FROM_NAME: str = "DATAEKO × meshIQ Assessment Platform"
 
-    # Server-Side Test Distribution Recipients (Placeholders for dev/test)
+    # Server-Side Test Distribution Recipients (Dev/Testing placeholders only)
     TEST_RECIPIENT_ROOP: Optional[str] = None
     TEST_RECIPIENT_SUMIT: Optional[str] = None
+
+    # Server-Side Production Distribution Lists (Unconfigured placeholders until production activation batch)
+    PROD_DATAEKO_DISTRIBUTION_EMAILS: List[str] = []
+    PROD_MESHIQ_DISTRIBUTION_EMAILS: List[str] = []
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -141,6 +147,24 @@ class Settings(BaseSettings):
             return [item.strip() for item in v.split(",") if item.strip()]
         return v
 
+    @field_validator("EMAIL_DISTRIBUTION_MODE", mode="before")
+    @classmethod
+    def parse_distribution_mode(cls, v: Any) -> str:
+        if isinstance(v, str):
+            return v.strip().lower()
+        return v
+
+    @field_validator("PROD_DATAEKO_DISTRIBUTION_EMAILS", "PROD_MESHIQ_DISTRIBUTION_EMAILS", mode="before")
+    @classmethod
+    def parse_email_list(cls, v: Any) -> List[str]:
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [item.strip() for item in v.split(",") if item.strip()]
+        if isinstance(v, (list, set, tuple)):
+            return [str(item).strip() for item in v if str(item).strip()]
+        return v
+
     @model_validator(mode="after")
     def validate_environment_and_production_settings(self) -> "Settings":
         # 1. Environment canonical validation
@@ -148,6 +172,13 @@ class Settings(BaseSettings):
             raise ValueError(
                 f"Invalid ENVIRONMENT '{self.ENVIRONMENT}'. "
                 f"Supported environments are: {', '.join(sorted(SUPPORTED_ENVIRONMENTS))}."
+            )
+
+        # Email distribution mode canonical validation
+        if self.EMAIL_DISTRIBUTION_MODE not in SUPPORTED_EMAIL_DISTRIBUTION_MODES:
+            raise ValueError(
+                f"Invalid EMAIL_DISTRIBUTION_MODE '{self.EMAIL_DISTRIBUTION_MODE}'. "
+                f"Supported modes are: {', '.join(sorted(SUPPORTED_EMAIL_DISTRIBUTION_MODES))}."
             )
 
         # 2. General validation across all environments
@@ -178,10 +209,18 @@ class Settings(BaseSettings):
             raise ValueError(f"SMTP_PORT must be between 1 and 65535 (got {self.SMTP_PORT}).")
 
         if self.EMAIL_ENABLED:
-            if not self.SMTP_HOST or not self.SMTP_HOST.strip():
-                raise ValueError("SMTP_HOST must be specified when EMAIL_ENABLED is True.")
-            if not self.EMAIL_FROM_ADDRESS or "@" not in self.EMAIL_FROM_ADDRESS:
-                raise ValueError(f"EMAIL_FROM_ADDRESS must be a valid email address (got '{self.EMAIL_FROM_ADDRESS}').")
+            if self.EMAIL_DISTRIBUTION_MODE != "disabled":
+                if not self.SMTP_HOST or not self.SMTP_HOST.strip():
+                    raise ValueError("SMTP_HOST must be specified when EMAIL_ENABLED is True.")
+                if not self.EMAIL_FROM_ADDRESS or "@" not in self.EMAIL_FROM_ADDRESS:
+                    raise ValueError(f"EMAIL_FROM_ADDRESS must be a valid email address (got '{self.EMAIL_FROM_ADDRESS}').")
+
+            if self.EMAIL_DISTRIBUTION_MODE == "production":
+                if not self.PROD_DATAEKO_DISTRIBUTION_EMAILS and not self.PROD_MESHIQ_DISTRIBUTION_EMAILS:
+                    raise ValueError(
+                        "Production email distribution mode requires configured recipients in "
+                        "PROD_DATAEKO_DISTRIBUTION_EMAILS or PROD_MESHIQ_DISTRIBUTION_EMAILS when EMAIL_ENABLED is True."
+                    )
 
         # Validate trusted proxy IP/CIDR syntax
         for proxy_entry in self.TRUSTED_PROXY_IPS:
@@ -302,12 +341,15 @@ class Settings(BaseSettings):
             "trusted_proxy_ips_count": len(self.TRUSTED_PROXY_IPS),
             "max_request_body_bytes": self.MAX_REQUEST_BODY_BYTES,
             "email_enabled": self.EMAIL_ENABLED,
+            "email_distribution_mode": self.EMAIL_DISTRIBUTION_MODE,
             "smtp_host_configured": bool(self.SMTP_HOST and self.SMTP_HOST.strip()),
             "smtp_port": self.SMTP_PORT,
             "smtp_use_tls": self.SMTP_USE_TLS,
             "email_from_address": self.EMAIL_FROM_ADDRESS,
             "email_from_name": self.EMAIL_FROM_NAME,
             "test_recipients_configured": bool(self.TEST_RECIPIENT_ROOP or self.TEST_RECIPIENT_SUMIT),
+            "prod_dataeko_recipients_count": len(self.PROD_DATAEKO_DISTRIBUTION_EMAILS),
+            "prod_meshiq_recipients_count": len(self.PROD_MESHIQ_DISTRIBUTION_EMAILS),
         }
 
 

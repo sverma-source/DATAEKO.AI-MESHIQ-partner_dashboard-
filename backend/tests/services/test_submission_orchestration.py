@@ -493,3 +493,44 @@ async def test_deliverable_generation_failure_audits_cleanly_and_skips_email(
     assert mutation_res.status_code == 409
 
 
+@pytest.mark.asyncio
+async def test_submission_uses_get_internal_recipients_governance(client: AsyncClient, db_session, monkeypatch, auth_headers: dict):
+    """
+    Verifies that submit_assessment delegates recipient resolution to get_internal_recipients(),
+    honoring EMAIL_DISTRIBUTION_MODE governance.
+    """
+    transport = InMemoryEmailTransport()
+    monkeypatch.setattr(settings, "EMAIL_ENABLED", True)
+    monkeypatch.setattr(settings, "EMAIL_DISTRIBUTION_MODE", "test")
+    monkeypatch.setattr(settings, "SMTP_HOST", "smtp.test.internal")
+    monkeypatch.setattr(settings, "TEST_RECIPIENT_ROOP", "roop@dataeko.ai")
+    monkeypatch.setattr(settings, "TEST_RECIPIENT_SUMIT", "sumit@dataeko.ai")
+    monkeypatch.setattr(settings, "PROD_DATAEKO_DISTRIBUTION_EMAILS", ["prod.leak@dataeko.ai"])
+    monkeypatch.setattr("app.services.email_service.SMTPTransport.send", transport.send)
+
+    cust_res = await client.post("/api/v1/customers", json={"name": "Governance Org"}, headers=auth_headers)
+    cust_id = cust_res.json()["id"]
+
+    ass_res = await client.post(
+        "/api/v1/assessments", json={"customer_id": cust_id, "title": "Governance Test"}, headers=auth_headers
+    )
+    assessment_id = ass_res.json()["id"]
+
+    await client.put(
+        f"/api/v1/assessments/{assessment_id}/responses",
+        json={"q03_environment_scale": "25-50 Queue Managers", "q04_weekly_admin_hours": 10.0},
+        headers=auth_headers,
+    )
+
+    with patch.object(EmailService, "get_internal_recipients", autospec=True, side_effect=lambda self: ["roop@dataeko.ai", "sumit@dataeko.ai"]) as spy_internal:
+        submit_res = await client.post(f"/api/v1/assessments/{assessment_id}/submit", headers=auth_headers)
+        assert submit_res.status_code == 200
+        assert spy_internal.called
+        assert len(transport.sent_messages) == 1
+        msg = transport.sent_messages[0]
+        # In test mode, only test recipients are resolved
+        assert msg.recipients == ["roop@dataeko.ai", "sumit@dataeko.ai"]
+        assert "prod.leak@dataeko.ai" not in msg.recipients
+
+
+
