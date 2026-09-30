@@ -39,6 +39,8 @@ import { ProvenanceBadge } from "./ProvenanceBadge";
 import { DashboardCharts } from "./DashboardCharts";
 import { ScenarioSandbox } from "./ScenarioSandbox";
 import { ExecutiveReportView } from "./report/ExecutiveReportView";
+import { ShowTheMathDrawer } from "./ShowTheMathDrawer";
+import { useAuth } from "../context/AuthContext";
 
 interface ExecutiveDashboardProps {
   calculation: CalculationRunResponse;
@@ -55,9 +57,17 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   answers = {},
   onReturnToWizard,
 }) => {
+  const { user } = useAuth();
   // View Mode: Executive Customer View vs Consultant Audit View
   const [viewMode, setViewMode] = useState<"customer" | "consultant">("customer");
   const [isReportViewOpen, setIsReportViewOpen] = useState<boolean>(false);
+  const [isShowMathOpen, setIsShowMathOpen] = useState<boolean>(false);
+
+  // Authorized roles for calculation transparency: CONSULTANT, PLATFORM_ADMIN, PARTNER_ADMIN
+  const isAuthorizedForMath =
+    user?.role === "CONSULTANT" ||
+    user?.role === "PLATFORM_ADMIN" ||
+    user?.role === "PARTNER_ADMIN";
 
   // Active Dashboard Tab
   const [activeTab, setActiveTab] = useState<
@@ -89,8 +99,8 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   const q21IsUnknown = answers.q21_is_unknown || !answers.q21_annual_mq_spend;
   const q21Value = answers.q21_annual_mq_spend;
 
-  // Loaded Hourly Rate
-  const loadedRateMetric = metrics.internal_loaded_hourly_rate;
+  // Loaded Hourly Rate (canonical loaded_hourly_rate with fallback to legacy internal_loaded_hourly_rate)
+  const loadedRateMetric = metrics.loaded_hourly_rate || metrics.internal_loaded_hourly_rate;
   const loadedHourlyRate = loadedRateMetric?.value
     ? Number(loadedRateMetric.value)
     : 86.53846153846154;
@@ -367,18 +377,32 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               {/* Headline Card 1: Total Quantified Operational Labor Cost */}
               <div className="rounded-xl border border-[#E2E6EE] border-t-4 border-t-[#38B449] bg-white p-6 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-[#667085] uppercase tracking-wider">
                       Operational Labor Cost
                     </span>
-                    <ProvenanceBadge
-                      provenance="CALCULATED_RESULT"
-                      state={metrics.total_quantified_labor_cost?.state || "VALID"}
-                      formulaCode={viewMode === "consultant" ? "C_TOTAL = C_ADMIN + C_TRB" : undefined}
-                    />
+                    <div className="flex items-center space-x-2">
+                      {isAuthorizedForMath && (
+                        <button
+                          type="button"
+                          onClick={() => setIsShowMathOpen(true)}
+                          data-testid="show-the-math-btn"
+                          className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#008638] hover:text-[#006B2D] bg-[#EEF8F0] hover:bg-[#E5F5E8] px-2 py-0.5 rounded-md border border-[#A8E2B5] transition-colors cursor-pointer shadow-2xs"
+                          aria-label="Show the Math for Operational Labor Cost"
+                        >
+                          <Calculator className="h-3 w-3 mr-0.5" />
+                          <span>Show the Math</span>
+                        </button>
+                      )}
+                      <ProvenanceBadge
+                        provenance="CALCULATED_RESULT"
+                        state={metrics.total_quantified_labor_cost?.state || "VALID"}
+                        formulaCode={viewMode === "consultant" ? "C_TOTAL = C_ADMIN + C_TRB" : undefined}
+                      />
+                    </div>
                   </div>
                   <div className="mt-3 flex items-baseline justify-between">
-                    <span className="text-3xl sm:text-4xl font-black text-[#172033] font-mono tracking-tight">
+                    <span className="text-3xl sm:text-4xl font-black text-[#172033] font-mono tracking-tight" data-testid="dashboard-operational-labor-cost">
                       {formatCurrency(summary.total_operational_labor_cost)}
                     </span>
                     <span className="text-xs font-bold text-[#667085]">/ year</span>
@@ -1006,6 +1030,17 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Show the Math Detail Drawer (Authorized Consultant / Admin Persona) */}
+      {isAuthorizedForMath && (
+        <ShowTheMathDrawer
+          isOpen={isShowMathOpen}
+          onClose={() => setIsShowMathOpen(false)}
+          calculation={calculation}
+          customerName={customer?.name}
+          answers={answers}
+        />
       )}
     </div>
   );
