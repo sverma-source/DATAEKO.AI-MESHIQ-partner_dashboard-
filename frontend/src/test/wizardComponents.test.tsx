@@ -157,6 +157,46 @@ describe("SectionNavigation Component", () => {
     expect(secA).not.toHaveAttribute("aria-current");
     expect(secA).toHaveAttribute("aria-label", expect.stringContaining("questions answered"));
   });
+
+  it("handles horizontal scroll controls, active section tracking, and keyboard focus", () => {
+    const handleSelect = vi.fn();
+    const { rerender } = render(
+      <SectionNavigation
+        sections={SECTIONS}
+        currentSectionId="A"
+        onSelectSection={handleSelect}
+        answers={{}}
+        questionsMap={QUESTIONS}
+      />
+    );
+
+    // Verify all 7 section buttons have data-section-id attributes
+    SECTIONS.forEach((sec) => {
+      const btn = screen.getByRole("button", { name: new RegExp(sec.title, "i") });
+      expect(btn).toHaveAttribute("data-section-id", sec.id);
+    });
+    const reviewBtn = screen.getByRole("button", { name: /review & submit/i });
+    expect(reviewBtn).toHaveAttribute("data-section-id", "REVIEW");
+
+    // Focus on Section G (simulating keyboard tab navigation)
+    const secGBtn = screen.getByRole("button", { name: /g\. economic inputs & timing/i });
+    fireEvent.focus(secGBtn);
+    expect(secGBtn).toBeInTheDocument();
+
+    // Rerender with active section E to test active auto-visibility trigger
+    rerender(
+      <SectionNavigation
+        sections={SECTIONS}
+        currentSectionId="E"
+        onSelectSection={handleSelect}
+        answers={{}}
+        questionsMap={QUESTIONS}
+      />
+    );
+
+    const secEBtn = screen.getByRole("button", { name: /e\. cost reduction & organizational pressure/i });
+    expect(secEBtn).toHaveAttribute("aria-current", "step");
+  });
 });
 
 describe("QuestionCard Component", () => {

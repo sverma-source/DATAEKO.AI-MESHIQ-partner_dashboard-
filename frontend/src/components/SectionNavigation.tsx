@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Check, CircleDot, FileCheck } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Check, ChevronLeft, ChevronRight, CircleDot, FileCheck } from "lucide-react";
 import { AssessmentResponseState, SectionDefinition } from "../types/assessment";
 
 interface SectionNavigationProps {
@@ -19,6 +19,10 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
   answers,
   questionsMap,
 }) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
+  const [canScrollRight, setCanScrollRight] = useState<boolean>(false);
+
   // Helper to calculate answered count for a section
   const getSectionStats = (section: SectionDefinition) => {
     let answered = 0;
@@ -38,10 +42,173 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
     };
   };
 
+  // Safe horizontal scroll helper with JSDOM fallback and reduced motion support
+  const safeScrollTo = useCallback((targetLeft: number, smooth: boolean = true) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    const behavior = smooth && !prefersReducedMotion ? "smooth" : "auto";
+    if (typeof container.scrollTo === "function") {
+      container.scrollTo({ left: targetLeft, behavior });
+    } else {
+      container.scrollLeft = targetLeft;
+    }
+  }, []);
+
+  // Check scroll container overflow state
+  const updateScrollState = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const hasScrollLeft = el.scrollLeft > 2;
+    const hasScrollRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+    setCanScrollLeft(hasScrollLeft);
+    setCanScrollRight(hasScrollRight);
+  }, []);
+
+  // Listen for scroll & resize events
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      updateScrollState();
+    };
+
+    updateScrollState();
+    const rafId = requestAnimationFrame(updateScrollState);
+
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        updateScrollState();
+      });
+      ro.observe(el);
+    }
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      el.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", updateScrollState);
+      ro?.disconnect();
+    };
+  }, [updateScrollState]);
+
+  // Bring active section into view when currentSectionId changes without page-level jumps
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const activeBtn = container.querySelector(
+      `[data-section-id="${currentSectionId}"]`
+    ) as HTMLElement | null;
+    if (!activeBtn) return;
+
+    const containerLeft = container.scrollLeft;
+    const containerWidth = container.clientWidth;
+    const btnLeft = activeBtn.offsetLeft;
+    const btnWidth = activeBtn.offsetWidth;
+    const buffer = 32;
+
+    if (btnLeft < containerLeft + buffer) {
+      safeScrollTo(Math.max(0, btnLeft - buffer));
+    } else if (btnLeft + btnWidth > containerLeft + containerWidth - buffer) {
+      safeScrollTo(
+        Math.min(
+          container.scrollWidth - containerWidth,
+          btnLeft + btnWidth - containerWidth + buffer
+        )
+      );
+    }
+
+    const timer = setTimeout(updateScrollState, 350);
+    return () => clearTimeout(timer);
+  }, [currentSectionId, safeScrollTo, updateScrollState]);
+
+  // Ensure focused item is brought into view for keyboard users
+  const handleButtonFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
+    const container = scrollContainerRef.current;
+    const btn = e.currentTarget;
+    if (!container || !btn) return;
+    const containerLeft = container.scrollLeft;
+    const containerWidth = container.clientWidth;
+    const btnLeft = btn.offsetLeft;
+    const btnWidth = btn.offsetWidth;
+    const buffer = 32;
+
+    if (btnLeft < containerLeft + buffer) {
+      safeScrollTo(Math.max(0, btnLeft - buffer));
+    } else if (btnLeft + btnWidth > containerLeft + containerWidth - buffer) {
+      safeScrollTo(
+        Math.min(
+          container.scrollWidth - containerWidth,
+          btnLeft + btnWidth - containerWidth + buffer
+        )
+      );
+    }
+  };
+
+  // Manual scroll buttons for mouse / pointer navigation
+  const handleManualScroll = (direction: "left" | "right") => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const scrollAmount = Math.max(180, Math.floor(container.clientWidth * 0.6));
+    const targetLeft =
+      direction === "left"
+        ? Math.max(0, container.scrollLeft - scrollAmount)
+        : Math.min(
+            container.scrollWidth - container.clientWidth,
+            container.scrollLeft + scrollAmount
+          );
+
+    safeScrollTo(targetLeft);
+  };
+
   return (
-    <nav aria-label="Assessment Sections Navigation" className="w-full bg-[#F7F8FA] border-b border-[#E2E6EE]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex space-x-1.5 sm:space-x-2 overflow-x-auto py-2.5 no-scrollbar scroll-smooth">
+    <nav
+      aria-label="Assessment Sections Navigation"
+      className="relative w-full bg-[#F7F8FA] border-b border-[#E2E6EE] select-none"
+    >
+      <div className="relative mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        {/* Left Scroll Affordance & Control */}
+        {canScrollLeft && (
+          <div className="absolute left-0 sm:left-2 top-0 bottom-0 z-10 flex items-center pr-8 bg-gradient-to-r from-[#F7F8FA] via-[#F7F8FA]/95 to-transparent pointer-events-none">
+            <button
+              type="button"
+              onClick={() => handleManualScroll("left")}
+              aria-label="Scroll section navigation left"
+              className="pointer-events-auto ml-1 sm:ml-2 h-7 w-7 rounded-full bg-white border border-[#CBD2DE] text-[#172033] shadow-xs flex items-center justify-center hover:bg-[#F1F3F7] hover:border-[#008638] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="h-4 w-4 text-[#172033]" />
+            </button>
+          </div>
+        )}
+
+        {/* Right Scroll Affordance & Control */}
+        {canScrollRight && (
+          <div className="absolute right-0 sm:right-2 top-0 bottom-0 z-10 flex items-center pl-8 bg-gradient-to-l from-[#F7F8FA] via-[#F7F8FA]/95 to-transparent pointer-events-none">
+            <button
+              type="button"
+              onClick={() => handleManualScroll("right")}
+              aria-label="Scroll section navigation right"
+              className="pointer-events-auto mr-1 sm:mr-2 h-7 w-7 rounded-full bg-white border border-[#CBD2DE] text-[#172033] shadow-xs flex items-center justify-center hover:bg-[#F1F3F7] hover:border-[#008638] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] transition-colors cursor-pointer"
+            >
+              <ChevronRight className="h-4 w-4 text-[#172033]" />
+            </button>
+          </div>
+        )}
+
+        {/* Horizontal Navigation Scroll Track */}
+        <div
+          ref={scrollContainerRef}
+          className="flex space-x-1.5 sm:space-x-2 overflow-x-auto py-2.5 no-scrollbar scroll-smooth"
+        >
           {sections.map((sec) => {
             const isActive = currentSectionId === sec.id;
             const stats = getSectionStats(sec);
@@ -49,6 +216,8 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
             return (
               <button
                 key={sec.id}
+                data-section-id={sec.id}
+                onFocus={handleButtonFocus}
                 type="button"
                 onClick={() => onSelectSection(sec.id)}
                 title={`${sec.id}. ${sec.title} — ${stats.answered}/${stats.total} questions answered`}
@@ -124,6 +293,8 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
           {/* Review Step Tab */}
           <button
             type="button"
+            data-section-id="REVIEW"
+            onFocus={handleButtonFocus}
             onClick={() => onSelectSection("REVIEW")}
             aria-current={currentSectionId === "REVIEW" ? "step" : undefined}
             aria-label="Review & Submit - Assessment Summary"
