@@ -23,6 +23,7 @@ import { SubmittedResponsesView } from "../components/SubmittedResponsesView";
 import { ExecutiveDashboard } from "../components/ExecutiveDashboard";
 import { ConsultantWorkspace } from "../components/ConsultantWorkspace";
 import { AdminWorkspace } from "../components/AdminWorkspace";
+import { MeshIQPageCanvas } from "../components/MeshIQPageCanvas";
 import { CustomerModal } from "../components/CustomerModal";
 import { QUESTIONS, SECTIONS, normalizeResponseState } from "../data/questionCatalog";
 import { api } from "../services/api";
@@ -419,9 +420,10 @@ export default function AssessmentWizardPage() {
   if (isConsultant) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033] w-full overflow-x-hidden">
+        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033] w-full overflow-x-hidden relative">
+          <MeshIQPageCanvas />
           <Navbar />
-          <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+          <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full relative z-10">
             <ConsultantWorkspace />
           </main>
           <footer className="py-5 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full border-t border-[#E2E6EE] flex flex-col sm:flex-row items-center justify-between text-xs text-[#667085] gap-3">
@@ -448,9 +450,10 @@ export default function AssessmentWizardPage() {
   if (isAdmin) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033] w-full overflow-x-hidden">
+        <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033] w-full overflow-x-hidden relative">
+          <MeshIQPageCanvas />
           <Navbar />
-          <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+          <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full relative z-10">
             <AdminWorkspace />
           </main>
           <footer className="py-5 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full border-t border-[#E2E6EE] flex flex-col sm:flex-row items-center justify-between text-xs text-[#667085] gap-3">
@@ -476,7 +479,8 @@ export default function AssessmentWizardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033] w-full overflow-x-hidden">
+      <div className="min-h-screen bg-[#F7F8FA] flex flex-col font-sans antialiased text-[#172033] w-full overflow-x-hidden relative">
+        <MeshIQPageCanvas />
         {/* Top Navigation */}
         <Navbar
           customerName={currentCustomer?.name}

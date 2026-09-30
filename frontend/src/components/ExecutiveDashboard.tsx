@@ -150,35 +150,69 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
     <div className="space-y-8 max-w-7xl mx-auto pb-20">
       {/* 1. Header Bar with Overview, Metadata, and View Mode Toggle */}
       <div className="rounded-2xl bg-[#0D1322] p-6 sm:p-8 text-white shadow-xl border border-[#1E293B] relative overflow-hidden">
-        {/* Subtle meshIQ Radial Data-in-Motion Background Motif */}
+        {/* meshIQ Brand Accent Hairline */}
         <div
           aria-hidden="true"
-          className="absolute -right-16 -top-16 w-80 h-80 sm:w-96 sm:h-96 pointer-events-none select-none opacity-20"
+          className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#008638] via-[#38B449] via-[#8CC63E] to-[#C026D3] pointer-events-none"
+        />
+
+        {/* Strengthened meshIQ Radial Data-in-Motion Background Motif */}
+        <div
+          aria-hidden="true"
+          className="absolute -right-28 -top-28 sm:-right-40 sm:-top-40 lg:-right-52 lg:-top-52 w-[550px] h-[550px] sm:w-[700px] sm:h-[700px] lg:w-[850px] lg:h-[850px] pointer-events-none select-none opacity-45 sm:opacity-55 z-0"
         >
-          <svg viewBox="0 0 400 400" className="w-full h-full" fill="none">
-            <circle cx="200" cy="200" r="60" stroke="#38B449" strokeWidth="1" strokeDasharray="3 6" />
-            <circle cx="200" cy="200" r="110" stroke="#8CC63E" strokeWidth="1" strokeDasharray="2 4" />
-            <circle cx="200" cy="200" r="160" stroke="#C026D3" strokeWidth="1" strokeDasharray="4 8" opacity="0.6" />
-            {Array.from({ length: 36 }).map((_, i) => {
-              const angle = (i * 360) / 36;
+          <svg viewBox="0 0 600 600" className="w-full h-full" fill="none">
+            <defs>
+              <linearGradient id="execRadialGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#38B449" stopOpacity="0.9" />
+                <stop offset="60%" stopColor="#8CC63E" stopOpacity="0.75" />
+                <stop offset="100%" stopColor="#8CC63E" stopOpacity="0.15" />
+              </linearGradient>
+              <linearGradient id="execRadialMagenta" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#C026D3" stopOpacity="0.85" />
+                <stop offset="100%" stopColor="#38B449" stopOpacity="0.2" />
+              </linearGradient>
+            </defs>
+
+            {/* Concentric orbital rings */}
+            <circle cx="300" cy="300" r="90" stroke="#38B449" strokeWidth="1.25" strokeDasharray="4 6" opacity="0.45" />
+            <circle cx="300" cy="300" r="155" stroke="#8CC63E" strokeWidth="1" strokeDasharray="3 5" opacity="0.45" />
+            <circle cx="300" cy="300" r="225" stroke="#C026D3" strokeWidth="1.2" strokeDasharray="4 8" opacity="0.4" />
+            <circle cx="300" cy="300" r="290" stroke="#38B449" strokeWidth="0.75" opacity="0.3" />
+
+            {/* Radiating data-in-motion lines (56 rays) */}
+            {Array.from({ length: 56 }).map((_, i) => {
+              const angle = (i * 360) / 56;
               const rad = (angle * Math.PI) / 180;
-              const x1 = Number((200 + 70 * Math.cos(rad)).toFixed(2));
-              const y1 = Number((200 + 70 * Math.sin(rad)).toFixed(2));
-              const x2 = Number((200 + 175 * Math.cos(rad)).toFixed(2));
-              const y2 = Number((200 + 175 * Math.sin(rad)).toFixed(2));
+              const innerR = 100 + (i % 3) * 15;
+              const outerR = 230 + (i % 5) * 18 + ((i * 7) % 25);
+              const x1 = Number((300 + innerR * Math.cos(rad)).toFixed(2));
+              const y1 = Number((300 + innerR * Math.sin(rad)).toFixed(2));
+              const x2 = Number((300 + outerR * Math.cos(rad)).toFixed(2));
+              const y2 = Number((300 + outerR * Math.sin(rad)).toFixed(2));
+              const strokeColor = (angle >= 135 && angle <= 225) ? "url(#execRadialMagenta)" : "url(#execRadialGreen)";
+              const strokeWidth = i % 4 === 0 ? 1.75 : i % 2 === 0 ? 1.2 : 0.85;
+
               return (
                 <line
-                  key={`ray-${i}`}
+                  key={`exec-ray-${i}`}
                   x1={x1}
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke={i % 4 === 0 ? "#C026D3" : "#38B449"}
-                  strokeWidth={0.8}
-                  opacity={0.4}
+                  stroke={strokeColor}
+                  strokeWidth={strokeWidth}
+                  opacity={Number((0.45 + (i % 4) * 0.12).toFixed(2))}
+                  strokeLinecap="round"
                 />
               );
             })}
+
+            {/* Orbiting data nodes */}
+            <circle cx="455" cy="300" r="3.5" fill="#38B449" opacity="0.8" />
+            <circle cx="300" cy="145" r="3" fill="#8CC63E" opacity="0.8" />
+            <circle cx="170" cy="230" r="3" fill="#C026D3" opacity="0.75" />
+            <circle cx="420" cy="420" r="3.5" fill="#38B449" opacity="0.7" />
           </svg>
         </div>
 

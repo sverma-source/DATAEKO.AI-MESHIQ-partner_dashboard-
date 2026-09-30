@@ -91,10 +91,10 @@ export default function LoginPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
         <div className="bg-white py-8 px-6 shadow-md shadow-slate-200/60 rounded-2xl border border-[#E2E6EE] sm:px-10 relative overflow-hidden">
-          {/* Subtle meshIQ Hairline Accent */}
+          {/* Crisp meshIQ Brand Hairline Accent */}
           <div
             aria-hidden="true"
-            className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#38B449] via-[#8CC63E] to-[#C026D3] opacity-80"
+            className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#008638] via-[#38B449] via-[#8CC63E] 75% to-[#C026D3] 100% pointer-events-none"
           />
           {localError && (
             <div

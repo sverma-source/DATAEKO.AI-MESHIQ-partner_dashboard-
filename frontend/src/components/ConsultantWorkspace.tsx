@@ -576,44 +576,70 @@ export const ConsultantWorkspace: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto py-3" data-testid="consultant-portfolio-workspace">
       {/* Enterprise Page Header */}
-      <div className="rounded-2xl bg-white p-6 sm:p-7 border border-[#E2E6EE] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
+      <div className="rounded-2xl bg-[#0D1322] p-6 sm:p-7 border border-[#1E293B] shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden text-white">
         {/* meshIQ Brand Accent Hairline */}
         <div
           aria-hidden="true"
-          className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#008638] via-[#38B449] to-transparent pointer-events-none"
+          className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#008638] via-[#38B449] via-[#8CC63E] to-[#C026D3] pointer-events-none"
         />
 
-        {/* Subtle meshIQ Background Contour Accent */}
-        <div aria-hidden="true" className="hidden sm:block absolute -right-6 -top-6 w-60 h-44 pointer-events-none opacity-20">
-          <svg viewBox="0 0 240 170" className="w-full h-full" fill="none">
-            <path d="M 10 170 C 60 115, 140 135, 240 55" stroke="#38B449" strokeWidth="1.25" strokeDasharray="3 4" />
-            <path d="M 30 170 C 80 125, 160 145, 250 75" stroke="#8CC63E" strokeWidth="1" />
-            <path d="M 50 170 C 100 135, 180 155, 260 95" stroke="#A855F7" strokeWidth="0.85" strokeDasharray="2 3" opacity="0.5" />
+        {/* Large Asymmetrical meshIQ Contour / Radial Background Geometry */}
+        <div aria-hidden="true" className="hidden sm:block absolute -right-16 -top-14 w-80 h-64 md:w-[420px] md:h-[260px] pointer-events-none opacity-40">
+          <svg viewBox="0 0 420 260" className="w-full h-full" fill="none">
+            {/* Concentric arcs */}
+            <circle cx="340" cy="50" r="140" stroke="#38B449" strokeWidth="1" strokeDasharray="4 6" opacity="0.4" />
+            <circle cx="340" cy="50" r="210" stroke="#8CC63E" strokeWidth="1" strokeDasharray="3 5" opacity="0.35" />
+            <circle cx="340" cy="50" r="280" stroke="#CBD5E1" strokeWidth="0.75" strokeDasharray="2 4" opacity="0.25" />
+            {/* Radiating technical rays */}
+            {Array.from({ length: 24 }).map((_, i) => {
+              const angle = 120 + (i * 120) / 24;
+              const rad = (angle * Math.PI) / 180;
+              const x1 = Number((340 + 80 * Math.cos(rad)).toFixed(2));
+              const y1 = Number((50 + 80 * Math.sin(rad)).toFixed(2));
+              const x2 = Number((340 + 260 * Math.cos(rad)).toFixed(2));
+              const y2 = Number((50 + 260 * Math.sin(rad)).toFixed(2));
+              return (
+                <line
+                  key={`c-ray-${i}`}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke={i % 6 === 0 ? "#C026D3" : i % 2 === 0 ? "#38B449" : "#8CC63E"}
+                  strokeWidth={i % 4 === 0 ? 1.5 : 0.85}
+                  opacity={0.5}
+                />
+              );
+            })}
+            {/* Flowing contour sweeps */}
+            <path d="M 20 260 C 120 180, 240 220, 380 90" stroke="#38B449" strokeWidth="1.5" />
+            <path d="M 60 260 C 150 195, 270 235, 410 110" stroke="#8CC63E" strokeWidth="1" />
+            <path d="M 100 260 C 180 210, 300 250, 440 130" stroke="#C026D3" strokeWidth="0.85" opacity="0.6" />
           </svg>
         </div>
 
         <div className="space-y-1.5 max-w-3xl relative z-10">
           <div className="flex items-center space-x-2.5">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-[#38B449]/15 text-[#8CC63E] border border-[#38B449]/40">
               <Shield className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
               Advisory &amp; Review Workspace
             </span>
-            <span className="text-xs text-[#5B6579] font-medium">Consultant Persona</span>
+            <span className="text-xs text-slate-400 font-medium">Consultant Persona</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172033] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             Customer &amp; Assessment Portfolio
           </h1>
-          <p className="text-xs sm:text-sm text-[#5B6579] leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
             Welcome to the Consultant Engagement Workspace. Review client-submitted Q01–Q22 discovery responses, inspect authoritative 12-section economic summaries, and access scenario models across your authorized customer tenant scope.
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0 relative z-10">
-          <div className="rounded-xl bg-[#F8FAFC] px-4 py-3 border border-[#E2E6EE] text-right">
-            <div className="text-[10px] font-bold text-[#8A94A6] uppercase tracking-wider">
+          <div className="rounded-xl bg-[#1E293B]/80 px-4 py-3 border border-[#334155] text-right">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               Active Tenant Scope
             </div>
-            <div className="text-xs font-bold text-[#172033] font-mono mt-0.5">
+            <div className="text-xs font-bold text-white font-mono mt-0.5">
               {user?.tenant_id ? `${user.tenant_id.slice(0, 13)}...` : "Partner Scope"}
             </div>
           </div>

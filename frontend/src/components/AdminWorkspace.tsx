@@ -112,6 +112,7 @@ export const AdminWorkspace: React.FC = () => {
         return {
           title: "Platform Administration",
           badge: "bg-[#FAF5FF] text-[#722F8A] border-[#E9D5FF]",
+          badgeDark: "bg-[#722F8A]/25 text-[#D8B4FE] border-[#9333EA]/50",
           scopeLabel: "Global System / Cross-Tenant Scope",
           personaTitle: "Platform Superadmin",
           desc: "Full administrative governance across all authorized partner tenants, user directories, customer organizations, assessment registries, and system audit trails.",
@@ -120,6 +121,7 @@ export const AdminWorkspace: React.FC = () => {
         return {
           title: "Partner Administration",
           badge: "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]",
+          badgeDark: "bg-[#38B449]/20 text-[#8CC63E] border-[#38B449]/40",
           scopeLabel: "Partner Tenant Scope",
           personaTitle: "Partner Administrator",
           desc: "Tenant-level governance over authorized customer accounts, user directory provisioning, assessment registries, and security logs within your partner tenant scope.",
@@ -129,6 +131,7 @@ export const AdminWorkspace: React.FC = () => {
         return {
           title: scopedCust ? `${scopedCust.name} Administration` : "Customer Administration",
           badge: "bg-slate-100 text-slate-800 border-slate-300",
+          badgeDark: "bg-slate-800 text-slate-200 border-slate-700",
           scopeLabel: scopedCust ? `Org: ${scopedCust.name}` : "Customer Organization Scope",
           personaTitle: "Customer Administrator",
           desc: scopedCust
@@ -140,6 +143,7 @@ export const AdminWorkspace: React.FC = () => {
         return {
           title: "System Administration",
           badge: "bg-slate-100 text-slate-700 border-slate-200",
+          badgeDark: "bg-slate-800 text-slate-300 border-slate-700",
           scopeLabel: "Administrative Scope",
           personaTitle: "System Administrator",
           desc: "Administrative governance and platform compliance oversight.",
@@ -446,48 +450,74 @@ export const AdminWorkspace: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto py-3" data-testid="admin-workspace">
       {/* Enterprise Workspace Header Banner */}
-      <div className="rounded-2xl bg-white p-6 sm:p-7 border border-[#E2E6EE] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
-        {/* meshIQ Brand Accent Hairline */}
+      <div className="rounded-2xl bg-[#0D1322] p-6 sm:p-7 border border-[#1E293B] shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden text-white">
+        {/* meshIQ Governance Accent Hairline */}
         <div
           aria-hidden="true"
-          className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#008638] via-[#38B449] to-transparent pointer-events-none"
+          className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#722F8A] via-[#9333EA] via-[#38B449] to-[#8CC63E] pointer-events-none"
         />
 
-        {/* Subtle meshIQ Background Contour Accent */}
-        <div aria-hidden="true" className="hidden sm:block absolute -right-6 -top-6 w-60 h-44 pointer-events-none opacity-20">
-          <svg viewBox="0 0 240 170" className="w-full h-full" fill="none">
-            <path d="M 10 170 C 60 115, 140 135, 240 55" stroke="#38B449" strokeWidth="1.25" strokeDasharray="3 4" />
-            <path d="M 30 170 C 80 125, 160 145, 250 75" stroke="#8CC63E" strokeWidth="1" />
-            <path d="M 50 170 C 100 135, 180 155, 260 95" stroke="#A855F7" strokeWidth="0.85" strokeDasharray="2 3" opacity="0.5" />
+        {/* Large Asymmetrical meshIQ Governance Contour / Radial Background Geometry */}
+        <div aria-hidden="true" className="hidden sm:block absolute -right-16 -top-14 w-80 h-64 md:w-[420px] md:h-[260px] pointer-events-none opacity-40">
+          <svg viewBox="0 0 420 260" className="w-full h-full" fill="none">
+            {/* Governance purple and meshIQ green concentric arcs */}
+            <circle cx="340" cy="50" r="140" stroke="#9333EA" strokeWidth="1" strokeDasharray="4 6" opacity="0.4" />
+            <circle cx="340" cy="50" r="210" stroke="#C026D3" strokeWidth="1" strokeDasharray="3 5" opacity="0.35" />
+            <circle cx="340" cy="50" r="280" stroke="#38B449" strokeWidth="0.75" strokeDasharray="2 4" opacity="0.3" />
+            {/* Radiating technical rays */}
+            {Array.from({ length: 24 }).map((_, i) => {
+              const angle = 120 + (i * 120) / 24;
+              const rad = (angle * Math.PI) / 180;
+              const x1 = Number((340 + 80 * Math.cos(rad)).toFixed(2));
+              const y1 = Number((50 + 80 * Math.sin(rad)).toFixed(2));
+              const x2 = Number((340 + 260 * Math.cos(rad)).toFixed(2));
+              const y2 = Number((50 + 260 * Math.sin(rad)).toFixed(2));
+              return (
+                <line
+                  key={`adm-ray-${i}`}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke={i % 4 === 0 ? "#38B449" : i % 2 === 0 ? "#9333EA" : "#C026D3"}
+                  strokeWidth={i % 3 === 0 ? 1.5 : 0.85}
+                  opacity={0.5}
+                />
+              );
+            })}
+            {/* Flowing contour sweeps */}
+            <path d="M 20 260 C 120 180, 240 220, 380 90" stroke="#9333EA" strokeWidth="1.5" />
+            <path d="M 60 260 C 150 195, 270 235, 410 110" stroke="#C026D3" strokeWidth="1" />
+            <path d="M 100 260 C 180 210, 300 250, 440 130" stroke="#38B449" strokeWidth="0.85" opacity="0.6" />
           </svg>
         </div>
 
         <div className="space-y-1.5 max-w-3xl relative z-10">
           <div className="flex items-center space-x-2.5">
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${scopeConfig.badge}`}
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${scopeConfig.badgeDark}`}
             >
               <ShieldCheck className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
               {scopeConfig.title}
             </span>
-            <span className="text-xs text-[#5B6579] font-medium">
+            <span className="text-xs text-slate-400 font-medium">
               {scopeConfig.personaTitle}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172033] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             Administration &amp; Governance Workspace
           </h1>
-          <p className="text-xs sm:text-sm text-[#5B6579] leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
             {scopeConfig.desc}
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0 relative z-10">
-          <div className="rounded-xl bg-[#F8FAFC] px-4 py-3 border border-[#E2E6EE] text-right">
-            <div className="text-[10px] font-bold text-[#8A94A6] uppercase tracking-wider">
+          <div className="rounded-xl bg-[#1E293B]/80 px-4 py-3 border border-[#334155] text-right">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               {scopeConfig.scopeLabel}
             </div>
-            <div className="text-xs font-bold text-[#172033] font-mono mt-0.5">
+            <div className="text-xs font-bold text-white font-mono mt-0.5">
               {user?.tenant_id ? `${user.tenant_id.slice(0, 16)}...` : "System Scope"}
             </div>
           </div>

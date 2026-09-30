@@ -173,8 +173,19 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
   return (
     <nav
       aria-label="Assessment Sections Navigation"
-      className="relative w-full bg-[#F7F8FA] border-b border-[#E2E6EE] select-none"
+      className="relative w-full bg-[#F7F8FA] border-b border-[#E2E6EE] select-none overflow-hidden"
     >
+      {/* Subtle meshIQ Section Track Ambient Motif */}
+      <div
+        aria-hidden="true"
+        className="hidden lg:block absolute right-0 top-0 bottom-0 w-80 pointer-events-none opacity-25 overflow-hidden"
+      >
+        <svg viewBox="0 0 320 60" className="w-full h-full" fill="none">
+          <path d="M 0 50 C 80 20, 200 45, 320 15" stroke="#38B449" strokeWidth="1" strokeDasharray="3 4" />
+          <path d="M 40 55 C 110 30, 220 50, 320 25" stroke="#8CC63E" strokeWidth="0.85" />
+          <path d="M 80 60 C 140 40, 240 55, 320 35" stroke="#C026D3" strokeWidth="0.75" opacity="0.6" strokeDasharray="2 3" />
+        </svg>
+      </div>
       <div className="relative mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
         {/* Left Scroll Affordance & Control */}
         {canScrollLeft && (
