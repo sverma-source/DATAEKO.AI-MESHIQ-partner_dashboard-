@@ -492,7 +492,7 @@ export const ConsultantAssessmentSummary: React.FC<ConsultantAssessmentSummaryPr
                       {report.operationalEffort.routineAdmin.annualHours.formattedValue}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-[#667085]">
-                      {(Number(report.operationalEffort.routineAdmin.annualHours.value || 0) / 2080).toFixed(2)}
+                      —
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono font-bold text-[#172033]">
                       {report.operationalEffort.routineAdmin.annualCost.formattedValue}
@@ -519,7 +519,7 @@ export const ConsultantAssessmentSummary: React.FC<ConsultantAssessmentSummaryPr
                       {report.operationalEffort.incidentTroubleshooting.annualHours.formattedValue}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-[#667085]">
-                      {(Number(report.operationalEffort.incidentTroubleshooting.annualHours.value || 0) / 2080).toFixed(2)}
+                      —
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono font-bold text-[#172033]">
                       {report.operationalEffort.incidentTroubleshooting.annualCost.formattedValue}
@@ -558,7 +558,7 @@ export const ConsultantAssessmentSummary: React.FC<ConsultantAssessmentSummaryPr
               </table>
             </div>
             <p className="text-[11px] text-[#667085] italic">
-              Note: FTE Burden is calculated using the standard enterprise denominator of 2,080 working hours per full-time equivalent staff member per year.
+              Note: Total Operational FTE Burden is provided directly by the authoritative calculation engine (operational_fte_burden). Category-level FTEs are not independently modeled in the snapshot.
             </p>
           </section>
 

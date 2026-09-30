@@ -33,33 +33,108 @@ export function generateReportHtml(snapshot, customer = {}, assessment = {}) {
   const m = snapshot.computed_metrics || {};
   const summary = snapshot.summary || snapshot.summary_metrics || {};
 
-  const getMetricVal = (key, summaryKey) => {
-    if (m[key] && m[key].value !== undefined && m[key].value !== null) {
-      return m[key].value;
+  const getCanonicalMetricVal = (canonicalKey, legacyKeys = [], summaryKeys = []) => {
+    if (m[canonicalKey] && m[canonicalKey].value !== undefined && m[canonicalKey].value !== null) {
+      return m[canonicalKey].value;
     }
-    if (summary[summaryKey || key] !== undefined && summary[summaryKey || key] !== null) {
-      return summary[summaryKey || key];
+    for (const sk of summaryKeys) {
+      if (summary[sk] !== undefined && summary[sk] !== null) {
+        return summary[sk];
+      }
+    }
+    for (const lk of legacyKeys) {
+      if (m[lk] && m[lk].value !== undefined && m[lk].value !== null) {
+        return m[lk].value;
+      }
     }
     return null;
   };
 
-  const adminLaborCostVal = getMetricVal("administrative_labor_cost", "admin_annual_cost");
-  const trbLaborCostVal = getMetricVal("troubleshooting_labor_cost", "troubleshooting_annual_cost");
-  const totalLaborCostVal = getMetricVal("total_operational_labor_cost", "total_operational_labor_cost");
-  const totalHoursVal = getMetricVal("total_operational_annual_hours", "total_operational_hours") ||
-    ((Number(getMetricVal("routine_admin_annual_hours", "admin_annual_hours") || 0)) +
-     (Number(getMetricVal("troubleshooting_annual_hours", "troubleshooting_annual_hours") || 0)));
-  const fteBurdenVal = getMetricVal("quantified_fte_burden", "operational_fte_burden");
-  const exposureCostVal = getMetricVal("representative_single_event_exposure", "representative_single_event_exposure") ||
-    getMetricVal("potential_financial_exposure", "representative_single_event_exposure");
-  const mqSpendVal = getMetricVal("customer_reported_mq_spend", "customer_reported_annual_spend") ||
-    getMetricVal("customer_reported_annual_spend");
-  const scenarioVal = getMetricVal("improvement_scenario_economic_value", "illustrative_annual_labor_savings") ||
-    getMetricVal("illustrative_economic_value");
-  const recoverableHoursVal = getMetricVal("improvement_scenario_recoverable_total_hours", "total_recoverable_labor_hours") ||
-    getMetricVal("total_recovered_hours");
-  const trbOppCostVal = getMetricVal("troubleshooting_productivity_opportunity_cost", "troubleshooting_productivity_opportunity") ||
-    getMetricVal("troubleshooting_productivity_opportunity");
+  const getMetricState = (canonicalKey, legacyKeys = []) => {
+    if (m[canonicalKey] && m[canonicalKey].state) {
+      return m[canonicalKey].state;
+    }
+    for (const lk of legacyKeys) {
+      if (m[lk] && m[lk].state) {
+        return m[lk].state;
+      }
+    }
+    return "VALID";
+  };
+
+  const getMetricVal = (key, summaryKey) => {
+    return getCanonicalMetricVal(key, [], [summaryKey || key]);
+  };
+
+  const totalLaborCostVal = getCanonicalMetricVal(
+    "total_quantified_labor_cost",
+    ["total_operational_labor_cost"],
+    ["total_quantified_labor_cost", "total_operational_labor_cost"]
+  );
+  const adminLaborCostVal = getCanonicalMetricVal(
+    "annual_admin_labor_cost",
+    ["administrative_labor_cost"],
+    ["annual_admin_labor_cost", "admin_annual_cost"]
+  );
+  const trbLaborCostVal = getCanonicalMetricVal(
+    "annual_troubleshooting_labor_cost",
+    ["troubleshooting_labor_cost"],
+    ["annual_troubleshooting_labor_cost", "troubleshooting_annual_cost"]
+  );
+  const loadedRateVal = getCanonicalMetricVal("loaded_hourly_rate", [], ["loaded_hourly_rate"]);
+  const fteBurdenVal = getCanonicalMetricVal(
+    "operational_fte_burden",
+    ["quantified_fte_burden"],
+    ["operational_fte_burden", "quantified_fte_burden"]
+  );
+
+  const exposureCostVal = getCanonicalMetricVal(
+    "potential_financial_exposure",
+    ["representative_single_event_exposure"],
+    ["potential_financial_exposure", "representative_single_event_exposure"]
+  );
+  const repDurationVal = getCanonicalMetricVal(
+    "representative_duration_hours",
+    ["representative_incident_duration_hours"],
+    ["representative_duration_hours"]
+  );
+  const appRateVal = getCanonicalMetricVal(
+    "applicable_financial_rate",
+    ["revenue_impact_per_hour"],
+    ["applicable_financial_rate"]
+  );
+
+  const scenarioVal = getCanonicalMetricVal(
+    "illustrative_economic_value",
+    ["improvement_scenario_economic_value"],
+    ["illustrative_economic_value", "illustrative_annual_labor_savings"]
+  );
+  const recoverableHoursVal = getCanonicalMetricVal(
+    "total_recovered_hours",
+    ["improvement_scenario_recoverable_total_hours"],
+    ["total_recovered_hours", "total_recoverable_labor_hours"]
+  );
+  const trbOppCostVal = getCanonicalMetricVal(
+    "troubleshooting_productivity_opportunity",
+    ["troubleshooting_productivity_opportunity_cost"],
+    ["troubleshooting_productivity_opportunity", "troubleshooting_productivity_opportunity_cost"]
+  );
+  const mqSpendVal = getCanonicalMetricVal(
+    "customer_reported_mq_spend",
+    ["customer_reported_annual_spend"],
+    ["customer_reported_mq_spend", "customer_reported_annual_spend"]
+  );
+
+  // Authoritative total hours ONLY - strictly no client summation fallback
+  const totalHoursVal = getCanonicalMetricVal(
+    "total_operational_annual_hours",
+    [],
+    ["total_operational_annual_hours", "total_operational_hours"]
+  );
+
+  const laborState = getMetricState("total_quantified_labor_cost", ["total_operational_labor_cost"]);
+  const exposureState = getMetricState("potential_financial_exposure", ["representative_single_event_exposure"]);
+  const scenarioState = getMetricState("illustrative_economic_value", ["improvement_scenario_economic_value"]);
 
   const adminLaborCost = formatCurrency(adminLaborCostVal);
   const trbLaborCost = formatCurrency(trbLaborCostVal);
@@ -367,6 +442,28 @@ export function generateReportHtml(snapshot, customer = {}, assessment = {}) {
       vertical-align: middle;
       margin-left: 6px;
     }
+    @media screen and (max-width: 640px) {
+      body {
+        padding: 4px;
+      }
+      .header-band {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .meta-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+      .two-col-cards {
+        grid-template-columns: 1fr;
+      }
+      .table-container {
+        width: 100%;
+        overflow-x: auto;
+      }
+    }
   </style>
 </head>
 <body>
@@ -457,63 +554,83 @@ export function generateReportHtml(snapshot, customer = {}, assessment = {}) {
     </div>
 
     <div class="narrative-box">
-      <p>
-        This report delivers an objective, deterministic baseline of ongoing operational effort, staffing allocations, and potential business disruption exposure for <strong>${customerName}</strong>’s IBM MQ messaging infrastructure.
+      <div style="font-weight: 800; font-size: 9pt; color: #0f172a; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+        Executive Economic Synthesis
+      </div>
+      <p style="margin-bottom: 6px;">
+        ${laborState === "NOT_MODELED"
+          ? "Quantified operational labor burden has not been modeled for this assessment scope."
+          : laborState === "INSUFFICIENT_DATA"
+          ? "Quantified operational labor burden cannot be calculated due to insufficient customer data."
+          : `Quantified ongoing operational labor reflects an annual investment of <strong>${totalLaborCost}</strong>${fteBurdenVal !== null && fteBurdenVal !== undefined ? ` across <strong>${fteBurden} operational FTEs</strong>` : ""}, split between routine administration (${adminLaborCost}) and incident troubleshooting (${trbLaborCost}). Loaded hourly rate is established at <strong>${formatCurrency(loadedRateVal || 86.54)}/hr</strong>.`}
+      </p>
+      <p style="margin-bottom: 6px;">
+        ${exposureState === "NOT_MODELED"
+          ? "Single-event financial exposure has not been modeled for this assessment scope."
+          : exposureState === "INSUFFICIENT_DATA"
+          ? "Single-event financial exposure cannot be calculated because incident duration or financial impact rate data was unprovided."
+          : `Potential business exposure from a single representative messaging disruption is estimated at <strong>${exposureCost}</strong>, based on a representative duration of <strong>${formatNumber(repDurationVal, 1)} hours</strong> and an applicable financial rate of <strong>${formatCurrency(appRateVal)}/hr</strong>. Single-event exposure is NOT an annualized loss figure and should not be multiplied across time.`}
       </p>
       <p>
-        Quantified baseline operational effort totals <strong>${totalHours} annual staff hours</strong>, representing an annual operational labor burden of <strong>${totalLaborCost}</strong> (equivalent to ${fteBurden} FTEs across routine administration and incident troubleshooting).
-      </p>
-      <p>
-        Under the approved model baseline assumptions (addressing 50% of routine administration with 50% efficiency and reducing investigation effort by 25%), the modeled scenario indicates an <strong>illustrative economic value of approximately ${scenarioValue}</strong> annually through the recovery of ${recoverableHours} staff hours.
+        ${scenarioState === "NOT_MODELED"
+          ? "Capacity recovery scenarios have not been modeled for this assessment scope."
+          : scenarioState === "INSUFFICIENT_DATA"
+          ? "Recoverable capacity opportunity cannot be projected without quantified operational labor baselines."
+          : `Under approved baseline scenario assumptions (addressing 50% of routine administration with 50% efficiency and reducing investigation effort by 25%), the modeled scenario indicates an <strong>illustrative economic value of approximately ${scenarioValue}</strong> annually through the recovery of <strong>${recoverableHours} staff hours</strong>. Illustrative economic value is not guaranteed cash savings, realized savings, or fixed ROI.`}
       </p>
     </div>
 
     <div class="section-heading">2. Operational Effort & Labor Cost Decomposition</div>
     
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Workload Category</th>
-          <th>Calculation Driver</th>
-          <th class="text-right">Annual Hours</th>
-          <th class="text-right">FTE Equiv.</th>
-          <th class="text-right">Labor Cost</th>
-          <th class="text-center">Provenance</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>
-            <strong>Routine Administration</strong>
-            <div style="font-size: 7.5pt; color: #64748b;">Quarterly Admin Workload × 4 quarters</div>
-          </td>
-          <td>Q04 Admin Workload</td>
-          <td class="text-right font-mono font-semibold">${formatNumber(getMetricVal("routine_admin_annual_hours", "admin_annual_hours"), 1)}</td>
-          <td class="text-right font-mono">${formatNumber((Number(getMetricVal("routine_admin_annual_hours", "admin_annual_hours") || 0)) / 2080, 2)}</td>
-          <td class="text-right font-mono font-bold">${adminLaborCost}</td>
-          <td class="text-center"><span class="badge badge-calc">Calculated</span></td>
-        </tr>
-        <tr>
-          <td>
-            <strong>Incident Troubleshooting</strong>
-            <div style="font-size: 7.5pt; color: #64748b;">Frequency × Staff Hours per Investigation</div>
-          </td>
-          <td>Q06 Frequency × Q07 Staff Effort</td>
-          <td class="text-right font-mono font-semibold">${formatNumber(getMetricVal("troubleshooting_annual_hours", "troubleshooting_annual_hours"), 1)}</td>
-          <td class="text-right font-mono">${formatNumber((Number(getMetricVal("troubleshooting_annual_hours", "troubleshooting_annual_hours") || 0)) / 2080, 2)}</td>
-          <td class="text-right font-mono font-bold">${trbLaborCost}</td>
-          <td class="text-center"><span class="badge badge-calc">Calculated</span></td>
-        </tr>
-        <tr class="total-row">
-          <td>Total Quantified Operational Labor</td>
-          <td style="font-size: 7.5pt; color: #64748b;">Loaded Rate: $86.54/hr ($180k/2,080h)</td>
-          <td class="text-right font-mono" style="font-size: 10pt; font-weight: 800;">${totalHours}</td>
-          <td class="text-right font-mono" style="font-size: 10pt; font-weight: 800;">${fteBurden}</td>
-          <td class="text-right font-mono" style="font-size: 10pt; font-weight: 800;">${totalLaborCost}</td>
-          <td class="text-center"><span class="badge badge-calc">Calculated</span></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Workload Category</th>
+            <th>Calculation Driver</th>
+            <th class="text-right">Annual Hours</th>
+            <th class="text-right">FTE Equiv.</th>
+            <th class="text-right">Labor Cost</th>
+            <th class="text-center">Provenance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>Routine Administration</strong>
+              <div style="font-size: 7.5pt; color: #64748b;">Quarterly Admin Workload × 4 quarters</div>
+            </td>
+            <td>Q04 Admin Workload</td>
+            <td class="text-right font-mono font-semibold">${formatNumber(getCanonicalMetricVal("admin_annual_hours", ["routine_admin_annual_hours"]), 1)}</td>
+            <td class="text-right font-mono" style="color: #64748b;">—</td>
+            <td class="text-right font-mono font-bold">${adminLaborCost}</td>
+            <td class="text-center"><span class="badge badge-calc">Calculated</span></td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Incident Troubleshooting</strong>
+              <div style="font-size: 7.5pt; color: #64748b;">Frequency × Staff Hours per Investigation</div>
+            </td>
+            <td>Q06 Frequency × Q07 Staff Effort</td>
+            <td class="text-right font-mono font-semibold">${formatNumber(getCanonicalMetricVal("troubleshooting_annual_hours"), 1)}</td>
+            <td class="text-right font-mono" style="color: #64748b;">—</td>
+            <td class="text-right font-mono font-bold">${trbLaborCost}</td>
+            <td class="text-center"><span class="badge badge-calc">Calculated</span></td>
+          </tr>
+          <tr class="total-row">
+            <td>Total Quantified Operational Labor</td>
+            <td style="font-size: 7.5pt; color: #64748b;">Loaded Rate: ${formatCurrency(loadedRateVal || 86.54)}/hr ($180k/2,080h)</td>
+            <td class="text-right font-mono" style="font-size: 10pt; font-weight: 800;">${totalHours}</td>
+            <td class="text-right font-mono" style="font-size: 10pt; font-weight: 800;">${fteBurden}</td>
+            <td class="text-right font-mono" style="font-size: 10pt; font-weight: 800;">${totalLaborCost}</td>
+            <td class="text-center"><span class="badge badge-calc">Calculated</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size: 7.5pt; color: #64748b; font-style: italic; margin-top: 4px; margin-bottom: 12px;">
+      Note: Total Operational FTE Burden is provided directly by the authoritative calculation engine (operational_fte_burden). Category-level FTEs are not independently modeled in the snapshot.
+    </p>
 
     <div class="footer-brand">
       <span>DATAEKO × meshIQ Assessment</span>
@@ -592,49 +709,52 @@ export function generateReportHtml(snapshot, customer = {}, assessment = {}) {
     </div>
 
     <div class="section-heading">5. Data Provenance & Trust Classification</div>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Classification Tier</th>
-          <th>Definition & Meaning</th>
-          <th>Metric Examples</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="badge badge-fact">Customer Fact</span></td>
-          <td>Direct customer-provided information entered during assessment</td>
-          <td>Q01 Scale, Q04 Workload, Q06 Frequency, Q07 Hours, Q21 Spend</td>
-        </tr>
-        <tr>
-          <td><span class="badge badge-bench">Industry Benchmark</span></td>
-          <td>External standard applied under approved governance fallback rules</td>
-          <td>ITIC $300,000/hr (Applied when Q15 unknown & Q12 significant)</td>
-        </tr>
-        <tr>
-          <td><span class="badge badge-calc">Calculated Metric</span></td>
-          <td>Deterministic mathematical result derived from customer facts</td>
-          <td>Routine Admin Cost, Troubleshooting Labor Cost, FTE Burden</td>
-        </tr>
-        <tr>
-          <td><span class="badge badge-base">Model Baseline</span></td>
-          <td>Approved scenario parameter baseline</td>
-          <td>50% Addressable Admin Share, 50% Efficiency, 25% Investigation</td>
-        </tr>
-        <tr>
-          <td><span class="badge badge-scen">Illustrative Scenario</span></td>
-          <td>Exploratory modeled outcome based on approved scenario baseline</td>
-          <td>Illustrative Economic Value ($37,903.85)</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Classification Tier</th>
+            <th>Definition & Meaning</th>
+            <th>Metric Examples</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-fact">Customer Fact</span></td>
+            <td>Direct customer-provided information entered during assessment</td>
+            <td>Q01 Scale, Q04 Workload, Q06 Frequency, Q07 Hours, Q21 Spend</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-bench">Industry Benchmark</span></td>
+            <td>External standard applied under approved governance fallback rules</td>
+            <td>ITIC $300,000/hr (Applied when Q15 unknown & Q12 significant)</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-calc">Calculated Metric</span></td>
+            <td>Deterministic mathematical result derived from customer facts</td>
+            <td>Routine Admin Cost, Troubleshooting Labor Cost, FTE Burden</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-base">Model Baseline</span></td>
+            <td>Approved scenario parameter baseline</td>
+            <td>50% Addressable Admin Share, 50% Efficiency, 25% Investigation</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-scen">Illustrative Scenario</span></td>
+            <td>Exploratory modeled outcome based on approved scenario baseline</td>
+            <td>Illustrative Economic Value ($37,903.85)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="safeguard-box avoid-break">
-      <h5>Important Financial Interpretation Safeguards & Disclaimers</h5>
+      <h5>Model Boundary Governance & Financial Safeguards</h5>
       <ul>
-        <li><strong>Representative Single-Event Exposure ≠ Annual Loss:</strong> The exposure figure represents a single modeled disruption event and must never be interpreted as an annualized loss estimate.</li>
-        <li><strong>Illustrative Economic Value ≠ Guaranteed Savings:</strong> Improvement scenario outcomes represent capacity recovery models and do not constitute guaranteed savings or committed ROI.</li>
-        <li><strong>Deterministic Presentation:</strong> All values are rendered directly from the immutable calculation snapshot without independent presentation-layer recomputation.</li>
+        <li><strong>NO GUARANTEED CASH SAVINGS:</strong> Capacity recovery models operational time returned to engineering teams. It does not automatically reduce headcount, payroll, or operating expenditures unless deliberate organizational changes are made. Illustrative economic value is NOT guaranteed savings, realized savings, or fixed ROI.</li>
+        <li><strong>NO ANNUALIZED EXPOSURE:</strong> Single-event business exposure models the financial consequence of one representative disruption event. Disruption frequency varies widely and cannot be inferred without long-term incident tracking; single-event exposure is NOT an annualized loss estimate.</li>
+        <li><strong>NO VENDOR RECOMMENDATION:</strong> Findings represent objective, deterministic economic modeling based on customer-provided facts and approved benchmarks. They do not constitute an endorsement or purchasing recommendation for any specific software product.</li>
+        <li><strong>DETERMINISTIC PRESENTATION:</strong> All values are rendered directly from the immutable calculation snapshot without presentation-layer recomputation, ensuring end-to-end mathematical auditability.</li>
       </ul>
     </div>
 

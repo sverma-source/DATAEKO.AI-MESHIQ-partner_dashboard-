@@ -117,7 +117,7 @@ export class ReportDataAdapter {
 
     // Loaded Hourly Rate (R_hr)
     const loadedRateMetric = mapMetricItem(
-      ["internal_loaded_hourly_rate", "loaded_hourly_rate"],
+      ["loaded_hourly_rate", "internal_loaded_hourly_rate"],
       "Loaded Hourly Labor Rate",
       "MODEL_ASSUMPTION",
       "$/hour",
@@ -148,16 +148,16 @@ export class ReportDataAdapter {
       interpretationNote: "Customer-disclosed expenditure preserved as an isolated customer fact; never synthesized or derived from operational labor.",
     };
 
-    // 1. Operational Effort & Cost Metrics
+    // 1. Operational Effort & Cost Metrics (Canonical E1 Keys First)
     const totalLaborCostMetric = mapMetricItem(
-      ["total_operational_labor_cost", "total_quantified_labor_cost"],
+      ["total_quantified_labor_cost", "total_operational_labor_cost"],
       "Total Operational Labor Cost",
       "CALCULATED_RESULT",
       "$/year",
       true
     );
     const adminHoursMetric = mapMetricItem(
-      ["routine_admin_annual_hours", "admin_annual_hours"],
+      ["annual_admin_hours", "routine_admin_annual_hours", "admin_annual_hours"],
       "Annual Administration Hours",
       "CALCULATED_RESULT",
       "hours/year",
@@ -165,14 +165,14 @@ export class ReportDataAdapter {
       0
     );
     const adminCostMetric = mapMetricItem(
-      ["administrative_labor_cost", "admin_annual_cost"],
+      ["annual_admin_labor_cost", "administrative_labor_cost", "admin_annual_cost"],
       "Annual Administration Labor Cost",
       "CALCULATED_RESULT",
       "$/year",
       true
     );
     const trbHoursMetric = mapMetricItem(
-      ["troubleshooting_annual_hours"],
+      ["annual_troubleshooting_hours", "troubleshooting_annual_hours"],
       "Annual Troubleshooting Hours",
       "CALCULATED_RESULT",
       "hours/year",
@@ -180,14 +180,14 @@ export class ReportDataAdapter {
       0
     );
     const trbCostMetric = mapMetricItem(
-      ["troubleshooting_labor_cost", "troubleshooting_annual_cost"],
+      ["annual_troubleshooting_labor_cost", "troubleshooting_labor_cost", "troubleshooting_annual_cost"],
       "Annual Troubleshooting Labor Cost",
       "CALCULATED_RESULT",
       "$/year",
       true
     );
     const fteBurdenMetric = mapMetricItem(
-      ["quantified_fte_burden", "operational_fte_burden"],
+      ["operational_fte_burden", "quantified_fte_burden"],
       "Operational FTE Burden",
       "CALCULATED_RESULT",
       "FTE",
@@ -195,52 +195,167 @@ export class ReportDataAdapter {
       2
     );
 
-    // 2. Business Exposure Metrics
+    // 2. Business Exposure Metrics (Canonical E2 Keys First)
     const exposureMetric = mapMetricItem(
-      ["representative_single_event_exposure"],
+      ["potential_financial_exposure", "representative_single_event_exposure"],
       "Representative Single-Event Exposure",
       "CALCULATED_RESULT",
       "$/event",
       true
     );
+    const durationMetric = mapMetricItem(
+      ["representative_duration_hours"],
+      "Representative Disruption Duration",
+      "MODEL_ASSUMPTION",
+      "hours",
+      false,
+      1
+    );
+    const rateImpactMetric = mapMetricItem(
+      ["applicable_financial_rate", "hourly_downtime_rate"],
+      "Applicable Financial Rate",
+      "MODEL_ASSUMPTION",
+      "$/hour",
+      true
+    );
     const isExposureBenchmark = exposureMetric.provenance === "BENCHMARK_FALLBACK" || exposureMetric.state === "INDUSTRY_BENCHMARK";
 
-    // 3. Scenario Capacity & Value Metrics
+    // 3. Scenario Capacity & Value Metrics (Canonical E3 Keys First)
     const recHoursMetric = mapMetricItem(
-      ["improvement_scenario_recoverable_total_hours", "total_recoverable_labor_hours"],
+      ["total_recovered_hours", "improvement_scenario_recoverable_total_hours", "total_recoverable_labor_hours"],
       "Total Recoverable Labor Hours",
       "SCENARIO_PROJECTION",
       "hours/year",
       false,
       0
     );
+    const recAdminMetric = mapMetricItem(
+      ["recovered_admin_hours", "improvement_scenario_recoverable_admin_hours"],
+      "Recovered Routine Admin Hours",
+      "SCENARIO_PROJECTION",
+      "hours/year",
+      false,
+      0
+    );
+    const recTrbMetric = mapMetricItem(
+      ["recovered_investigation_hours", "improvement_scenario_recoverable_troubleshooting_hours"],
+      "Recovered Investigation Hours",
+      "SCENARIO_PROJECTION",
+      "hours/year",
+      false,
+      0
+    );
     const recSavingsMetric = mapMetricItem(
-      ["improvement_scenario_economic_value", "illustrative_annual_labor_savings"],
+      ["illustrative_economic_value", "improvement_scenario_economic_value", "illustrative_annual_labor_savings"],
       "Illustrative Economic Value",
       "SCENARIO_PROJECTION",
       "$/year",
       true
     );
     const trbOpportunityMetric = mapMetricItem(
-      ["troubleshooting_productivity_opportunity_cost", "troubleshooting_productivity_opportunity"],
+      ["troubleshooting_productivity_opportunity", "troubleshooting_productivity_opportunity_cost"],
       "Troubleshooting Productivity Opportunity (10%)",
       "CALCULATED_RESULT",
       "$/year",
       true
     );
 
-    const adminHoursVal = Number(adminHoursMetric.value || 0);
-    const trbHoursVal = Number(trbHoursMetric.value || 0);
-    const totalHoursVal = Number(metrics.total_operational_annual_hours?.value || (adminHoursVal + trbHoursVal));
-    const recHoursVal = Number(recHoursMetric.value || 0);
-    const recAdminHoursVal = adminHoursVal * 0.25;
-    const recTrbHoursVal = trbHoursVal * 0.25;
+    const totalHoursMetric = mapMetricItem(
+      ["total_operational_annual_hours", "total_operational_hours"],
+      "Total Annual Operational Hours",
+      "CALCULATED_RESULT",
+      "hours/year",
+      false,
+      0
+    );
+    const totalHoursVal = typeof totalHoursMetric.value === "number"
+      ? totalHoursMetric.value
+      : (!isNaN(Number(totalHoursMetric.value)) && totalHoursMetric.value !== null ? Number(totalHoursMetric.value) : 0);
 
+    // E4 Deterministic Executive Economic Narrative Construction
+    const laborState = totalLaborCostMetric.state;
+    const laborCostFormatted = totalLaborCostMetric.formattedValue;
+    const fteFormatted = fteBurdenMetric.formattedValue;
+    const laborStateReason = totalLaborCostMetric.interpretationNote;
+
+    let operationalBurdenNarrative = "";
+    if (laborState === "VALID") {
+      operationalBurdenNarrative = `Quantified operational labor expenditure is currently modeled at ${laborCostFormatted}/year across routine queue administration and reactive bridge-call triage, representing ${fteFormatted} FTE of dedicated engineering capacity at loaded labor cost.`;
+    } else if (laborState === "VALID_WITH_DEFAULTS") {
+      operationalBurdenNarrative = `Quantified operational labor cost is modeled at ${laborCostFormatted}/year (${fteFormatted} FTE). This calculation incorporates model standard benchmark defaults ($180,000/yr loaded rate).`;
+    } else if (laborState === "INSUFFICIENT_DATA") {
+      operationalBurdenNarrative = `Quantified operational labor cost is currently incomplete. ${laborStateReason || "Requires both administration and troubleshooting inputs to finalize total labor expenditure."}`;
+    } else {
+      operationalBurdenNarrative = `Operational labor cost is not currently modeled. Baseline administration or troubleshooting inputs were unprovided in the assessment.`;
+    }
+
+    const exposureState = exposureMetric.state;
+    const exposureFormatted = exposureMetric.formattedValue;
+    const durationFormatted = durationMetric.formattedValue !== "—" ? `${durationMetric.formattedValue} hour` : "estimated";
+    const rateImpactFormatted = rateImpactMetric.formattedValue !== "—" ? `${rateImpactMetric.formattedValue}/hr` : "applicable impact rate";
+    const exposureStateReason = exposureMetric.interpretationNote;
+
+    let exposureNarrative = "";
+    if (exposureState === "VALID" || exposureState === "VALID_WITH_DEFAULTS") {
+      exposureNarrative = `Representative single-event downtime exposure is modeled at ${exposureFormatted} per event based on an estimated ${durationFormatted} disruption at an applicable financial impact rate of ${rateImpactFormatted}. Modeled consequence of a single representative incident; not an annualized loss estimate.`;
+    } else if (exposureState === "INSUFFICIENT_DATA") {
+      exposureNarrative = `Single-event financial exposure is currently incomplete. ${exposureStateReason || "Requires representative disruption duration and business impact severity."}`;
+    } else {
+      exposureNarrative = `Single-event financial exposure is not currently modeled. Disruption duration (Q14) or impact severity (Q12) were unprovided.`;
+    }
+
+    const oppState = recSavingsMetric.state;
+    const oppFormatted = recSavingsMetric.formattedValue;
+    const recHoursFormatted = recHoursMetric.formattedValue;
+    const oppStateReason = recSavingsMetric.interpretationNote;
+
+    let opportunityNarrative = "";
+    if (oppState === "VALID") {
+      opportunityNarrative = `The controlled improvement scenario (50%×50% admin, 25% MTTR acceleration) models ${recHoursFormatted} recoverable engineering hours/year, corresponding to an illustrative capacity valuation of ${oppFormatted}/year. Illustrative operational capacity liberation; not guaranteed cash savings or fixed ROI.`;
+    } else if (recAdminMetric.state === "VALID" && (recHoursMetric.state === "INSUFFICIENT_DATA" || oppState === "INSUFFICIENT_DATA")) {
+      opportunityNarrative = `Scenario modeling captures ${recAdminMetric.formattedValue} recoverable routine admin hours/year. Total recoverable hours and illustrative value remain incomplete awaiting troubleshooting metrics.`;
+    } else if (oppState === "INSUFFICIENT_DATA") {
+      opportunityNarrative = `Recoverable opportunity is currently incomplete. ${oppStateReason || "Requires completed baseline administration and troubleshooting hours."}`;
+    } else {
+      opportunityNarrative = `Recoverable scenario opportunity is not currently modeled because baseline effort metrics are unprovided.`;
+    }
+
+    const evidenceSupports = [
+      "Deterministic quantification of routine middleware maintenance and bridge calls.",
+      "Loaded hourly engineering labor rate applied consistently across administrative streams.",
+      "Controlled simulation of addressable administrative automation and triage acceleration.",
+    ];
+
+    const shouldNotBeInferred = [
+      {
+        title: "No Guaranteed Cash Savings",
+        text: "Scenario valuations model liberated staff capacity, not cash reductions or staff reductions.",
+      },
+      {
+        title: "No Annualized Exposure",
+        text: "Single-event downtime figures model potential impact of a single major incident, not cumulative annual loss.",
+      },
+      {
+        title: "No Vendor Recommendation",
+        text: "Metrics provide mathematical baseline transparency without commercial endorsement.",
+      },
+    ];
+
+    let modeledCount = 0;
+    let incompleteCount = 0;
+    let notModeledCount = 0;
+    Object.values(metrics).forEach((m) => {
+      if (m && (m.state === "VALID" || m.state === "VALID_WITH_DEFAULTS")) modeledCount++;
+      else if (m && m.state === "INSUFFICIENT_DATA") incompleteCount++;
+      else if (m && m.state === "NOT_MODELED") notModeledCount++;
+    });
+
+    const snapId = calculation.snapshot_id || (calculation as any).id || "IMMUTABLE";
     return {
       metadata: {
-        reportId: `REP-${(calculation.snapshot_id || "IMMUTABLE").substring(0, 8).toUpperCase()}`,
+        reportId: `REP-${snapId.substring(0, 8).toUpperCase()}`,
         assessmentId: calculation.assessment_id || assessment?.id || "ass-current",
-        snapshotId: calculation.snapshot_id || "IMMUTABLE_SNAPSHOT",
+        snapshotId: snapId,
         calculationEngineVersion: calculation.calculation_engine_version || "1.0.0",
         assessmentVersion: calculation.assessment_version || "1.0.0",
         generatedAt,
@@ -261,11 +376,22 @@ export class ReportDataAdapter {
         troubleshootingProductivityOpportunity: trbOpportunityMetric,
         customerReportedAnnualMqSpend: q21Metric,
         summaryNarrative: [
-          `The assessment baseline identifies ${fteBurdenMetric.formattedValue} FTE (${totalHoursVal.toLocaleString()} hours/year) of dedicated engineering capacity consumed by routine administration and reactive triage.`,
-          `Quantified operational labor expenditure is modeled at ${totalLaborCostMetric.formattedValue}/year based on an internal loaded labor rate of ${loadedRateMetric.formattedValue}.`,
-          `Representative single-event business exposure for a major messaging outage is modeled at ${exposureMetric.formattedValue} (modeled single-event consequence; not annualized loss).`,
-          `Under approved meshIQ improvement parameters (50%×50% routine admin automation, 25% diagnostic acceleration), the model projects an illustrative capacity recovery of ${recHoursMetric.formattedValue} hours/year (${recSavingsMetric.formattedValue}/year illustrative economic value).`,
+          operationalBurdenNarrative,
+          exposureNarrative,
+          opportunityNarrative,
         ],
+        executiveNarrative: {
+          operationalBurdenNarrative,
+          exposureNarrative,
+          opportunityNarrative,
+          evidenceSupports,
+          shouldNotBeInferred,
+          completenessCounts: {
+            modeledCount,
+            incompleteCount,
+            notModeledCount,
+          },
+        },
       },
 
       scopeAndEnvironment: {
@@ -323,7 +449,7 @@ export class ReportDataAdapter {
           annualCost: trbCostMetric,
         },
         consolidated: {
-          totalAnnualHours: mapMetricItem("total_operational_hours", "Total Annual Operational Hours", "CALCULATED_RESULT", "hours/year", false, 0),
+          totalAnnualHours: totalHoursMetric,
           totalAnnualCost: totalLaborCostMetric,
           fteBurden: fteBurdenMetric,
           loadedHourlyRate: loadedRateMetric,
@@ -335,7 +461,9 @@ export class ReportDataAdapter {
         recentExperienceDropdown: answers.q13_recent_disruptions || "1–2 major disruptions in past 12 months",
         disruptionDurationDropdown: answers.q14_disruption_duration || "46–90 minutes (1.13 hrs)",
         durationDecimalHours: 1.133,
-        hourlyDowntimeRate: mapMetricItem("hourly_downtime_rate", "Hourly Downtime Rate", isExposureBenchmark ? "INDUSTRY_BENCHMARK" : "CUSTOMER_FACT", "$/hour", true),
+        hourlyDowntimeRate: rateImpactMetric,
+        representativeDurationHours: durationMetric,
+        applicableFinancialRate: rateImpactMetric,
         isBenchmarkApplied: isExposureBenchmark,
         representativeSingleEventExposure: exposureMetric,
         exposureInterpretationNote: "Representative Single-Event Exposure represents the modeled downstream consequence of one single major outage event. It must not be interpreted or multiplied as an annualized loss estimate.",
@@ -359,32 +487,12 @@ export class ReportDataAdapter {
         addressableAdminSharePct: 50,
         adminEfficiencyImprovementPct: 50,
         investigationImprovementPct: 25,
-        recoveredAdminHours: {
-          key: "recovered_admin_hours",
-          label: "Recovered Routine Admin Hours",
-          value: recAdminHoursVal,
-          formattedValue: `${recAdminHoursVal.toLocaleString()} hrs`,
-          unit: "hours/year",
-          state: "VALID",
-          provenance: "SCENARIO_PROJECTION",
-          provenanceLabel: "Illustrative Scenario",
-          formulaCode: "H_REC_ADMIN = H_ADMIN × 50% × 50%",
-        },
-        recoveredInvestigationHours: {
-          key: "recovered_investigation_hours",
-          label: "Recovered Investigation Hours",
-          value: recTrbHoursVal,
-          formattedValue: `${recTrbHoursVal.toLocaleString()} hrs`,
-          unit: "hours/year",
-          state: "VALID",
-          provenance: "SCENARIO_PROJECTION",
-          provenanceLabel: "Illustrative Scenario",
-          formulaCode: "H_REC_TRB = H_TRB × 25%",
-        },
+        recoveredAdminHours: recAdminMetric,
+        recoveredInvestigationHours: recTrbMetric,
         totalRecoverableHours: recHoursMetric,
         illustrativeEconomicValue: recSavingsMetric,
-        retainedOperationalHours: Math.max(0, totalHoursVal - recHoursVal),
-        retainedOperationalCost: Math.max(0, (summary.total_operational_labor_cost || 0) - (summary.illustrative_annual_labor_savings || 0)),
+        retainedOperationalHours: 0,
+        retainedOperationalCost: 0,
         scenarioDisclaimer: "The controlled improvement scenario models illustrative operational capacity liberation under standard meshIQ automation assumptions (50%×50% admin reduction, 25% investigation acceleration). It does not represent a guarantee of cash savings, commercial ROI, or contractual commitment.",
       },
 

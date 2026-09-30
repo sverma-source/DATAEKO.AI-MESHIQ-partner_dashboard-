@@ -78,6 +78,18 @@ export interface ExecutiveReportModel {
     troubleshootingProductivityOpportunity: ReportMetricItem;
     customerReportedAnnualMqSpend: ReportMetricItem;
     summaryNarrative: string[];
+    executiveNarrative?: {
+      operationalBurdenNarrative: string;
+      exposureNarrative: string;
+      opportunityNarrative: string;
+      evidenceSupports: string[];
+      shouldNotBeInferred: Array<{ title: string; text: string }>;
+      completenessCounts?: {
+        modeledCount: number;
+        incompleteCount: number;
+        notModeledCount: number;
+      };
+    };
   };
 
   // 3. Assessment Scope & Environment (Q01–Q05)
@@ -121,6 +133,8 @@ export interface ExecutiveReportModel {
     disruptionDurationDropdown: string;
     durationDecimalHours: number;
     hourlyDowntimeRate: ReportMetricItem;
+    representativeDurationHours?: ReportMetricItem;
+    applicableFinancialRate?: ReportMetricItem;
     isBenchmarkApplied: boolean;
     representativeSingleEventExposure: ReportMetricItem;
     exposureInterpretationNote: string;

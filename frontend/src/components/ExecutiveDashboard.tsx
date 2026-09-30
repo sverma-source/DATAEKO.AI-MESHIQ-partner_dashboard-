@@ -154,6 +154,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         assessment={assessment}
         answers={answers}
         onBack={() => setIsReportViewOpen(false)}
+        userRole={user?.role}
       />
     );
   }

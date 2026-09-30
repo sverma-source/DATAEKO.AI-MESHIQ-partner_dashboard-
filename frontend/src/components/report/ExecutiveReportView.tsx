@@ -26,6 +26,7 @@ interface ExecutiveReportViewProps {
   assessment?: Assessment | null;
   answers?: Record<string, any>;
   onBack?: () => void;
+  userRole?: string;
 }
 
 export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
@@ -34,6 +35,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
   assessment,
   answers = {},
   onBack,
+  userRole,
 }) => {
   const [showConsultantAppendix, setShowConsultantAppendix] = useState<boolean>(false);
 
@@ -115,15 +117,17 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
           </div>
 
           <div className="flex items-center space-x-3">
-            <label className="inline-flex items-center space-x-2 text-xs font-medium text-slate-700 cursor-pointer bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
-              <input
-                type="checkbox"
-                checked={showConsultantAppendix}
-                onChange={(e) => setShowConsultantAppendix(e.target.checked)}
-                className="rounded text-[#008638] focus:ring-[#008638] h-3.5 w-3.5 cursor-pointer"
-              />
-              <span>Include Consultant Appendix</span>
-            </label>
+            {userRole !== "CUSTOMER_USER" && (
+              <label className="inline-flex items-center space-x-2 text-xs font-medium text-slate-700 cursor-pointer bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                <input
+                  type="checkbox"
+                  checked={showConsultantAppendix}
+                  onChange={(e) => setShowConsultantAppendix(e.target.checked)}
+                  className="rounded text-[#008638] focus:ring-[#008638] h-3.5 w-3.5 cursor-pointer"
+                />
+                <span>Include Consultant Appendix</span>
+              </label>
+            )}
 
             <button
               type="button"
@@ -284,6 +288,44 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
               <p key={idx}>{p}</p>
             ))}
           </div>
+
+          {/* E4 Executive Synthesis & Model Boundary Governance */}
+          {report.executiveSummary.executiveNarrative && (
+            <div className="rounded-xl border border-slate-200 bg-[#FAFBFD] p-4.5 space-y-3.5" data-testid="report-boundary-governance">
+              <div className="flex items-center space-x-2">
+                <ShieldCheck className="h-4 w-4 text-[#008638]" />
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Executive Synthesis &amp; Model Boundary Governance
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="p-3.5 rounded-lg bg-white border border-slate-200 space-y-1.5">
+                  <div className="font-bold text-slate-900 flex items-center space-x-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[#008638]" />
+                    <span>What the Assessment Evidence Supports:</span>
+                  </div>
+                  <ul className="list-disc list-inside space-y-1 text-slate-600 pl-1 text-[11px] leading-relaxed">
+                    {report.executiveSummary.executiveNarrative.evidenceSupports.map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="p-3.5 rounded-lg bg-white border border-slate-200 space-y-1.5">
+                  <div className="font-bold text-slate-900 flex items-center space-x-1.5">
+                    <ShieldAlert className="h-3.5 w-3.5 text-amber-600" />
+                    <span>What Should NOT Be Inferred:</span>
+                  </div>
+                  <ul className="list-disc list-inside space-y-1 text-slate-600 pl-1 text-[11px] leading-relaxed">
+                    {report.executiveSummary.executiveNarrative.shouldNotBeInferred.map((item, idx) => (
+                      <li key={idx}>
+                        <strong className="text-slate-800">{item.title}:</strong> {item.text}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* ========================================================================= */}
@@ -351,8 +393,8 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                   <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
                     {report.operationalEffort.routineAdmin.annualHours.formattedValue}
                   </td>
-                  <td className="py-2.5 px-3 text-right font-mono text-slate-700">
-                    {(Number(report.operationalEffort.routineAdmin.annualHours.value || 0) / 2080).toFixed(2)}
+                  <td className="py-2.5 px-3 text-right font-mono text-slate-400">
+                    —
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
                     {report.operationalEffort.routineAdmin.annualCost.formattedValue}
@@ -378,8 +420,8 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                   <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
                     {report.operationalEffort.incidentTroubleshooting.annualHours.formattedValue}
                   </td>
-                  <td className="py-2.5 px-3 text-right font-mono text-slate-700">
-                    {(Number(report.operationalEffort.incidentTroubleshooting.annualHours.value || 0) / 2080).toFixed(2)}
+                  <td className="py-2.5 px-3 text-right font-mono text-slate-400">
+                    —
                   </td>
                   <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
                     {report.operationalEffort.incidentTroubleshooting.annualCost.formattedValue}
@@ -419,7 +461,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
           </div>
 
           <p className="text-[11px] text-slate-500 italic">
-            Note: FTE Burden is calculated using the standard enterprise denominator of 2,080 working hours per full-time equivalent staff member per year.
+            Note: Total Operational FTE Burden is provided directly by the authoritative calculation engine (operational_fte_burden). Category-level FTEs are not independently modeled in the snapshot.
           </p>
         </section>
 
@@ -732,7 +774,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
         {/* ========================================================================= */}
         {/* OPTIONAL SECTION 15: CONSULTANT AUDIT APPENDIX */}
         {/* ========================================================================= */}
-        {showConsultantAppendix && report.auditAppendix && (
+        {userRole !== "CUSTOMER_USER" && showConsultantAppendix && report.auditAppendix && (
           <section className="space-y-4 break-inside-avoid border-t-2 border-indigo-200 pt-8 bg-indigo-50/20 p-6 rounded-2xl">
             <div className="border-l-4 border-indigo-600 pl-4">
               <div className="flex items-center space-x-2">
