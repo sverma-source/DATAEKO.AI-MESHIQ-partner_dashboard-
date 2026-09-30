@@ -61,17 +61,7 @@ export default function LoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         {/* Brand Logo Header */}
         <div className="flex flex-col items-center mb-6">
-          <div className="flex items-center justify-center space-x-3.5 bg-white px-6 py-3.5 rounded-xl border border-[#E2E6EE] shadow-xs">
-            <Image
-              src="/dataeko-logo.png"
-              alt="DATAEKO"
-              width={638}
-              height={106}
-              unoptimized
-              priority
-              className="h-4.5 sm:h-5 w-auto object-contain shrink-0"
-            />
-            <span className="text-[#8A94A6] text-sm font-mono select-none">×</span>
+          <div className="flex items-center justify-center bg-white px-7 py-3.5 rounded-xl border border-[#E2E6EE] shadow-xs">
             <Image
               src="/meshiq-logo.png"
               alt="meshIQ"
@@ -79,11 +69,14 @@ export default function LoginPage() {
               height={135}
               unoptimized
               priority
-              className="h-5.5 sm:h-6 w-auto object-contain shrink-0"
+              className="h-6 sm:h-7 w-auto object-contain shrink-0"
             />
           </div>
-          <p className="text-xs text-[#5B6579] mt-3 font-medium text-center">
-            Enterprise MQ Economic Assessment Platform
+          <h1 className="text-sm sm:text-base font-bold text-[#172033] mt-3.5 tracking-tight text-center">
+            Economic Assessment Platform
+          </h1>
+          <p className="text-xs text-[#5B6579] mt-0.5 font-medium text-center">
+            Enterprise Middleware Analytics
           </p>
         </div>
 
@@ -223,23 +216,25 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* Security Notice & Attribution */}
-        <div className="mt-6 text-center space-y-2.5">
+        {/* Security Notice */}
+        <div className="mt-6 text-center">
           <p className="text-[11px] text-[#5B6579] leading-relaxed max-w-sm mx-auto">
             Protected by signed JSON Web Tokens (HTTP-only SameSite cookies) and Multi-Tenant RBAC isolation.
           </p>
-          <div className="flex items-center justify-center space-x-2 text-xs font-medium text-[#5B6579] tracking-tight pt-1">
-            <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
-            <Image
-              src="/dataeko-logo.png"
-              alt="DATAEKO.AI"
-              width={638}
-              height={106}
-              unoptimized
-              className="h-5 sm:h-5.5 w-auto object-contain shrink-0"
-            />
-          </div>
         </div>
+      </div>
+
+      {/* Quiet Enterprise Attribution (Bottom-Right) */}
+      <div className="mt-8 sm:mt-0 sm:absolute sm:bottom-6 sm:right-6 flex items-center justify-center sm:justify-end space-x-2 text-xs font-medium text-[#5B6579] select-none z-20 pointer-events-auto">
+        <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
+        <Image
+          src="/dataeko-logo.png"
+          alt="DATAEKO"
+          width={1024}
+          height={1024}
+          unoptimized
+          className="h-8 sm:h-9 w-auto object-contain shrink-0"
+        />
       </div>
     </div>
   );

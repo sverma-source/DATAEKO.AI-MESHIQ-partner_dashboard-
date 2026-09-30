@@ -77,7 +77,7 @@ describe("AssessmentWizardPage Full Integration", () => {
     render(<AssessmentWizardPage />);
 
     // Header & Section info
-    expect(screen.getAllByAltText("DATAEKO.AI")[0]).toBeInTheDocument();
+    expect(screen.getAllByAltText("DATAEKO")[0]).toBeInTheDocument();
     expect(screen.getByAltText("meshIQ")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "A. Environment & Cost Baseline" })).toBeInTheDocument();
 

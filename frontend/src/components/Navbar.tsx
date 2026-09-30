@@ -186,19 +186,16 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
             <UserMenu />
           </div>
 
-          {/* Official DATAEKO Partner Attribution (Protected / Non-shrinking) */}
-          <div className="flex items-center pl-2 sm:pl-3 border-l border-[#E2E6EE] space-x-1.5 sm:space-x-2 shrink-0 whitespace-nowrap">
-            <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-[#8A94A6] font-semibold hidden xl:inline">
-              Powered by
-            </span>
+          {/* Official DATAEKO Partner Attribution (Logo Only) */}
+          <div className="flex items-center pl-2 sm:pl-3 border-l border-[#E2E6EE] shrink-0 whitespace-nowrap" aria-label="DATAEKO">
             <Image
               src="/dataeko-logo.png"
-              alt="Powered by DATAEKO.AI"
-              width={638}
-              height={106}
+              alt="DATAEKO"
+              width={1024}
+              height={1024}
               unoptimized
               priority
-              className="h-5 sm:h-5.5 lg:h-6 w-auto object-contain shrink-0"
+              className="h-8 sm:h-9 lg:h-10 w-auto object-contain shrink-0"
             />
           </div>
         </div>

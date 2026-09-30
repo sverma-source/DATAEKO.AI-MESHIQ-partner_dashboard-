@@ -18,17 +18,16 @@ describe("LoginPage Component", () => {
     vi.clearAllMocks();
   });
 
-  it("renders DATAEKO × meshIQ enterprise login layout", () => {
+  it("renders meshIQ enterprise login layout with DATAEKO attribution", () => {
     render(
       <AuthProvider>
         <LoginPage />
       </AuthProvider>
     );
 
-    expect(screen.getByAltText("DATAEKO")).toBeInTheDocument();
     expect(screen.getByAltText("meshIQ")).toBeInTheDocument();
     expect(screen.getByText("Powered by")).toBeInTheDocument();
-    expect(screen.getByAltText("DATAEKO.AI")).toBeInTheDocument();
+    expect(screen.getByAltText("DATAEKO")).toBeInTheDocument();
     expect(screen.getByLabelText(/Corporate Email Address/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
   });

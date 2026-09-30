@@ -432,11 +432,11 @@ export default function AssessmentWizardPage() {
               <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
               <Image
                 src="/dataeko-logo.png"
-                alt="DATAEKO.AI"
-                width={638}
-                height={106}
+                alt="DATAEKO"
+                width={1024}
+                height={1024}
                 unoptimized
-                className="h-5 sm:h-6 w-auto object-contain shrink-0"
+                className="h-6 sm:h-7 w-auto object-contain shrink-0"
               />
             </div>
           </footer>
@@ -461,11 +461,11 @@ export default function AssessmentWizardPage() {
               <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
               <Image
                 src="/dataeko-logo.png"
-                alt="DATAEKO.AI"
-                width={638}
-                height={106}
+                alt="DATAEKO"
+                width={1024}
+                height={1024}
                 unoptimized
-                className="h-5 sm:h-6 w-auto object-contain shrink-0"
+                className="h-6 sm:h-7 w-auto object-contain shrink-0"
               />
             </div>
           </footer>
@@ -796,11 +796,11 @@ export default function AssessmentWizardPage() {
           <span className="text-[11px] uppercase tracking-wider text-[#8A94A6]">Powered by</span>
           <Image
             src="/dataeko-logo.png"
-            alt="DATAEKO.AI"
-            width={638}
-            height={106}
+            alt="DATAEKO"
+            width={1024}
+            height={1024}
             unoptimized
-            className="h-5 sm:h-6 w-auto object-contain shrink-0"
+            className="h-6 sm:h-7 w-auto object-contain shrink-0"
           />
         </div>
       </footer>

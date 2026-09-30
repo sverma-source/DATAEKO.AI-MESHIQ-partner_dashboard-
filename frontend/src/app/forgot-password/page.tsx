@@ -39,17 +39,7 @@ export default function ForgotPasswordPage() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="flex flex-col items-center mb-6">
-          <div className="flex items-center justify-center space-x-3.5 bg-[#172033]/90 px-6 py-3.5 rounded-xl border border-[#1E293B] shadow-lg backdrop-blur-sm">
-            <Image
-              src="/dataeko-logo.png"
-              alt="DATAEKO"
-              width={638}
-              height={106}
-              unoptimized
-              priority
-              className="h-4.5 sm:h-5 w-auto object-contain shrink-0"
-            />
-            <span className="text-slate-400 text-sm font-mono select-none">×</span>
+          <div className="flex items-center justify-center bg-[#172033]/90 px-7 py-3.5 rounded-xl border border-[#1E293B] shadow-lg backdrop-blur-sm">
             <Image
               src="/meshiq-logo.png"
               alt="meshIQ"
@@ -57,11 +47,14 @@ export default function ForgotPasswordPage() {
               height={135}
               unoptimized
               priority
-              className="h-5.5 sm:h-6 w-auto object-contain shrink-0"
+              className="h-6 sm:h-7 w-auto object-contain shrink-0"
             />
           </div>
-          <p className="text-xs text-slate-400 mt-3 font-medium text-center">
-            Enterprise MQ Economic Assessment Platform
+          <h1 className="text-sm sm:text-base font-bold text-slate-100 mt-3.5 tracking-tight text-center">
+            Economic Assessment Platform
+          </h1>
+          <p className="text-xs text-slate-400 mt-0.5 font-medium text-center">
+            Enterprise Middleware Analytics
           </p>
         </div>
 
@@ -160,6 +153,19 @@ export default function ForgotPasswordPage() {
             </form>
           )}
         </div>
+      </div>
+
+      {/* Quiet Enterprise Attribution (Bottom-Right) */}
+      <div className="mt-8 sm:mt-0 sm:absolute sm:bottom-6 sm:right-6 flex items-center justify-center sm:justify-end space-x-2 text-slate-400 select-none z-20 pointer-events-auto">
+        <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Powered by</span>
+        <Image
+          src="/dataeko-logo.png"
+          alt="DATAEKO"
+          width={1024}
+          height={1024}
+          unoptimized
+          className="h-8 sm:h-9 w-auto object-contain shrink-0"
+        />
       </div>
     </div>
   );

@@ -799,11 +799,11 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
             <span className="text-[11px] uppercase tracking-wider text-slate-500">Powered by</span>
             <Image
               src="/dataeko-logo.png"
-              alt="DATAEKO.AI"
-              width={638}
-              height={106}
+              alt="DATAEKO"
+              width={1024}
+              height={1024}
               unoptimized
-              className="h-5 sm:h-5.5 w-auto object-contain shrink-0"
+              className="h-6 sm:h-6.5 w-auto object-contain shrink-0"
             />
           </div>
         </div>
