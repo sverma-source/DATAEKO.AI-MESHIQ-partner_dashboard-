@@ -191,11 +191,11 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
             <Image
               src="/dataeko-logo.png"
               alt="DATAEKO"
-              width={1024}
-              height={1024}
+              width={2048}
+              height={375}
               unoptimized
               priority
-              className="h-8 sm:h-9 lg:h-10 w-auto object-contain shrink-0"
+              className="w-20 sm:w-24 lg:w-28 h-auto shrink-0"
             />
           </div>
         </div>

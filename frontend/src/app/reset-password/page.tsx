@@ -209,10 +209,10 @@ function ResetPasswordContent() {
         <Image
           src="/dataeko-logo.png"
           alt="DATAEKO"
-          width={1024}
-          height={1024}
+          width={2048}
+          height={375}
           unoptimized
-          className="h-8 sm:h-9 w-auto object-contain shrink-0"
+          className="w-24 sm:w-28 lg:w-32 h-auto shrink-0"
         />
       </div>
     </div>

@@ -433,10 +433,10 @@ export default function AssessmentWizardPage() {
               <Image
                 src="/dataeko-logo.png"
                 alt="DATAEKO"
-                width={1024}
-                height={1024}
+                width={2048}
+                height={375}
                 unoptimized
-                className="h-6 sm:h-7 w-auto object-contain shrink-0"
+                className="w-20 sm:w-24 h-auto shrink-0"
               />
             </div>
           </footer>
@@ -462,10 +462,10 @@ export default function AssessmentWizardPage() {
               <Image
                 src="/dataeko-logo.png"
                 alt="DATAEKO"
-                width={1024}
-                height={1024}
+                width={2048}
+                height={375}
                 unoptimized
-                className="h-6 sm:h-7 w-auto object-contain shrink-0"
+                className="w-20 sm:w-24 h-auto shrink-0"
               />
             </div>
           </footer>
@@ -797,10 +797,10 @@ export default function AssessmentWizardPage() {
           <Image
             src="/dataeko-logo.png"
             alt="DATAEKO"
-            width={1024}
-            height={1024}
+            width={2048}
+            height={375}
             unoptimized
-            className="h-6 sm:h-7 w-auto object-contain shrink-0"
+            className="w-20 sm:w-24 h-auto shrink-0"
           />
         </div>
       </footer>
