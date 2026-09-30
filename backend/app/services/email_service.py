@@ -1,4 +1,5 @@
 import asyncio
+import base64
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from email import encoders
@@ -10,7 +11,16 @@ from email.utils import formatdate, make_msgid
 import logging
 import smtplib
 import ssl
-from typing import List, Optional
+from typing import Any, Callable, Dict, List, Optional
+
+try:
+    from google.oauth2.credentials import Credentials
+    from googleapiclient.discovery import build as google_api_build
+    from googleapiclient.errors import HttpError
+except ImportError:  # pragma: no cover
+    Credentials = None  # type: ignore
+    google_api_build = None  # type: ignore
+    HttpError = Exception  # type: ignore
 
 from app.config import Settings, settings as global_settings
 from app.core.errors import AppError
@@ -193,6 +203,79 @@ class SMTPTransport(EmailTransport):
             raise EmailDeliveryError(f"Unexpected failure during email dispatch: {type(exc).__name__}") from exc
 
 
+class GmailAPITransport(EmailTransport):
+    """
+    Gmail API OAuth 2.0 transport using Google API Python Client.
+    Dispatches RFC-compliant MIME messages via users.messages.send.
+    Uses strictly the https://www.googleapis.com/auth/gmail.send scope.
+    """
+
+    GMAIL_SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send"
+
+    def __init__(self, service_factory: Optional[Callable[..., Any]] = None):
+        self._service_factory = service_factory or google_api_build
+
+    def send(self, message: EmailMessage, settings: Settings) -> bool:
+        if not settings.GMAIL_CLIENT_ID or not settings.GMAIL_CLIENT_ID.strip():
+            raise EmailConfigurationError("Cannot send email via GmailAPITransport: GMAIL_CLIENT_ID is not configured.")
+        if not settings.GMAIL_CLIENT_SECRET or not settings.GMAIL_CLIENT_SECRET.strip():
+            raise EmailConfigurationError("Cannot send email via GmailAPITransport: GMAIL_CLIENT_SECRET is not configured.")
+        if not settings.GMAIL_REFRESH_TOKEN or not settings.GMAIL_REFRESH_TOKEN.strip():
+            raise EmailConfigurationError("Cannot send email via GmailAPITransport: GMAIL_REFRESH_TOKEN is not configured.")
+
+        if self._service_factory is None:
+            raise EmailConfigurationError("Cannot send email via GmailAPITransport: Google API client libraries are not available.")
+
+        # Build raw MIME message using authoritative EmailService builder
+        mime_msg = EmailService.build_mime_message(message, settings)
+        recipients = message.recipients
+        sender = (
+            settings.GMAIL_AUTHORIZED_SENDER
+            or message.from_address
+            or settings.EMAIL_FROM_ADDRESS
+        )
+
+        raw_bytes = mime_msg.as_bytes()
+        raw_b64 = base64.urlsafe_b64encode(raw_bytes).decode("utf-8")
+
+        logger.info(
+            "GmailAPITransport: Initiating dispatch to %d recipient(s) via Gmail API (sender=%s)",
+            len(recipients),
+            sender,
+        )
+
+        try:
+            creds = Credentials(
+                token=None,
+                refresh_token=settings.GMAIL_REFRESH_TOKEN.strip(),
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=settings.GMAIL_CLIENT_ID.strip(),
+                client_secret=settings.GMAIL_CLIENT_SECRET.strip(),
+                scopes=[self.GMAIL_SEND_SCOPE],
+            )
+
+            service = self._service_factory("gmail", "v1", credentials=creds, cache_discovery=False)
+            result = service.users().messages().send(
+                userId="me",
+                body={"raw": raw_b64},
+            ).execute()
+
+            msg_id = result.get("id", "unknown") if isinstance(result, dict) else "unknown"
+            logger.info("GmailAPITransport: Email successfully dispatched to %d recipient(s) (message_id=%s).", len(recipients), msg_id)
+            return True
+
+        except HttpError as exc:
+            # Sanitize Google HttpError without leaking credentials, refresh tokens, or headers
+            status_code = exc.resp.status if hasattr(exc, "resp") and hasattr(exc.resp, "status") else "unknown"
+            logger.error("GmailAPITransport: Google API HTTP error %s during email dispatch", status_code)
+            raise EmailDeliveryError(f"Gmail API delivery failed with HTTP status {status_code}.") from exc
+        except EmailServiceError:
+            raise
+        except Exception as exc:
+            logger.error("GmailAPITransport: Unexpected failure during email dispatch: %s", type(exc).__name__)
+            raise EmailDeliveryError(f"Unexpected failure during Gmail API email dispatch: {type(exc).__name__}") from exc
+
+
 # ==============================================================================
 # EMAIL SERVICE
 # ==============================================================================
@@ -210,9 +293,26 @@ class EmailService:
         transport: Optional[EmailTransport] = None,
     ):
         self.settings: Settings = settings or global_settings
-        self.transport: EmailTransport = transport or (
-            SMTPTransport() if self.settings.EMAIL_ENABLED else InMemoryEmailTransport()
-        )
+        self.transport: EmailTransport = transport or self._resolve_default_transport(self.settings)
+
+    @staticmethod
+    def _resolve_default_transport(settings: Settings) -> EmailTransport:
+        """
+        Determines the default transport based on configuration.
+        - EMAIL_ENABLED=False -> InMemoryEmailTransport
+        - EMAIL_ENABLED=True & EMAIL_TRANSPORT_TYPE="gmail_api" -> GmailAPITransport
+        - EMAIL_ENABLED=True & EMAIL_TRANSPORT_TYPE="in_memory" -> InMemoryEmailTransport
+        - EMAIL_ENABLED=True & EMAIL_TRANSPORT_TYPE="smtp" (default) -> SMTPTransport
+        """
+        if not settings.EMAIL_ENABLED:
+            return InMemoryEmailTransport()
+
+        transport_type = (settings.EMAIL_TRANSPORT_TYPE or "smtp").strip().lower()
+        if transport_type == "gmail_api":
+            return GmailAPITransport()
+        if transport_type == "in_memory":
+            return InMemoryEmailTransport()
+        return SMTPTransport()
 
     @staticmethod
     def build_mime_message(message: EmailMessage, settings: Optional[Settings] = None) -> MIMEMultipart:
@@ -221,7 +321,11 @@ class EmailService:
         text/html body alternatives, and binary/text attachments.
         """
         cfg = settings or global_settings
-        from_addr = message.from_address or cfg.EMAIL_FROM_ADDRESS
+        from_addr = message.from_address or (
+            cfg.GMAIL_AUTHORIZED_SENDER
+            if getattr(cfg, "EMAIL_TRANSPORT_TYPE", "smtp") == "gmail_api" and cfg.GMAIL_AUTHORIZED_SENDER
+            else cfg.EMAIL_FROM_ADDRESS
+        )
         from_name = message.from_name or cfg.EMAIL_FROM_NAME
 
         # Root multipart container
@@ -590,9 +694,10 @@ class EmailService:
                 return False
             raise EmailDisabledError("Email delivery is disabled in current configuration (EMAIL_DISTRIBUTION_MODE=disabled).")
 
-        # Validate SMTP configuration prerequisites
-        if not self.settings.SMTP_HOST or not self.settings.SMTP_HOST.strip():
-            raise EmailConfigurationError("SMTP_HOST must be configured when EMAIL_ENABLED is True.")
+        # Validate transport-specific configuration prerequisites
+        if isinstance(self.transport, SMTPTransport):
+            if not self.settings.SMTP_HOST or not self.settings.SMTP_HOST.strip():
+                raise EmailConfigurationError("SMTP_HOST must be configured when EMAIL_ENABLED is True.")
 
         # Execute blocking transport in worker thread to prevent event loop starvation
         loop = asyncio.get_running_loop()

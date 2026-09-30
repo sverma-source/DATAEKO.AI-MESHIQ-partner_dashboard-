@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 SUPPORTED_ENVIRONMENTS = {"development", "test", "production"}
 SUPPORTED_EMAIL_DISTRIBUTION_MODES = {"disabled", "test", "production"}
+SUPPORTED_EMAIL_TRANSPORT_TYPES = {"smtp", "gmail_api", "in_memory"}
 
 BROAD_PRIVATE_NETWORKS = {
     ipaddress.ip_network("10.0.0.0/8"),
@@ -107,9 +108,10 @@ class Settings(BaseSettings):
     # Maximum Request Payload Size (Defense against payload flooding / memory exhaustion)
     MAX_REQUEST_BODY_BYTES: int = 2 * 1024 * 1024  # 2 MB default
 
-    # Server-Side Email Configuration (Batch 1 Hardening)
+    # Server-Side Email Configuration (Batch 1 Hardening & G1 Gmail API)
     EMAIL_ENABLED: bool = False
     EMAIL_DISTRIBUTION_MODE: str = "test"
+    EMAIL_TRANSPORT_TYPE: str = "smtp"
     SMTP_HOST: Optional[str] = None
     SMTP_PORT: int = 587
     SMTP_USERNAME: Optional[str] = None
@@ -117,6 +119,13 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
     EMAIL_FROM_ADDRESS: str = "noreply@dataeko.ai"
     EMAIL_FROM_NAME: str = "DATAEKO × meshIQ Assessment Platform"
+
+    # Google OAuth 2.0 & Gmail API Settings (G1 Foundation)
+    GMAIL_CLIENT_ID: Optional[str] = None
+    GMAIL_CLIENT_SECRET: Optional[str] = None
+    GMAIL_REDIRECT_URI: Optional[str] = None
+    GMAIL_AUTHORIZED_SENDER: Optional[str] = None
+    GMAIL_REFRESH_TOKEN: Optional[str] = None
 
     # Server-Side Test Distribution Recipients (Dev/Testing placeholders only)
     TEST_RECIPIENT_ROOP: Optional[str] = None
@@ -154,6 +163,13 @@ class Settings(BaseSettings):
             return v.strip().lower()
         return v
 
+    @field_validator("EMAIL_TRANSPORT_TYPE", mode="before")
+    @classmethod
+    def parse_transport_type(cls, v: Any) -> str:
+        if isinstance(v, str):
+            return v.strip().lower()
+        return "smtp"
+
     @field_validator("PROD_DATAEKO_DISTRIBUTION_EMAILS", "PROD_MESHIQ_DISTRIBUTION_EMAILS", mode="before")
     @classmethod
     def parse_email_list(cls, v: Any) -> List[str]:
@@ -179,6 +195,13 @@ class Settings(BaseSettings):
             raise ValueError(
                 f"Invalid EMAIL_DISTRIBUTION_MODE '{self.EMAIL_DISTRIBUTION_MODE}'. "
                 f"Supported modes are: {', '.join(sorted(SUPPORTED_EMAIL_DISTRIBUTION_MODES))}."
+            )
+
+        # Email transport type canonical validation
+        if self.EMAIL_TRANSPORT_TYPE not in SUPPORTED_EMAIL_TRANSPORT_TYPES:
+            raise ValueError(
+                f"Invalid EMAIL_TRANSPORT_TYPE '{self.EMAIL_TRANSPORT_TYPE}'. "
+                f"Supported types are: {', '.join(sorted(SUPPORTED_EMAIL_TRANSPORT_TYPES))}."
             )
 
         # 2. General validation across all environments
@@ -210,8 +233,8 @@ class Settings(BaseSettings):
 
         if self.EMAIL_ENABLED:
             if self.EMAIL_DISTRIBUTION_MODE != "disabled":
-                if not self.SMTP_HOST or not self.SMTP_HOST.strip():
-                    raise ValueError("SMTP_HOST must be specified when EMAIL_ENABLED is True.")
+                if self.EMAIL_TRANSPORT_TYPE == "smtp" and (not self.SMTP_HOST or not self.SMTP_HOST.strip()):
+                    raise ValueError("SMTP_HOST must be specified when EMAIL_ENABLED is True and EMAIL_TRANSPORT_TYPE is 'smtp'.")
                 if not self.EMAIL_FROM_ADDRESS or "@" not in self.EMAIL_FROM_ADDRESS:
                     raise ValueError(f"EMAIL_FROM_ADDRESS must be a valid email address (got '{self.EMAIL_FROM_ADDRESS}').")
 

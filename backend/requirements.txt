@@ -21,3 +21,8 @@ python-dotenv>=1.0.0
 
 # HTTP & Client
 httpx>=0.27.0
+
+# Google API & OAuth Email Transport (Gmail API)
+google-api-python-client>=2.100.0
+google-auth>=2.20.0
+google-auth-httplib2>=0.2.0
