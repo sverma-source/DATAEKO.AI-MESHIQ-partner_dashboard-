@@ -13,15 +13,23 @@ import {
   ArrowRight,
   Clock,
   DollarSign,
+  Calculator,
 } from "lucide-react";
 import { CalculationRunResponse } from "../types/assessment";
 import { ProvenanceBadge } from "./ProvenanceBadge";
+import { MathTargetMetricKey } from "./ShowTheMathDrawer";
 
 interface ScenarioSandboxProps {
   calculation: CalculationRunResponse;
+  onShowMath?: (target?: MathTargetMetricKey) => void;
+  isAuthorizedForMath?: boolean;
 }
 
-export const ScenarioSandbox: React.FC<ScenarioSandboxProps> = ({ calculation }) => {
+export const ScenarioSandbox: React.FC<ScenarioSandboxProps> = ({
+  calculation,
+  onShowMath,
+  isAuthorizedForMath,
+}) => {
   const summary = calculation.summary;
   const adminHours = summary.admin_annual_hours || 0;
   const trbHours = summary.troubleshooting_annual_hours || 0;
@@ -277,7 +285,21 @@ export const ScenarioSandbox: React.FC<ScenarioSandboxProps> = ({ calculation })
                   Scenario Projected Outcomes
                 </h3>
               </div>
-              <ProvenanceBadge provenance="SCENARIO_PROJECTION" state="VALID" />
+              <div className="flex items-center space-x-2">
+                {isAuthorizedForMath && onShowMath && (
+                  <button
+                    type="button"
+                    onClick={() => onShowMath("illustrative_economic_value")}
+                    data-testid="show-the-math-sandbox-btn"
+                    className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#008638] hover:text-[#006B2D] bg-[#EEF8F0] hover:bg-[#E5F5E8] px-2 py-0.5 rounded-md border border-[#A8E2B5] transition-colors cursor-pointer shadow-2xs"
+                    aria-label="Show the Math for Scenario Economics"
+                  >
+                    <Calculator className="h-3 w-3 mr-0.5" />
+                    <span>Show the Math</span>
+                  </button>
+                )}
+                <ProvenanceBadge provenance="SCENARIO_PROJECTION" state="VALID" />
+              </div>
             </div>
 
             {/* High-Level Metric Tiles */}

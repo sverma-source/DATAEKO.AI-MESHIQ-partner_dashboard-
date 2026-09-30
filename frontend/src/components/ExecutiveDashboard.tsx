@@ -39,7 +39,7 @@ import { ProvenanceBadge } from "./ProvenanceBadge";
 import { DashboardCharts } from "./DashboardCharts";
 import { ScenarioSandbox } from "./ScenarioSandbox";
 import { ExecutiveReportView } from "./report/ExecutiveReportView";
-import { ShowTheMathDrawer } from "./ShowTheMathDrawer";
+import { ShowTheMathDrawer, MathTargetMetricKey } from "./ShowTheMathDrawer";
 import { useAuth } from "../context/AuthContext";
 
 interface ExecutiveDashboardProps {
@@ -62,9 +62,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   const [viewMode, setViewMode] = useState<"customer" | "consultant">("customer");
   const [isReportViewOpen, setIsReportViewOpen] = useState<boolean>(false);
   const [isShowMathOpen, setIsShowMathOpen] = useState<boolean>(false);
-  const [mathTarget, setMathTarget] = useState<
-    "total_quantified_labor_cost" | "potential_financial_exposure"
-  >("total_quantified_labor_cost");
+  const [mathTarget, setMathTarget] = useState<MathTargetMetricKey>("total_quantified_labor_cost");
 
   // Authorized roles for calculation transparency: CONSULTANT, PLATFORM_ADMIN, PARTNER_ADMIN
   const isAuthorizedForMath =
@@ -582,9 +580,26 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                   meshIQ Controlled Improvement Scenario (Illustrative Simulation)
                 </h2>
               </div>
-              <span className="inline-flex items-center text-[11px] font-bold text-[#008638] bg-white px-2.5 py-0.5 rounded-full border border-[#A8E2B5]">
-                50%×50% Admin • 25% MTTR Acceleration
-              </span>
+              <div className="flex items-center space-x-2">
+                {isAuthorizedForMath && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMathTarget("illustrative_economic_value");
+                      setIsShowMathOpen(true);
+                    }}
+                    data-testid="show-the-math-scenario-btn"
+                    className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#008638] hover:text-[#006B2D] bg-white hover:bg-[#EEF8F0] px-2 py-0.5 rounded-md border border-[#A8E2B5] transition-colors cursor-pointer shadow-2xs"
+                    aria-label="Show the Math for Recoverable Opportunity"
+                  >
+                    <Calculator className="h-3 w-3 mr-0.5" />
+                    <span>Show the Math</span>
+                  </button>
+                )}
+                <span className="inline-flex items-center text-[11px] font-bold text-[#008638] bg-white px-2.5 py-0.5 rounded-full border border-[#A8E2B5]">
+                  50%×50% Admin • 25% MTTR Acceleration
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -595,14 +610,31 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                     <span className="text-xs font-bold text-[#008638] uppercase tracking-wider">
                       Total Recoverable Hours
                     </span>
-                    <ProvenanceBadge
-                      provenance="SCENARIO_PROJECTION"
-                      state="VALID"
-                      formulaCode={viewMode === "consultant" ? "H_REC = 0.25·H_ADMIN + 0.25·H_TRB" : undefined}
-                    />
+                    <div className="flex items-center space-x-2">
+                      {isAuthorizedForMath && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMathTarget("total_recovered_hours");
+                            setIsShowMathOpen(true);
+                          }}
+                          data-testid="show-the-math-recovered-hours-btn"
+                          className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#008638] hover:text-[#006B2D] bg-[#EEF8F0] hover:bg-[#E5F5E8] px-2 py-0.5 rounded-md border border-[#A8E2B5] transition-colors cursor-pointer shadow-2xs"
+                          aria-label="Show the Math for Total Recoverable Hours"
+                        >
+                          <Calculator className="h-3 w-3 mr-0.5" />
+                          <span>Show the Math</span>
+                        </button>
+                      )}
+                      <ProvenanceBadge
+                        provenance="SCENARIO_PROJECTION"
+                        state="VALID"
+                        formulaCode={viewMode === "consultant" ? "H_REC = 0.25·H_ADMIN + 0.25·H_TRB" : undefined}
+                      />
+                    </div>
                   </div>
                   <div className="mt-3 flex items-baseline justify-between">
-                    <span className="text-3xl font-black text-[#008638] font-mono">
+                    <span className="text-3xl font-black text-[#008638] font-mono" data-testid="dashboard-total-recoverable-hours">
                       {formatNumber(summary.total_recoverable_labor_hours)} hrs
                     </span>
                     <span className="text-xs font-bold text-[#667085]">/ year</span>
@@ -625,14 +657,31 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                     <span className="text-xs font-bold text-[#008638] uppercase tracking-wider">
                       Illustrative Economic Value
                     </span>
-                    <ProvenanceBadge
-                      provenance="SCENARIO_PROJECTION"
-                      state="VALID"
-                      formulaCode={viewMode === "consultant" ? "SAVINGS = H_REC × R_HR" : undefined}
-                    />
+                    <div className="flex items-center space-x-2">
+                      {isAuthorizedForMath && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMathTarget("illustrative_economic_value");
+                            setIsShowMathOpen(true);
+                          }}
+                          data-testid="show-the-math-opportunity-btn"
+                          className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#008638] hover:text-[#006B2D] bg-[#EEF8F0] hover:bg-[#E5F5E8] px-2 py-0.5 rounded-md border border-[#A8E2B5] transition-colors cursor-pointer shadow-2xs"
+                          aria-label="Show the Math for Illustrative Economic Value"
+                        >
+                          <Calculator className="h-3 w-3 mr-0.5" />
+                          <span>Show the Math</span>
+                        </button>
+                      )}
+                      <ProvenanceBadge
+                        provenance="SCENARIO_PROJECTION"
+                        state="VALID"
+                        formulaCode={viewMode === "consultant" ? "SAVINGS = H_REC × R_HR" : undefined}
+                      />
+                    </div>
                   </div>
                   <div className="mt-3 flex items-baseline justify-between">
-                    <span className="text-3xl font-black text-[#008638] font-mono">
+                    <span className="text-3xl font-black text-[#008638] font-mono" data-testid="dashboard-illustrative-economic-value">
                       {formatCurrency(summary.illustrative_annual_labor_savings)}
                     </span>
                     <span className="text-xs font-bold text-[#008638]">/ year</span>
@@ -905,7 +954,14 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           tabIndex={0}
           className="focus:outline-hidden"
         >
-          <ScenarioSandbox calculation={calculation} />
+          <ScenarioSandbox
+            calculation={calculation}
+            onShowMath={(target) => {
+              setMathTarget(target || "illustrative_economic_value");
+              setIsShowMathOpen(true);
+            }}
+            isAuthorizedForMath={isAuthorizedForMath}
+          />
         </div>
       )}
 

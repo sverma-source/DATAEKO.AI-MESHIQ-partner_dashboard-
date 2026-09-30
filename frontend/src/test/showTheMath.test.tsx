@@ -130,10 +130,54 @@ const mockCalculation: CalculationRunResponse = {
       inputs_used: { q15_hourly_cost: "None", q12_severity: "Critical / Significant" },
       state_reason: "Using ITIC $300,000/hr benchmark for Critical/Significant impact",
     },
+    recovered_admin_hours: {
+      value: "52.00",
+      state: "VALID",
+      provenance: "ILLUSTRATIVE_SCENARIO",
+      formula_code: "H_REC_ADMIN = H_ADMIN * 0.50_ADDRESSABLE * 0.50_EFFICIENCY",
+      rule_version: "calc-rules-v1.0.0",
+      inputs_used: { h_admin: "208", addressable_share: "0.50", admin_efficiency: "0.50" },
+    },
+    recovered_investigation_hours: {
+      value: "80.00",
+      state: "VALID",
+      provenance: "ILLUSTRATIVE_SCENARIO",
+      formula_code: "H_REC_INV = H_TRB * 0.25_INVESTIGATION_IMP",
+      rule_version: "calc-rules-v1.0.0",
+      inputs_used: { h_trb: "320", investigation_improvement: "0.25" },
+    },
+    total_recovered_hours: {
+      value: "132.00",
+      state: "VALID",
+      provenance: "ILLUSTRATIVE_SCENARIO",
+      formula_code: "H_REC_TOTAL = H_REC_ADMIN + H_REC_INV",
+      rule_version: "calc-rules-v1.0.0",
+      inputs_used: { rec_admin: "52.00", rec_inv: "80.00" },
+    },
+    illustrative_economic_value: {
+      value: "11423.08",
+      state: "VALID",
+      provenance: "ILLUSTRATIVE_SCENARIO",
+      formula_code: "V_ILLUSTRATIVE = H_REC_TOTAL * R_HR",
+      rule_version: "calc-rules-v1.0.0",
+      inputs_used: { rec_total: "132.00", r_hr: "86.53846153846154" },
+    },
+    troubleshooting_productivity_opportunity: {
+      value: "2769.23",
+      state: "VALID",
+      provenance: "ILLUSTRATIVE_SCENARIO",
+      formula_code: "OPP_TRB = C_TRB * 0.10",
+      rule_version: "calc-rules-v1.0.0",
+      inputs_used: { c_trb: "27692.31", opportunity_share: "0.10" },
+    },
   },
   assumptions_used: {
     annual_working_hours: 2080,
     default_annual_loaded_labor_cost: 180000,
+    scenario_admin_addressable_share: "0.50",
+    scenario_admin_efficiency_improvement: "0.50",
+    scenario_investigation_improvement: "0.25",
+    scenario_troubleshooting_opportunity_share: "0.10",
   },
   benchmarks_used: {
     itic_hourly_downtime_benchmark: 300000,
@@ -145,6 +189,11 @@ const mockCalculation: CalculationRunResponse = {
     potential_financial_exposure: "CALCULATED_RESULT",
     representative_duration_hours: "MODEL_ASSUMPTION",
     applicable_financial_rate: "INDUSTRY_BENCHMARK",
+    recovered_admin_hours: "ILLUSTRATIVE_SCENARIO",
+    recovered_investigation_hours: "ILLUSTRATIVE_SCENARIO",
+    total_recovered_hours: "ILLUSTRATIVE_SCENARIO",
+    illustrative_economic_value: "ILLUSTRATIVE_SCENARIO",
+    troubleshooting_productivity_opportunity: "ILLUSTRATIVE_SCENARIO",
   },
 };
 
@@ -176,24 +225,24 @@ const createMockAuth = (role: string) => ({
   hasRole: vi.fn().mockImplementation((r) => r === role),
 });
 
+const renderDashboardWithRole = (role: string) => {
+  const authValue = createMockAuth(role);
+  return render(
+    <AuthContext.Provider value={authValue as any}>
+      <ExecutiveDashboard
+        calculation={mockCalculation}
+        customer={{ id: "cust-1", name: "Acme Corp" }}
+        assessment={{ id: "ass-101", title: "Enterprise MQ Assessment", status: "SUBMITTED" } as any}
+        answers={mockAnswers}
+      />
+    </AuthContext.Provider>
+  );
+};
+
 describe("E1: Economic Insight / Show the Math (Labor Cost)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  const renderDashboardWithRole = (role: string) => {
-    const authValue = createMockAuth(role);
-    return render(
-      <AuthContext.Provider value={authValue as any}>
-        <ExecutiveDashboard
-          calculation={mockCalculation}
-          customer={{ id: "cust-1", name: "Acme Corp" }}
-          assessment={{ id: "ass-101", title: "Enterprise MQ Assessment", status: "SUBMITTED" } as any}
-          answers={mockAnswers}
-        />
-      </AuthContext.Provider>
-    );
-  };
 
   it("1. renders Show the Math button for CONSULTANT on Operational Labor Cost metric", () => {
     renderDashboardWithRole("CONSULTANT");
@@ -482,5 +531,181 @@ describe("E2: Financial Exposure / Show the Math", () => {
     expect(screen.getByTestId("target-metric-value")).toHaveTextContent("$825,000");
     expect(screen.getByTestId("component-duration-hours")).toHaveTextContent("2.75 hrs");
     expect(screen.getByTestId("component-financial-rate")).toHaveTextContent("$300,000 / hr");
+  });
+});
+
+describe("E3: Show the Math — Recoverable Opportunity & Scenario Explanation", () => {
+  it("1. renders Controlled Improvement Scenario metrics on Executive Dashboard", () => {
+    renderDashboardWithRole("CONSULTANT");
+    expect(screen.getByTestId("dashboard-total-recoverable-hours")).toHaveTextContent("132 hrs");
+    expect(screen.getByTestId("dashboard-illustrative-economic-value")).toHaveTextContent("$11,423");
+  });
+
+  it("2. renders Show the Math scenario controls for authorized CONSULTANT", () => {
+    renderDashboardWithRole("CONSULTANT");
+    expect(screen.getByTestId("show-the-math-scenario-btn")).toBeInTheDocument();
+    expect(screen.getByTestId("show-the-math-recovered-hours-btn")).toBeInTheDocument();
+    expect(screen.getByTestId("show-the-math-opportunity-btn")).toBeInTheDocument();
+  });
+
+  it("3. renders Show the Math scenario controls for PLATFORM_ADMIN and PARTNER_ADMIN", () => {
+    const { unmount } = renderDashboardWithRole("PLATFORM_ADMIN");
+    expect(screen.getByTestId("show-the-math-opportunity-btn")).toBeInTheDocument();
+    unmount();
+
+    renderDashboardWithRole("PARTNER_ADMIN");
+    expect(screen.getByTestId("show-the-math-opportunity-btn")).toBeInTheDocument();
+  });
+
+  it("4. strictly hides Show the Math scenario controls for CUSTOMER_USER", () => {
+    renderDashboardWithRole("CUSTOMER_USER");
+    expect(screen.queryByTestId("show-the-math-scenario-btn")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("show-the-math-recovered-hours-btn")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("show-the-math-opportunity-btn")).not.toBeInTheDocument();
+  });
+
+  it("5. clicking Show the Math on Illustrative Economic Value opens explanation surface", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Recoverable Opportunity & Scenario Breakdown")).toBeInTheDocument();
+  });
+
+  it("6. displays exact snapshot value for Illustrative Economic Value ($11,423)", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getByTestId("target-metric-value")).toHaveTextContent("$11,423");
+  });
+
+  it("7. displays existing VALID state and ILLUSTRATIVE_SCENARIO provenance", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getAllByText("Valid").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Illustrative Scenario").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("8. displays canonical formula code for Illustrative Economic Value", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getByTestId("canonical-formula-code")).toHaveTextContent("V_ILLUSTRATIVE = H_REC_TOTAL * R_HR");
+  });
+
+  it("9. displays recovered hours breakdown (H_REC_ADMIN, H_REC_INV, H_REC_TOTAL) directly from snapshot", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getByTestId("scenario-rec-admin-hours")).toHaveTextContent("52 hrs/yr");
+    expect(screen.getByTestId("scenario-rec-inv-hours")).toHaveTextContent("80 hrs/yr");
+    expect(screen.getByTestId("scenario-total-rec-hours")).toHaveTextContent("132 hrs/yr");
+  });
+
+  it("10. clicking Show the Math on Total Recoverable Hours displays total_recovered_hours as hero metric", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-recovered-hours-btn"));
+
+    expect(screen.getByText("Recoverable Labor Hours Breakdown")).toBeInTheDocument();
+    expect(screen.getByTestId("target-metric-value")).toHaveTextContent("132");
+    expect(screen.getByTestId("canonical-formula-code")).toHaveTextContent("H_REC_TOTAL = H_REC_ADMIN + H_REC_INV");
+  });
+
+  it("11. displays isolated Troubleshooting Productivity Opportunity (10% rule) from snapshot", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getByTestId("scenario-trb-opp-value")).toHaveTextContent("$2,769");
+    expect(screen.getByText(/OPP_TRB = C_TRB \* 0\.10/)).toBeInTheDocument();
+  });
+
+  it("12. displays scenario assumptions used from snapshot.assumptions_used", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getByTestId("assumption-admin-addressable")).toHaveTextContent("50%");
+    expect(screen.getByTestId("assumption-admin-efficiency")).toHaveTextContent("50%");
+    expect(screen.getByTestId("assumption-inv-improvement")).toHaveTextContent("25%");
+    expect(screen.getByTestId("assumption-trb-opp-share")).toHaveTextContent("10%");
+  });
+
+  it("13. displays source questions and assessment inputs lineage (Q04, Q06, Q07, Q20)", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getByTestId("input-q04")).toHaveTextContent("1–5 hrs/week");
+    expect(screen.getByTestId("input-q06")).toHaveTextContent("2–3 times / week");
+    expect(screen.getByTestId("input-q07")).toHaveTextContent("2–4 hours");
+    expect(screen.getByTestId("input-q20")).toHaveTextContent("$180,000 / yr (Default)");
+  });
+
+  it("14. displays provenance source tiers classification", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getByText("Provenance Classification: Source Tiers")).toBeInTheDocument();
+    expect(screen.getByText("Assessment Discovery Inputs")).toBeInTheDocument();
+    expect(screen.getByText("Approved Improvement Multipliers")).toBeInTheDocument();
+  });
+
+  it("15. displays technical engine and rule metadata", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+
+    expect(screen.getByTestId("engine-version")).toHaveTextContent("1.0.0");
+    expect(screen.getByTestId("rule-version")).toHaveTextContent("calc-rules-v1.0.0");
+    expect(screen.getByTestId("snapshot-id")).toHaveTextContent("snap-abc-12345");
+    expect(screen.getByTestId("calculated-at")).toHaveTextContent("2026-09-30T14:00:00Z");
+  });
+
+  it("16. closes on close button click and on Escape key press", () => {
+    renderDashboardWithRole("CONSULTANT");
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /close calculation detail panel/i }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("show-the-math-opportunity-btn"));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("17. renders Show the Math button in ScenarioSandbox for authorized users and opens explanation drawer", () => {
+    renderDashboardWithRole("CONSULTANT");
+    // Switch to Scenario Sandbox tab
+    const sandboxTabBtn = screen.getByRole("tab", { name: /scenario sandbox/i });
+    fireEvent.click(sandboxTabBtn);
+
+    const sandboxMathBtn = screen.getByTestId("show-the-math-sandbox-btn");
+    expect(sandboxMathBtn).toBeInTheDocument();
+    fireEvent.click(sandboxMathBtn);
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Recoverable Opportunity & Scenario Breakdown")).toBeInTheDocument();
+  });
+
+  it("18. standalone ShowTheMathDrawer with targetMetricKey='illustrative_economic_value' has zero client math", () => {
+    const handleClose = vi.fn();
+    render(
+      <ShowTheMathDrawer
+        isOpen={true}
+        onClose={handleClose}
+        calculation={mockCalculation}
+        customerName="Apex Global"
+        answers={mockAnswers}
+        targetMetricKey="illustrative_economic_value"
+      />
+    );
+
+    expect(screen.getByTestId("target-metric-value")).toHaveTextContent("$11,423");
+    expect(screen.getByTestId("scenario-rec-admin-hours")).toHaveTextContent("52 hrs/yr");
+    expect(screen.getByTestId("scenario-rec-inv-hours")).toHaveTextContent("80 hrs/yr");
+    expect(screen.getByTestId("scenario-total-rec-hours")).toHaveTextContent("132 hrs/yr");
+    expect(screen.getByTestId("scenario-illustrative-value")).toHaveTextContent("$11,423");
+    expect(screen.getByTestId("scenario-trb-opp-value")).toHaveTextContent("$2,769");
   });
 });
