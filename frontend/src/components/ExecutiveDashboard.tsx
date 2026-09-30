@@ -149,8 +149,40 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-20">
       {/* 1. Header Bar with Overview, Metadata, and View Mode Toggle */}
-      <div className="rounded-2xl bg-[#0D1322] p-6 sm:p-8 text-white shadow-xl border border-[#1E293B]">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      <div className="rounded-2xl bg-[#0D1322] p-6 sm:p-8 text-white shadow-xl border border-[#1E293B] relative overflow-hidden">
+        {/* Subtle meshIQ Radial Data-in-Motion Background Motif */}
+        <div
+          aria-hidden="true"
+          className="absolute -right-16 -top-16 w-80 h-80 sm:w-96 sm:h-96 pointer-events-none select-none opacity-20"
+        >
+          <svg viewBox="0 0 400 400" className="w-full h-full" fill="none">
+            <circle cx="200" cy="200" r="60" stroke="#38B449" strokeWidth="1" strokeDasharray="3 6" />
+            <circle cx="200" cy="200" r="110" stroke="#8CC63E" strokeWidth="1" strokeDasharray="2 4" />
+            <circle cx="200" cy="200" r="160" stroke="#C026D3" strokeWidth="1" strokeDasharray="4 8" opacity="0.6" />
+            {Array.from({ length: 36 }).map((_, i) => {
+              const angle = (i * 360) / 36;
+              const rad = (angle * Math.PI) / 180;
+              const x1 = Number((200 + 70 * Math.cos(rad)).toFixed(2));
+              const y1 = Number((200 + 70 * Math.sin(rad)).toFixed(2));
+              const x2 = Number((200 + 175 * Math.cos(rad)).toFixed(2));
+              const y2 = Number((200 + 175 * Math.sin(rad)).toFixed(2));
+              return (
+                <line
+                  key={`ray-${i}`}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke={i % 4 === 0 ? "#C026D3" : "#38B449"}
+                  strokeWidth={0.8}
+                  opacity={0.4}
+                />
+              );
+            })}
+          </svg>
+        </div>
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center space-x-1 rounded-full bg-[#38B449]/20 px-3 py-1 text-xs font-bold text-[#8CC63E] border border-[#38B449]/40">

@@ -49,7 +49,7 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
           <div className="flex items-center space-x-3 w-full sm:w-48">
             <div className="flex-1 bg-[#F1F3F7] rounded-full h-2 overflow-hidden border border-[#E2E6EE]">
               <div
-                className="bg-[#008638] h-full rounded-full transition-all duration-300 ease-out"
+                className="bg-gradient-to-r from-[#008638] via-[#38B449] to-[#8CC63E] h-full rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${percentage}%` }}
                 role="progressbar"
                 aria-valuenow={percentage}

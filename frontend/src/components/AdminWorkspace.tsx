@@ -446,8 +446,23 @@ export const AdminWorkspace: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto py-3" data-testid="admin-workspace">
       {/* Enterprise Workspace Header Banner */}
-      <div className="rounded-2xl bg-white p-6 sm:p-7 border border-[#E2E6EE] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-        <div className="space-y-1.5 max-w-3xl">
+      <div className="rounded-2xl bg-white p-6 sm:p-7 border border-[#E2E6EE] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
+        {/* meshIQ Brand Accent Hairline */}
+        <div
+          aria-hidden="true"
+          className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#008638] via-[#38B449] to-transparent pointer-events-none"
+        />
+
+        {/* Subtle meshIQ Background Contour Accent */}
+        <div aria-hidden="true" className="hidden sm:block absolute -right-6 -top-6 w-60 h-44 pointer-events-none opacity-20">
+          <svg viewBox="0 0 240 170" className="w-full h-full" fill="none">
+            <path d="M 10 170 C 60 115, 140 135, 240 55" stroke="#38B449" strokeWidth="1.25" strokeDasharray="3 4" />
+            <path d="M 30 170 C 80 125, 160 145, 250 75" stroke="#8CC63E" strokeWidth="1" />
+            <path d="M 50 170 C 100 135, 180 155, 260 95" stroke="#A855F7" strokeWidth="0.85" strokeDasharray="2 3" opacity="0.5" />
+          </svg>
+        </div>
+
+        <div className="space-y-1.5 max-w-3xl relative z-10">
           <div className="flex items-center space-x-2.5">
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${scopeConfig.badge}`}
@@ -467,7 +482,7 @@ export const AdminWorkspace: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 relative z-10">
           <div className="rounded-xl bg-[#F8FAFC] px-4 py-3 border border-[#E2E6EE] text-right">
             <div className="text-[10px] font-bold text-[#8A94A6] uppercase tracking-wider">
               {scopeConfig.scopeLabel}

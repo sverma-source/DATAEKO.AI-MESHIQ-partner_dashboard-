@@ -39,7 +39,12 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#E2E6EE] bg-white text-[#172033] shadow-xs">
+    <header className="sticky top-0 z-40 w-full border-b border-[#E2E6EE] bg-white text-[#172033] shadow-xs relative">
+      {/* meshIQ Brand Accent Hairline */}
+      <div
+        aria-hidden="true"
+        className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#38B449] via-[#8CC63E] to-[#C026D3]/40 pointer-events-none"
+      />
       <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-5 lg:px-6 gap-2 sm:gap-3 lg:gap-4 min-h-[72px] sm:min-h-[76px] py-3 sm:py-3.5">
         {/* Zone 1 (Left): Official meshIQ Logo & Platform Title */}
         <div className="flex items-center space-x-3 sm:space-x-3.5 shrink-0">

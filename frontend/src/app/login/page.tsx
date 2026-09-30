@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { Lock, Mail, Loader2, ShieldCheck, ArrowRight, AlertCircle } from "lucide-react";
+import { MeshIQLoginBackground } from "../../components/MeshIQLoginBackground";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
@@ -54,9 +55,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-[#F8FAFC] text-[#172033] relative">
-      {/* Background pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(#E2E8F0_1px,transparent_1px)] [background-size:20px_20px] opacity-70 pointer-events-none" />
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-[#F8FAFC] text-[#172033] relative overflow-hidden">
+      {/* meshIQ Dynamic Enterprise Visual Background */}
+      <MeshIQLoginBackground />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         {/* Brand Logo Header */}
@@ -89,7 +90,12 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
-        <div className="bg-white py-8 px-6 shadow-sm rounded-2xl border border-[#E2E6EE] sm:px-10">
+        <div className="bg-white py-8 px-6 shadow-md shadow-slate-200/60 rounded-2xl border border-[#E2E6EE] sm:px-10 relative overflow-hidden">
+          {/* Subtle meshIQ Hairline Accent */}
+          <div
+            aria-hidden="true"
+            className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#38B449] via-[#8CC63E] to-[#C026D3] opacity-80"
+          />
           {localError && (
             <div
               className="mb-5 flex items-start space-x-2.5 rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800"
