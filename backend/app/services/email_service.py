@@ -578,8 +578,9 @@ class EmailService:
             if section != current_section:
                 current_section = section
                 html_rows.append(
-                    f"<tr><td colspan='3' style='background-color: #F1F5F9; font-weight: bold; "
-                    f"color: #1E293B; padding: 10px 12px; font-size: 13px; text-transform: uppercase; "
+                    f"<tr><td colspan='3' style='background-color: #F8FAFC; border-top: 1px solid #E2E8F0; "
+                    f"border-bottom: 1px solid #E2E8F0; border-left: 3.5px solid #008638; padding: 9px 12px; "
+                    f"font-size: 11px; font-weight: 800; color: #0F172A; text-transform: uppercase; "
                     f"letter-spacing: 0.5px;'>{section}</td></tr>"
                 )
 
@@ -589,15 +590,15 @@ class EmailService:
             exact_val = item.get("exact_value", "")
 
             if exact_val and str(exact_val).strip():
-                val_str = f"<strong>{resp_val}</strong> <span style='color: #64748B;'>({exact_val})</span>"
+                val_str = f"<strong>{resp_val}</strong> <span style='color: #64748B; font-weight: normal; font-size: 12px;'>(Specified: {exact_val})</span>"
             else:
                 val_str = f"<strong>{resp_val or 'Not answered'}</strong>"
 
             html_rows.append(
-                f"<tr style='border-bottom: 1px solid #E2E8F0;'>"
-                f"<td style='padding: 8px 12px; font-weight: bold; color: #008638; width: 60px;'>{q_id}</td>"
-                f"<td style='padding: 8px 12px; color: #334155;'>{title}</td>"
-                f"<td style='padding: 8px 12px; color: #0F172A;'>{val_str}</td>"
+                f"<tr style='border-bottom: 1px solid #F1F5F9;'>"
+                f"<td style='padding: 8px 12px; font-weight: 800; color: #008638; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; width: 45px; vertical-align: top;'>{q_id}</td>"
+                f"<td style='padding: 8px 12px; color: #334155; font-size: 12.5px; vertical-align: top;'>{title}</td>"
+                f"<td style='padding: 8px 12px; color: #0F172A; font-size: 12.5px; vertical-align: top; text-align: right;'>{val_str}</td>"
                 f"</tr>"
             )
 
@@ -607,35 +608,71 @@ class EmailService:
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assessment Submission Confirmation</title>
 </head>
-<body style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F8FAFC; color: #1E293B;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 680px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px; border: 1px solid #E2E8F0; overflow: hidden;">
+<body style="margin: 0; padding: 24px 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F8FAFC; color: #0F172A; line-height: 1.45;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 660px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px; border: 1px solid #E2E8F0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <!-- Brand Topline -->
     <tr>
-      <td style="background-color: #172033; padding: 24px; color: #FFFFFF;">
-        <h1 style="margin: 0; font-size: 20px; font-weight: 600;">DATAEKO × meshIQ</h1>
-        <p style="margin: 4px 0 0 0; font-size: 13px; color: #94A3B8;">Discovery Assessment Submission Confirmation</p>
+      <td style="background-color: #008638; height: 3px; font-size: 1px; line-height: 1px;">&nbsp;</td>
+    </tr>
+    <!-- Hero Banner -->
+    <tr>
+      <td style="background-color: #0D1322; padding: 22px 26px; color: #FFFFFF;">
+        <div style="font-size: 9.5px; font-weight: 800; color: #8CC63E; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;">
+          DATAEKO × MESHIQ ASSESSMENT PLATFORM
+        </div>
+        <h1 style="margin: 0; font-size: 18px; font-weight: 800; color: #FFFFFF; line-height: 1.3;">
+          Assessment Submission Confirmation
+        </h1>
+        <p style="margin: 4px 0 0 0; font-size: 12.5px; color: #94A3B8;">
+          Discovery Assessment Submission Confirmation
+        </p>
       </td>
     </tr>
+    <!-- Content Body -->
     <tr>
-      <td style="padding: 24px;">
-        <p style="margin-top: 0; font-size: 15px; color: #334155;">Dear <strong>{display_name}</strong>,</p>
-        <p style="font-size: 14px; line-height: 1.5; color: #475569;">
-          Thank you for submitting your IBM MQ Discovery Assessment. Your finalized responses (Q01–Q22) have been securely recorded.
+      <td style="padding: 24px 26px;">
+        <p style="margin-top: 0; margin-bottom: 12px; font-size: 14.5px; color: #0F172A;">
+          Dear <strong>{display_name}</strong>,
         </p>
-        <div style="background-color: #F8FAFC; border-left: 4px solid #008638; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0;">
-          <p style="margin: 0 0 4px 0; font-size: 13px;"><strong>Customer:</strong> {customer_name}</p>
-          <p style="margin: 0 0 4px 0; font-size: 13px;"><strong>Assessment:</strong> {assessment_title}</p>
-          <p style="margin: 0; font-size: 13px;"><strong>Reference ID:</strong> <code>{assessment_id}</code></p>
-        </div>
+        <p style="font-size: 13.5px; line-height: 1.5; color: #475569; margin-top: 0; margin-bottom: 16px;">
+          Thank you for completing your IBM MQ Discovery Assessment. Your finalized responses (Q01–Q22) have been securely recorded and submitted to the evaluation team.
+        </p>
 
-        <h3 style="font-size: 14px; color: #1E293B; margin: 24px 0 12px 0;">Finalized Discovery Responses</h3>
-        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; font-size: 13px;">
+        <!-- Metadata Box -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; margin: 16px 0 20px 0; font-size: 12.5px;">
+          <tr>
+            <td style="padding: 8px 14px; color: #64748B; width: 110px; font-size: 11px; text-transform: uppercase; font-weight: 700;">Customer</td>
+            <td style="padding: 8px 14px; color: #0F172A; font-weight: 700;">{customer_name}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 14px; color: #64748B; font-size: 11px; text-transform: uppercase; font-weight: 700; border-top: 1px solid #F1F5F9;">Assessment</td>
+            <td style="padding: 8px 14px; color: #0F172A; font-weight: 600; border-top: 1px solid #F1F5F9;">{assessment_title}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 14px; color: #64748B; font-size: 11px; text-transform: uppercase; font-weight: 700; border-top: 1px solid #F1F5F9;">Reference ID</td>
+            <td style="padding: 8px 14px; color: #0F172A; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; border-top: 1px solid #F1F5F9;">{assessment_id}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 14px; color: #64748B; font-size: 11px; text-transform: uppercase; font-weight: 700; border-top: 1px solid #F1F5F9;">Status</td>
+            <td style="padding: 8px 14px; border-top: 1px solid #F1F5F9;">
+              <span style="display: inline-block; font-size: 10.5px; font-weight: 800; background-color: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; border-radius: 9999px; padding: 2px 8px; text-transform: uppercase; letter-spacing: 0.5px;">SUBMITTED</span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Responses Table -->
+        <h3 style="font-size: 13.5px; font-weight: 800; color: #0F172A; text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px 0;">
+          Finalized Discovery Responses (Q01–Q22)
+        </h3>
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: 1px solid #E2E8F0; border-radius: 6px; overflow: hidden;">
           <thead>
-            <tr style="background-color: #E2E8F0; text-align: left;">
-              <th style="padding: 8px 12px; color: #475569;">ID</th>
-              <th style="padding: 8px 12px; color: #475569;">Question</th>
-              <th style="padding: 8px 12px; color: #475569;">Response</th>
+            <tr style="background-color: #F1F5F9; text-align: left;">
+              <th style="padding: 8px 12px; color: #475569; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; width: 45px;">ID</th>
+              <th style="padding: 8px 12px; color: #475569; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Question</th>
+              <th style="padding: 8px 12px; color: #475569; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Response</th>
             </tr>
           </thead>
           <tbody>
@@ -643,10 +680,18 @@ class EmailService:
           </tbody>
         </table>
 
-        <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 28px 0 16px 0;" />
-        <p style="font-size: 11px; color: #94A3B8; margin: 0;">
-          This confirmation was generated automatically by the DATAEKO × meshIQ Assessment Platform for your organization.
-        </p>
+        <!-- Notice & Footer -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #E2E8F0;">
+          <tr>
+            <td style="font-size: 11px; color: #64748B; line-height: 1.45;">
+              This confirmation has been sent to your registered address for your records.<br>
+              © 2026 meshIQ · DATAEKO × meshIQ Assessment Platform
+            </td>
+            <td style="font-size: 11px; color: #64748B; text-align: right; vertical-align: top;">
+              Powered by <strong style="color: #0F172A;">DATAEKO.AI</strong>
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
   </table>
