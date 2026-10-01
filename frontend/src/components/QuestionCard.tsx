@@ -54,16 +54,50 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
   const hasOverride = overrideValue !== undefined && overrideValue !== null && overrideValue !== "";
   const [overrideToggled, setOverrideToggled] = useState<boolean | null>(null);
-  const useOverrideMode = overrideToggled !== null ? overrideToggled : hasOverride;
+
+  // Reset explicit toggle when selected option changes so selection dictates override visibility
+  React.useEffect(() => {
+    setOverrideToggled(null);
+  }, [effectiveSelectedValue]);
+
+  const isOverrideOption = effectiveSelectedValue === "OVERRIDE";
+  const isLegacyDraft =
+    question.code === "Q04" &&
+    Boolean(selectedValue) &&
+    selectedValue !== "OVERRIDE" &&
+    selectedValue !== "UNKNOWN" &&
+    selectedValue !== "Not sure" &&
+    !hasOverride;
+
+  const useOverrideMode =
+    overrideToggled !== null
+      ? overrideToggled
+      : (hasOverride || isOverrideOption || isLegacyDraft);
+
+  const isQ04Answered =
+    (hasOverride && Number(overrideValue) >= 0) ||
+    effectiveSelectedValue === "UNKNOWN" ||
+    effectiveSelectedValue === "Not sure";
 
   const isAnswered =
-    (effectiveSelectedValue !== undefined && effectiveSelectedValue !== null && effectiveSelectedValue !== "") ||
-    hasOverride;
+    question.code === "Q04"
+      ? isQ04Answered
+      : (effectiveSelectedValue !== undefined && effectiveSelectedValue !== null && effectiveSelectedValue !== "") ||
+        hasOverride;
+
+  const q04NegativeError =
+    question.code === "Q04" &&
+    overrideValue !== undefined &&
+    overrideValue !== null &&
+    overrideValue !== "" &&
+    Number(overrideValue) < 0;
+
+  const displayError = error || (q04NegativeError ? "Quarterly administration hours cannot be negative." : undefined);
 
   return (
     <div
       className={`rounded-xl border bg-white p-4 sm:p-5 shadow-xs transition-colors duration-150 ${
-        error
+        displayError
           ? "border-rose-300 ring-1 ring-rose-200"
           : isAnswered
           ? "border-[#D4EAD8] hover:border-[#A8E2B5]"
@@ -112,6 +146,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
       {/* Input / Control Body */}
       <div className="mt-3.5 space-y-3">
+        {/* Legacy Draft Context Banner for Q04 */}
+        {isLegacyDraft && (
+          <div className="rounded-lg bg-amber-50 p-2.5 border border-amber-200 text-xs text-amber-900">
+            <span className="font-semibold">Previous draft selection:</span> {selectedValue}. Please enter exact quarterly hours below or select &quot;Not sure&quot;.
+          </div>
+        )}
+
         {/* Type A: Controlled Dropdown Options */}
         {question.options && question.options.length > 0 && (
           <div>
@@ -127,10 +168,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 value={effectiveSelectedValue}
                 onChange={(e) => onSelectOption(e.target.value)}
                 aria-label={`${question.code}: ${question.title}`}
-                aria-invalid={!!error}
-                aria-describedby={error ? `error-${question.id}` : undefined}
+                aria-invalid={!!displayError}
+                aria-describedby={displayError ? `error-${question.id}` : undefined}
                 className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 sm:py-2.5 pr-10 text-xs sm:text-sm font-medium text-[#172033] shadow-xs transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] focus-visible:border-[#008638] cursor-pointer ${
-                  error
+                  displayError
                     ? "border-rose-400 focus:border-rose-500 focus:ring-rose-200"
                     : isAnswered
                     ? "border-[#A8E2B5] hover:border-[#008638] hover:bg-[#FBFDFB]"
@@ -164,8 +205,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 <Sparkles className="h-3.5 w-3.5 text-[#008638]" />
                 <span>
                   {useOverrideMode
-                    ? "Hide exact numeric customer fact"
-                    : `Provide exact customer fact (${question.overrideLabel || "Exact Number"})`}
+                    ? (question.code === "Q04" ? "Hide quarterly hours input" : "Hide exact numeric customer fact")
+                    : (question.code === "Q04" ? "Provide exact quarterly hours" : `Provide exact customer fact (${question.overrideLabel || "Exact Number"})`)}
                 </span>
               </button>
 
@@ -194,7 +235,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     {question.overrideLabel || "Exact Numeric Override"}
                   </label>
                   <span className="text-[10px] font-semibold text-[#008638] bg-[#EEF8F0] px-2 py-0.5 rounded border border-[#A8E2B5]">
-                    Customer Fact Override
+                    {question.code === "Q04" ? "Customer Fact" : "Customer Fact Override"}
                   </span>
                 </div>
                 <div className="relative flex items-center">
@@ -202,10 +243,11 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     id={`override-${question.id}`}
                     type="number"
                     step="any"
+                    min={question.code === "Q04" ? "0" : undefined}
                     placeholder={question.overridePlaceholder || "0.00"}
                     aria-label={`${question.code} exact numeric value: ${question.overrideLabel || "Exact Numeric Override"}`}
-                    aria-invalid={!!error}
-                    aria-describedby={error ? `error-${question.id}` : undefined}
+                    aria-invalid={!!displayError}
+                    aria-describedby={displayError ? `error-${question.id}` : undefined}
                     value={overrideValue !== undefined && overrideValue !== null ? overrideValue : ""}
                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     onChange={(e) => {
@@ -221,7 +263,9 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                   )}
                 </div>
                 <p className="text-[11px] text-[#5B6579]">
-                  Customer verified figure overrides categorical estimate in calculation engine.
+                  {question.code === "Q04"
+                    ? "Total combined staff hours per typical quarter spent on routine IBM MQ administration and management."
+                    : "Customer verified figure overrides categorical estimate in calculation engine."}
                 </p>
               </div>
             )}
@@ -229,10 +273,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         )}
 
         {/* Validation Error */}
-        {error && (
+        {displayError && (
           <div id={`error-${question.id}`} role="alert" className="flex items-center space-x-1.5 text-xs text-rose-600 font-medium pt-0.5">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-            <span>{error}</span>
+            <span>{displayError}</span>
           </div>
         )}
 

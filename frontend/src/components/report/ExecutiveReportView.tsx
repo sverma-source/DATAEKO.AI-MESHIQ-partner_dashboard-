@@ -384,7 +384,7 @@ export const ExecutiveReportView: React.FC<ExecutiveReportViewProps> = ({
                   <td className="py-2.5 px-3 font-semibold text-slate-900">
                     Routine Administration
                     <span className="block text-[10px] text-slate-500 font-normal">
-                      Quarterly Admin: {report.operationalEffort.routineAdmin.quarterlyHours} hrs × 4
+                      Quarterly Admin: {report.operationalEffort.routineAdmin.quarterlyHours !== null ? `${report.operationalEffort.routineAdmin.quarterlyHours} hrs × 4` : "—"}
                     </span>
                   </td>
                   <td className="py-2.5 px-3 text-slate-600">

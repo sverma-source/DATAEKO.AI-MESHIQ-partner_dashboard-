@@ -10,6 +10,7 @@ export type QuestionResponseType =
   | "DROPDOWN_SINGLE_SELECT"
   | "DROPDOWN_WITH_NUMERIC_OVERRIDE"
   | "NUMERIC_HOURS_OR_DROPDOWN"
+  | "NUMERIC_HOURS_OR_UNKNOWN"
   | "NUMERIC_CURRENCY_OR_UNKNOWN"
   | "DROPDOWN_PERCENTAGE_OR_NUMERIC"
   | "NUMERIC_CURRENCY_OR_DEFAULT";
@@ -74,6 +75,7 @@ export interface AssessmentResponseState {
   q12_business_impact?: string;
   q13_recent_disruptions?: string;
   q14_disruption_duration?: string;
+  q15_dropdown?: string;
   q15_hourly_cost_override?: number;
   q15_is_unknown?: boolean;
 
@@ -87,8 +89,10 @@ export interface AssessmentResponseState {
   q19_documentation_effort?: string;
 
   // Section G (Q20-Q22)
+  q20_dropdown?: string;
   q20_annual_labor_rate?: number;
   q20_use_default?: boolean;
+  q21_dropdown?: string;
   q21_annual_mq_spend?: number;
   q21_is_unknown?: boolean;
   q22_migration_plans?: string;

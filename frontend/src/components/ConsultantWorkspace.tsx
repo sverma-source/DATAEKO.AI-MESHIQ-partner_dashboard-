@@ -209,6 +209,8 @@ export const ConsultantWorkspace: React.FC = () => {
       case "Q04":
         return answers.q04_admin_hours !== undefined
           ? `${answers.q04_admin_hours} hours / quarter`
+          : answers.q04_dropdown === "UNKNOWN"
+          ? "Not sure / To be assessed"
           : answers.q04_dropdown || "Not answered";
       case "Q05":
         return answers.q05_tech_debt || "Not answered";

@@ -482,7 +482,7 @@ export const ConsultantAssessmentSummary: React.FC<ConsultantAssessmentSummaryPr
                     <td className="py-2.5 px-3 font-semibold text-[#172033]">
                       Routine Administration
                       <span className="block text-[10px] text-[#667085] font-normal">
-                        Quarterly Admin: {report.operationalEffort.routineAdmin.quarterlyHours} hrs × 4
+                        Quarterly Admin: {report.operationalEffort.routineAdmin.quarterlyHours !== null ? `${report.operationalEffort.routineAdmin.quarterlyHours} hrs × 4` : "—"}
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-[#667085]">

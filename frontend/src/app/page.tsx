@@ -627,20 +627,30 @@ export default function AssessmentWizardPage() {
                   (answers as any)[`${qCode}_tech_debt`] ||
                   (answers as any)[`${qCode}_dropdown`];
 
-                if (q.code === "Q15") {
-                  selectedVal = answers.q15_is_unknown
+                if (q.code === "Q04") {
+                  selectedVal = answers.q04_dropdown === "UNKNOWN" || answers.q04_dropdown === "Not sure"
                     ? "UNKNOWN"
-                    : answers.q15_hourly_cost_override !== undefined
+                    : answers.q04_admin_hours !== undefined
                     ? "OVERRIDE"
-                    : "";
+                    : (answers.q04_dropdown || "");
+                } else if (q.code === "Q15") {
+                  selectedVal = answers.q15_dropdown || (
+                    answers.q15_is_unknown
+                      ? "UNKNOWN"
+                      : answers.q15_hourly_cost_override !== undefined
+                      ? "OVERRIDE"
+                      : ""
+                  );
                 } else if (q.code === "Q20") {
-                  selectedVal = answers.q20_use_default ? "DEFAULT" : "OVERRIDE";
+                  selectedVal = answers.q20_dropdown || (answers.q20_use_default ? "DEFAULT" : "OVERRIDE");
                 } else if (q.code === "Q21") {
-                  selectedVal = answers.q21_is_unknown
-                    ? "UNKNOWN"
-                    : answers.q21_annual_mq_spend !== undefined
-                    ? "OVERRIDE"
-                    : "";
+                  selectedVal = answers.q21_dropdown || (
+                    answers.q21_is_unknown
+                      ? "UNKNOWN"
+                      : answers.q21_annual_mq_spend !== undefined
+                      ? "OVERRIDE"
+                      : ""
+                  );
                 }
 
                 const overrideVal = (answers as any)[`${qCode}_override`] !== undefined
@@ -665,7 +675,16 @@ export default function AssessmentWizardPage() {
                       if (q.code === "Q01") updateAnswerField("q01_scale", val);
                       else if (q.code === "Q02") updateAnswerField("q02_staffing", val);
                       else if (q.code === "Q03") updateAnswerField("q03_staffing_model", val);
-                      else if (q.code === "Q04") updateAnswerField("q04_dropdown", val);
+                      else if (q.code === "Q04") {
+                        if (val === "OVERRIDE") {
+                          updateAnswerField("q04_dropdown", "OVERRIDE");
+                        } else if (val === "UNKNOWN" || val === "Not sure") {
+                          updateAnswerField("q04_dropdown", "UNKNOWN");
+                          updateAnswerField("q04_admin_hours", undefined);
+                        } else {
+                          updateAnswerField("q04_dropdown", val);
+                        }
+                      }
                       else if (q.code === "Q05") updateAnswerField("q05_tech_debt", val);
                       else if (q.code === "Q06") updateAnswerField("q06_frequency", val);
                       else if (q.code === "Q07") updateAnswerField("q07_labor_hours", val);
@@ -677,31 +696,93 @@ export default function AssessmentWizardPage() {
                       else if (q.code === "Q13") updateAnswerField("q13_recent_disruptions", val);
                       else if (q.code === "Q14") updateAnswerField("q14_disruption_duration", val);
                       else if (q.code === "Q15") {
-                        if (val === "UNKNOWN") updateAnswerField("q15_is_unknown", true);
-                        else updateAnswerField("q15_is_unknown", false);
+                        if (val === "OVERRIDE") {
+                          updateAnswerField("q15_dropdown", "OVERRIDE");
+                          updateAnswerField("q15_is_unknown", false);
+                        } else if (val === "UNKNOWN") {
+                          updateAnswerField("q15_dropdown", "UNKNOWN");
+                          updateAnswerField("q15_is_unknown", true);
+                          updateAnswerField("q15_hourly_cost_override", undefined);
+                        } else {
+                          updateAnswerField("q15_dropdown", undefined);
+                          updateAnswerField("q15_is_unknown", false);
+                          updateAnswerField("q15_hourly_cost_override", undefined);
+                        }
                       } else if (q.code === "Q16") updateAnswerField("q16_cost_mandate", val);
                       else if (q.code === "Q17") updateAnswerField("q17_opex_reduction", val);
                       else if (q.code === "Q18") updateAnswerField("q18_audit_effort", val);
                       else if (q.code === "Q19") updateAnswerField("q19_documentation_effort", val);
                       else if (q.code === "Q20") {
-                        if (val === "DEFAULT") updateAnswerField("q20_use_default", true);
-                        else updateAnswerField("q20_use_default", false);
+                        if (val === "OVERRIDE") {
+                          updateAnswerField("q20_dropdown", "OVERRIDE");
+                          updateAnswerField("q20_use_default", false);
+                        } else if (val === "DEFAULT") {
+                          updateAnswerField("q20_dropdown", "DEFAULT");
+                          updateAnswerField("q20_use_default", true);
+                          updateAnswerField("q20_annual_labor_rate", undefined);
+                        } else {
+                          updateAnswerField("q20_dropdown", undefined);
+                          updateAnswerField("q20_use_default", true);
+                          updateAnswerField("q20_annual_labor_rate", undefined);
+                        }
                       } else if (q.code === "Q21") {
-                        if (val === "UNKNOWN") updateAnswerField("q21_is_unknown", true);
-                        else updateAnswerField("q21_is_unknown", false);
+                        if (val === "OVERRIDE") {
+                          updateAnswerField("q21_dropdown", "OVERRIDE");
+                          updateAnswerField("q21_is_unknown", false);
+                        } else if (val === "UNKNOWN") {
+                          updateAnswerField("q21_dropdown", "UNKNOWN");
+                          updateAnswerField("q21_is_unknown", true);
+                          updateAnswerField("q21_annual_mq_spend", undefined);
+                        } else {
+                          updateAnswerField("q21_dropdown", undefined);
+                          updateAnswerField("q21_is_unknown", false);
+                          updateAnswerField("q21_annual_mq_spend", undefined);
+                        }
                       } else if (q.code === "Q22") updateAnswerField("q22_migration_plans", val);
                     }}
                     onOverrideChange={(num) => {
                       if (q.code === "Q01") updateAnswerField("q01_override", num);
                       else if (q.code === "Q02") updateAnswerField("q02_override", num);
-                      else if (q.code === "Q04") updateAnswerField("q04_admin_hours", num);
+                      else if (q.code === "Q04") {
+                        if (num !== undefined && num < 0) {
+                          return;
+                        }
+                        updateAnswerField("q04_admin_hours", num);
+                        if (num !== undefined) {
+                          updateAnswerField("q04_dropdown", "OVERRIDE");
+                        }
+                      }
                       else if (q.code === "Q07") updateAnswerField("q07_override", num);
-                      else if (q.code === "Q15") updateAnswerField("q15_hourly_cost_override", num);
+                      else if (q.code === "Q15") {
+                        updateAnswerField("q15_hourly_cost_override", num);
+                        if (num !== undefined) {
+                          updateAnswerField("q15_dropdown", "OVERRIDE");
+                          updateAnswerField("q15_is_unknown", false);
+                        }
+                      }
                       else if (q.code === "Q17") updateAnswerField("q17_override", num);
-                      else if (q.code === "Q20") updateAnswerField("q20_annual_labor_rate", num);
-                      else if (q.code === "Q21") updateAnswerField("q21_annual_mq_spend", num);
+                      else if (q.code === "Q20") {
+                        updateAnswerField("q20_annual_labor_rate", num);
+                        if (num !== undefined) {
+                          updateAnswerField("q20_dropdown", "OVERRIDE");
+                          updateAnswerField("q20_use_default", false);
+                        }
+                      }
+                      else if (q.code === "Q21") {
+                        updateAnswerField("q21_annual_mq_spend", num);
+                        if (num !== undefined) {
+                          updateAnswerField("q21_dropdown", "OVERRIDE");
+                          updateAnswerField("q21_is_unknown", false);
+                        }
+                      }
                     }}
-                    onDefaultToggle={(def) => updateAnswerField("q20_use_default", def)}
+                    onDefaultToggle={(def) => {
+                      updateAnswerField("q20_use_default", def);
+                      updateAnswerField("q20_dropdown", def ? "DEFAULT" : "OVERRIDE");
+                      if (def) {
+                        updateAnswerField("q20_annual_labor_rate", undefined);
+                      }
+                    }}
                     error={validationErrors[q.code]}
                   />
                 );

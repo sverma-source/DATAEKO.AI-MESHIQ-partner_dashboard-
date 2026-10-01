@@ -104,7 +104,7 @@ export interface ExecutiveReportModel {
   // 4. Operational Effort Breakdown
   operationalEffort: {
     routineAdmin: {
-      quarterlyHours: number;
+      quarterlyHours: number | null;
       annualHours: ReportMetricItem;
       annualCost: ReportMetricItem;
       quarterlyDropdownValue: string;

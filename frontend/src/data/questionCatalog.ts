@@ -123,19 +123,15 @@ export const QUESTIONS: Record<string, QuestionDefinition> = {
     code: "Q04",
     sectionId: "A",
     title: "Quarterly Administration Time Overhead",
-    questionText: "On average, approximately how many total staff hours per quarter are spent on routine IBM MQ administration, patching, upgrades, and configuration changes?",
-    responseType: "NUMERIC_HOURS_OR_DROPDOWN",
+    questionText: "Over a typical quarter, approximately how many total staff hours are spent on routine IBM MQ administration and management?",
+    responseType: "NUMERIC_HOURS_OR_UNKNOWN",
     options: [
-      { value: "Less than 40 hours", label: "Less than 40 hours / quarter (~20 hrs)" },
-      { value: "40–100 hours", label: "40–100 hours / quarter (~70 hrs)" },
-      { value: "101–250 hours", label: "101–250 hours / quarter (~175 hrs)" },
-      { value: "251–500 hours", label: "251–500 hours / quarter (~375 hrs)" },
-      { value: "500+ hours", label: "500+ hours / quarter (~600 hrs)" },
-      { value: "Not sure", label: "Not sure / To be assessed", isUnknownOrNotSure: true },
+      { value: "OVERRIDE", label: "Exact Quarterly Administration Hours" },
+      { value: "UNKNOWN", label: "Not sure / To be assessed", isUnknownOrNotSure: true },
     ],
     allowNumericOverride: true,
     overrideLabel: "Exact Quarterly Administration Hours",
-    overridePlaceholder: "e.g. 80.0",
+    overridePlaceholder: "80.0",
     overrideUnit: "hours / quarter",
     sellerGuidance: "Clarify quarterly scope. Captures routine operational maintenance (excluding reactive troubleshooting).",
     theme: "Administration Overhead",
@@ -553,7 +549,14 @@ export function normalizeResponseState(
     q04_admin_hours:
       response.q04_weekly_admin_hours !== null && response.q04_weekly_admin_hours !== undefined
         ? Number(response.q04_weekly_admin_hours)
+        : response.raw_responses?.q04_admin_hours !== null && response.raw_responses?.q04_admin_hours !== undefined
+        ? Number(response.raw_responses.q04_admin_hours)
         : undefined,
+    q04_dropdown:
+      response.raw_responses?.q04_dropdown ||
+      (response.q04_weekly_admin_hours !== null && response.q04_weekly_admin_hours !== undefined
+        ? "OVERRIDE"
+        : undefined),
     q06_frequency: response.q06_frequency_text || undefined,
     q07_labor_hours: response.q07_labor_hours_text || undefined,
     q07_override:
@@ -566,6 +569,13 @@ export function normalizeResponseState(
     q11_productivity_constraint: response.q11_monitoring_status || undefined,
     q12_business_impact: response.q12_business_impact || undefined,
     q14_disruption_duration: response.q14_duration_text || undefined,
+    q15_dropdown:
+      response.raw_responses?.q15_dropdown ||
+      (response.q15_hourly_cost_override !== null && response.q15_hourly_cost_override !== undefined
+        ? "OVERRIDE"
+        : response.raw_responses?.q15_is_unknown === true
+        ? "UNKNOWN"
+        : undefined),
     q15_hourly_cost_override:
       response.q15_hourly_cost_override !== null && response.q15_hourly_cost_override !== undefined
         ? Number(response.q15_hourly_cost_override)
@@ -575,12 +585,28 @@ export function normalizeResponseState(
     q16_cost_mandate: response.q16_config_management_method || undefined,
     q18_audit_effort: response.q18_audit_effort || undefined,
     q19_documentation_effort: response.q19_documentation_effort || undefined,
+    q20_dropdown:
+      response.raw_responses?.q20_dropdown ||
+      (response.q20_annual_labor_rate !== null && response.q20_annual_labor_rate !== undefined
+        ? "OVERRIDE"
+        : response.raw_responses?.q20_use_default === false
+        ? "OVERRIDE"
+        : "DEFAULT"),
     q20_annual_labor_rate:
       response.q20_annual_labor_rate !== null && response.q20_annual_labor_rate !== undefined
         ? Number(response.q20_annual_labor_rate)
         : undefined,
     q20_use_default:
-      response.q20_annual_labor_rate === null || response.q20_annual_labor_rate === undefined,
+      response.raw_responses?.q20_use_default !== undefined
+        ? Boolean(response.raw_responses.q20_use_default)
+        : (response.q20_annual_labor_rate === null || response.q20_annual_labor_rate === undefined),
+    q21_dropdown:
+      response.raw_responses?.q21_dropdown ||
+      (response.q21_annual_mq_spend !== null && response.q21_annual_mq_spend !== undefined
+        ? "OVERRIDE"
+        : response.raw_responses?.q21_is_unknown === true
+        ? "UNKNOWN"
+        : undefined),
     q21_annual_mq_spend:
       response.q21_annual_mq_spend !== null && response.q21_annual_mq_spend !== undefined
         ? Number(response.q21_annual_mq_spend)

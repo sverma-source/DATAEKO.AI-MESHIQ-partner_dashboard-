@@ -420,7 +420,11 @@ export class ReportDataAdapter {
           category: "Admin Overhead",
           questionCode: "Q04",
           questionTitle: "Quarterly Administration Time Overhead",
-          customerResponse: answers.q04_dropdown || "80 hours / quarter (320 hrs/yr)",
+          customerResponse: answers.q04_admin_hours !== undefined && answers.q04_admin_hours !== null
+            ? `${answers.q04_admin_hours} hours / quarter`
+            : answers.q04_dropdown === "UNKNOWN" || answers.q04_dropdown === "Not sure"
+            ? "Not sure"
+            : answers.q04_dropdown || "Not provided",
           interpretation: "Direct quantitative input driving annual routine maintenance and queue configuration hours.",
         },
         techDebtInfrastructure: {
@@ -434,10 +438,18 @@ export class ReportDataAdapter {
 
       operationalEffort: {
         routineAdmin: {
-          quarterlyHours: (summary.admin_annual_hours || 320) / 4,
+          quarterlyHours: summary.admin_annual_hours !== undefined && summary.admin_annual_hours !== null
+            ? summary.admin_annual_hours / 4
+            : answers.q04_admin_hours !== undefined && answers.q04_admin_hours !== null
+            ? answers.q04_admin_hours
+            : null,
           annualHours: adminHoursMetric,
           annualCost: adminCostMetric,
-          quarterlyDropdownValue: answers.q04_dropdown || "80 hours / quarter",
+          quarterlyDropdownValue: answers.q04_admin_hours !== undefined && answers.q04_admin_hours !== null
+            ? `${answers.q04_admin_hours} hours / quarter`
+            : answers.q04_dropdown === "UNKNOWN" || answers.q04_dropdown === "Not sure"
+            ? "Not sure"
+            : answers.q04_dropdown || "Not provided",
         },
         incidentTroubleshooting: {
           frequencyDropdown: answers.q06_frequency || "About weekly (52/yr)",
