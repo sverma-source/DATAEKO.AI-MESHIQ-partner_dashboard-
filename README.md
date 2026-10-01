@@ -56,16 +56,17 @@ Persisted Immutable CalculationSnapshot
 
 ## 2. Current Project Status & Checkpoint
 
-The platform is under active development on the **`dev`** branch. The authoritative **Q04 Exact Numeric Intake & Presentation Alignment** checkpoint has been completed, verified across automated and live browser tests, and committed.
+The platform is under active development on the **`dev`** branch. The authoritative **Workspace Presentation & Branding Refinement** checkpoint has been completed, verified across automated and live browser tests, and committed.
 
 ### Current Checkpoint Summary
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Git Checkpoint** | `6a74bc7` (`fix: correct Q04 dashboard and report presentation`) |
-| **Authoritative Commit Hash** | `6a74bc7c20c0dd1f28b49206b020059c381c8c50` |
+| **Current Git Checkpoint** | `0cc18fa` (`feat: refine workspace presentation and branding`) |
+| **Authoritative Commit Hash** | `0cc18fae66ef8739195e0f382468e10e64b27264` |
 | **Development Branch** | `dev` (Synchronized with `origin/dev`) |
-| **Implementation Stage** | **Q04 Exact Numeric Intake & Presentation Alignment Complete** |
+| **Implementation Stage** | **Workspace Presentation & Branding Refinement Complete (Presentation-Only)** |
+| **Workspace Visual Styling** | **Bright/Light Enterprise Presentation** (Soft-green Consultant & soft-lavender Admin heroes; elevated white scope cards; subtle decorative meshIQ rays; enlarged DATAEKO footer logo) |
 | **Q04 Authoritative Rule** | Exact numeric quarterly hours (`hours / quarter`); Annual hours = `Q04 × 4` |
 | **Q04 Dashboard Display** | Displays exact `{value} hours / quarter`; `"OVERRIDE"` internal token hidden |
 | **Q04 PDF Deliverable** | Resolves authoritative `annual_admin_hours` metric; shows calculated annual hours |
@@ -76,6 +77,55 @@ The platform is under active development on the **`dev`** branch. The authoritat
 | **Next Planned Work** | **Incremental Product Roadmap Features (P2, P3, Defensible Economic Outputs, etc.)** |
 | **Deployment Status** | **Deferred** (Local development only; no production deployment performed) |
 | **Email Status** | **Gmail API + OAuth 2.0 Tested** (`gmail.send` scope; submission notification verified; secrets secured) |
+
+---
+
+### WORKSPACE PRESENTATION & BRANDING REFINEMENT
+
+**Status:** COMPLETE / VISUALLY QA-TESTED & COMMITTED
+**Latest Application Checkpoint:** `0cc18fae66ef8739195e0f382468e10e64b27264`
+**Commit Message:** `feat: refine workspace presentation and branding`
+**Scope:** Controlled presentation-only refinement for Consultant/Admin workspace hero cards and global DATAEKO footer attribution sizing.
+
+#### 1. DATAEKO Footer Attribution
+- **"Powered by" Text**: Kept exactly as is (`text-[10px] text-[#64748B] font-normal`), with identical size, weight, spacing, color, and positioning.
+- **Authoritative Logo Asset**: Preserves the existing official `/dataeko-logo.png` asset without replacement, recoloring, tinting, cropping, or distortion.
+- **Modest Size Adjustment**: Increased display size from `w-14 sm:w-16` (56px / 64px) to `w-[66px] sm:w-[78px]` (66px / 78px), providing a balanced ~18–22% increase in visual prominence while remaining a quiet, compact footer attribution.
+- **Aspect Ratio**: Original 2048:375 aspect ratio preserved (`h-auto shrink-0`).
+- **Consistent Multi-Surface Coverage**: Applied uniformly across Consultant Workspace, Platform Admin Workspace, Client Assessment Intake, Login, Accept Invitation, Forgot Password, Reset Password, and Executive Report View.
+
+#### 2. Consultant Engagement Workspace
+- **Hero Card Visual Treatment**: Converted from dark navy (`#0D1322`) to a bright, clean, soft green-tinted neutral surface (`bg-gradient-to-br from-[#F8FAF9] via-[#F4F9F5] to-[#EEF7F1] border border-[#D5EADB] shadow-xs`).
+- **Consultant Identity**: Official top brand accent hairline (`from-[#008638] via-[#38B449] via-[#8CC63E] to-[#C026D3]`) and consultant green badge (`ADVISORY & REVIEW WORKSPACE`, `bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]`) retained.
+- **Typography & Content**: Title `"Customer & Assessment Portfolio"` rendered in dark high-contrast `#172033`; body copy rendered in readable dark slate `#5B6579`. Existing wording, sizes, and layout preserved verbatim.
+- **Scope Card (`ACTIVE TENANT SCOPE`)**: Converted from dark translucent to an elevated clean white card (`bg-white border-[#D5EADB] shadow-xs`) with readable dark text.
+- **Decorative Artwork**: meshIQ technical contour arcs and radiating rays in the top-right preserved, with opacity lowered to 0.25 for subtle, low-contrast architectural elegance against the light background.
+
+#### 3. Platform Administration Workspace
+- **Hero Card Visual Treatment**: Converted from dark navy (`#0D1322`) to a bright, clean, soft lavender-tinted neutral surface (`bg-gradient-to-br from-[#FAF7FD] via-[#F6F1FA] to-[#F1EBF7] border border-[#E5D7F2] shadow-xs`).
+- **Governance Identity**: Official top governance accent hairline (`from-[#722F8A] via-[#9333EA] via-[#38B449] to-[#8CC63E]`) and governance purple badge (`PLATFORM ADMINISTRATION`, `bg-[#FAF5FF] text-[#722F8A] border-[#E9D5FF]`) retained.
+- **Typography & Content**: Title `"Administration & Governance Workspace"` rendered in dark high-contrast `#172033`; body copy rendered in readable dark slate `#5B6579`. Existing wording, sizes, and layout preserved verbatim.
+- **Scope Card (`GLOBAL SYSTEM / CROSS-TENANT SCOPE`)**: Converted from dark translucent to an elevated clean white card (`bg-white border-[#E5D7F2] shadow-xs`) with readable dark text.
+- **Decorative Artwork**: meshIQ technical arcs and radiating rays preserved with opacity lowered to 0.25 for subtle, low-contrast elegance against the light background.
+
+#### 4. Authentication & Report Surfaces
+- DATAEKO footer logo refinement applied consistently across all login, invitation, password reset, and executive report footers.
+- Zero changes to authentication, credential lifecycle, reporting calculation, or business behavior.
+
+#### 5. Protected Business Logic Invariants
+This presentation-only refinement strictly preserved all frozen business and system logic:
+- `backend/app/calculation_engine/**`: 100% untouched.
+- `backend/**`: 100% untouched.
+- Database models, schema, and Alembic migrations: 100% untouched.
+- Q01–Q22 question catalog semantics and response types: 100% untouched.
+- Q04 exact numeric intake and calculation logic (`Q04 × 4`): 100% untouched.
+- Q15, Q20, Q21 override mechanics: 100% untouched.
+- `CalculationSnapshot` persistence and schema: 100% untouched.
+- Spreadsheet-derived formulas, constants, thresholds, and lookups: 100% untouched.
+- Assessment submission and finalization state transitions: 100% untouched.
+- Email delivery and Gmail API / OAuth 2.0 implementation: 100% untouched.
+- Authentication, RBAC, customer scoping, and session invalidation: 100% untouched.
+- Zero frontend recalculation or synthetic midpoint logic introduced.
 
 ---
 
@@ -442,7 +492,7 @@ The database schema is managed via asynchronous Alembic migrations:
 
 ## 10. Automated Testing & Verification Status
 
-### Verified Test Suite Results (Latest Checkpoint `6a74bc7`)
+### Verified Test Suite Results (Latest Checkpoint `0cc18fa`)
 
 ```text
 ================================================================================
@@ -466,6 +516,9 @@ The database schema is managed via asynchronous Alembic migrations:
 2. Frontend Test Suite (Vitest 5.0):
    • 23/23 Test Files                                                    PASSED
    • 226/226 Component, Wizard, Governance & Security Tests             PASSED
+           - Includes consultantWorkspace.test.tsx (4/4 tests passed)
+           - Includes adminWorkspace.test.tsx (8/8 tests passed)
+           - Includes roleWorkspaces.test.tsx (5/5 tests passed)
            - Includes q04_functional.test.tsx (26/26 Q04 tests passed)
            - Includes q15_q20_q21_functional.test.tsx (6/6 tests passed)
            - Includes responsePersistence.test.ts (P1 state normalization)
@@ -476,7 +529,8 @@ The database schema is managed via asynchronous Alembic migrations:
    • TypeScript Static Typecheck (`tsc --noEmit`):                       0 ERRORS
    • Next.js Production Turbopack Build (`next build`):                  PASSED
 
-4. Controlled Q04 Regression & Deliverable Verification:
+4. Controlled Presentation & Q04 Verification:
+   • Workspace Presentation & Branding Refinement (Light Heroes & Footer): PASSED
    • Exact Integer & Decimal Intake (80.0, 12.5):                        PASSED
    • Strict Zero (`0`) Preservation:                                     PASSED
    • Negative Number Inline Rejection:                                   PASSED
@@ -527,15 +581,18 @@ The database schema is managed via asynchronous Alembic migrations:
 | **Style Polish**| `0e60d73` | `style: refine UI branding, hover states, and login experience` | Header branding balance, subtle attribution, interactive hover states, login simplification. |
 | **Q04 Fallback**| `0ff094c` | `fix: remove non-authoritative Q04 report fallback` | Aligned Q04 intake to exact numeric quarterly hours and removed synthetic report fallbacks. |
 | **Q04 Pres.**  | `6a74bc7` | `fix: correct Q04 dashboard and report presentation` | Corrected Stream A dashboard display and PDF annual admin hours metric lookup. |
+| **Docs Update** | `a8fd831` | `docs: update project status and Q04 checkpoint` | Documented authoritative Q04 exact numeric quarterly hours and dashboard/report alignment. |
+| **UI Refine**   | `0cc18fa` | `feat: refine workspace presentation and branding` | Converted Consultant/Admin heroes to light treatment, elevated scope cards, subtle decorative rays, and modestly enlarged DATAEKO footer logo. |
 
 ---
 
 ## 12. Planned Next Increments & Product Roadmap
 
-### Current Authoritative Checkpoint (`6a74bc7`)
-- **Authoritative Commit Hash**: `6a74bc7c20c0dd1f28b49206b020059c381c8c50`
+### Current Authoritative Checkpoint (`0cc18fa`)
+- **Authoritative Commit Hash**: `0cc18fae66ef8739195e0f382468e10e64b27264`
 - **Development Branch**: `dev` (Synchronized with `origin/dev`)
 - **Working Tree**: Clean (zero uncommitted changes)
+- **Workspace Presentation & Branding Status**: **RESOLVED** — Clean light-theme Consultant and Admin hero cards, elevated white scope cards, and enhanced footer logo visibility.
 - **Q04 Intake & Presentation Status**: **RESOLVED** — Exact numeric intake, dashboard display, and PDF report lookup aligned with authoritative workbook.
 - **P0 Status**: **RESOLVED** — Strict authentication dependency on all assessment routes (`401 Unauthorized` on anonymous access).
 - **P1 Status**: **RESOLVED** — Client intake response persistence and state normalization verified across multiple save/reload cycles.
