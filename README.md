@@ -56,27 +56,119 @@ Persisted Immutable CalculationSnapshot
 
 ## 2. Current Project Status & Checkpoint
 
-The platform is under active development on the **`dev`** branch. The authoritative **Workspace Presentation & Branding Refinement** checkpoint has been completed, verified across automated and live browser tests, and committed.
+The platform is under active development on the **`dev`** branch. The authoritative **Executive Report & Client Submission Email Redesign** checkpoint has been completed, verified across automated and live browser tests, and committed.
 
 ### Current Checkpoint Summary
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Git Checkpoint** | `0cc18fa` (`feat: refine workspace presentation and branding`) |
-| **Authoritative Commit Hash** | `0cc18fae66ef8739195e0f382468e10e64b27264` |
+| **Current Git Checkpoint** | `566e35b` (`feat: redesign executive report and client submission email`) |
+| **Authoritative Commit Hash** | `566e35bfbd9dd4d0ca3edb0205efc8f29ab17da1` |
 | **Development Branch** | `dev` (Synchronized with `origin/dev`) |
-| **Implementation Stage** | **Workspace Presentation & Branding Refinement Complete (Presentation-Only)** |
-| **Workspace Visual Styling** | **Bright/Light Enterprise Presentation** (Soft-green Consultant & soft-lavender Admin heroes; elevated white scope cards; subtle decorative meshIQ rays; enlarged DATAEKO footer logo) |
+| **Implementation Stage** | **Executive Report & Client Submission Email Redesign Complete (Presentation-Only)** |
+| **Executive PDF Template** | **Approved 3-Page Enterprise Reference** (Exec Summary & 4 KPIs, Effort Decomposition & Show the Math, Isolated MQ Spend, Scenarios, Provenance & Governance Safeguards) |
+| **Client Email Presentation** | **DATAEKO × meshIQ Dual Branding** (Green accent, dark hero, SUBMITTED badge, Q01–Q22 table, responsive inline CSS, strict contract preservation) |
 | **Q04 Authoritative Rule** | Exact numeric quarterly hours (`hours / quarter`); Annual hours = `Q04 × 4` |
 | **Q04 Dashboard Display** | Displays exact `{value} hours / quarter`; `"OVERRIDE"` internal token hidden |
 | **Q04 PDF Deliverable** | Resolves authoritative `annual_admin_hours` metric; shows calculated annual hours |
 | **P0 Authentication Boundary** | **RESOLVED** (`401 Unauthorized` enforced for all unauthenticated assessment API requests) |
 | **P1 Save/Resume Persistence** | **RESOLVED** (Reliable multi-cycle response persistence; nested payload stripping; dropdown/override resilience) |
 | **Submission Immutability** | **VERIFIED** (Read-only view preserved across reloads; `HTTP 409 Conflict` on post-finalization mutations) |
-| **Working Tree** | **Clean** (No uncommitted changes, ready for remote push) |
+| **Working Tree** | **Clean** (Application code committed; generated PDFs intentionally outside source commits) |
 | **Next Planned Work** | **Incremental Product Roadmap Features (P2, P3, Defensible Economic Outputs, etc.)** |
 | **Deployment Status** | **Deferred** (Local development only; no production deployment performed) |
-| **Email Status** | **Gmail API + OAuth 2.0 Tested** (`gmail.send` scope; submission notification verified; secrets secured) |
+| **Email Status** | **Client Submission Confirmation Redesigned & Tested** (Exact subject contract, zero attachments, zero economics exposed) |
+
+---
+
+### EXECUTIVE REPORT & CLIENT SUBMISSION EMAIL REDESIGN
+
+**Status:** COMPLETE / FULLY VALIDATED & COMMITTED
+**Latest Application Checkpoint:** `566e35bfbd9dd4d0ca3edb0205efc8f29ab17da1`
+**Commit Message:** `feat: redesign executive report and client submission email`
+**Scope:** Controlled presentation-only redesign of the Executive PDF Report deliverable and Client Submission Confirmation Email.
+
+#### 1. Executive Report / PDF Template Redesign
+The executive PDF report deliverable (`frontend/scripts/render_report_pdf.mjs`) has been restructured to strictly follow the approved 3-page enterprise reference structure:
+
+- **PAGE 1: Cover & Executive Summary**
+  - **Header**: Official meshIQ logo asset with right-aligned `EXECUTIVE CUSTOMER REPORT` and deterministic version indicator (`Version 1.0 (Deterministic)`).
+  - **Hero Banner**: High-contrast dark navy banner (`#0D1322`) with neon green tag (`#8CC63E` `ENTERPRISE MESSAGING ECONOMIC ASSESSMENT`), assessment title, and baseline subtitle.
+  - **Metadata Strip**: Clean 4-column card displaying Customer Organization, Assessment Scope, Assessment Date, and Engine Version (`v1.0.0 · calc snapshot (immutable)`).
+  - **Section 1 — Executive Summary**:
+    - Four primary KPI cards in a balanced 4-column layout:
+      1. `QUANTIFIED OPERATIONAL LABOR`: Annual operational cost with FTE burden, marked with `CALCULATED` badge.
+      2. `SINGLE-EVENT EXPOSURE`: Representative consequence of a single disruption, marked with `CUSTOMER FACT` badge.
+      3. `CUSTOMER-REPORTED MQ SPEND`: Isolated annual spend from Q21, marked with `CUSTOMER FACT` badge.
+      4. `ILLUSTRATIVE ECONOMIC VALUE`: Modeled scenario recovery with staff hours recovered per year, marked with `SCENARIO` badge on highlighted card.
+    - **Executive Economic Synthesis**: Structured synthesis card with green border-left, dynamically incorporating snapshot values and explicit bold financial safeguards (*"not an annualized loss figure"* and *"not guaranteed cash savings, realized savings, or fixed ROI"*).
+    - **How to Read This Report**: Guidance box defining provenance tags (Customer Fact, Calculated, Benchmark, Scenario).
+    - **Footer**: Formal confidentiality notice, `Page 1 of 3`, and official DATAEKO logo attribution.
+
+- **PAGE 2: Operational Effort Decomposition & Business Exposure**
+  - **Header**: meshIQ logo and running report header with customer name.
+  - **Section 2 — Operational Effort & Labor Cost Decomposition**:
+    - **Neutral / Non-Proportional Breakdown**: Clean two-tone bar (`Where the $X comes from`) showing Routine Administration and Troubleshooting without distorted proportions.
+    - **Workload Decomposition Table**: Tabular breakdown of Routine Administration (`Q04 Admin Workload`), Incident Troubleshooting (`Q06 Frequency × Q07 Staff Effort`), and Total Quantified Operational Labor, displaying calculation drivers, annual hours, FTE equivalents, labor costs, and provenance badges.
+    - **Authoritative Footnote**: Clarifies that category-level hours and FTEs are not independently modeled in the snapshot and Total FTE Burden is provided directly by the calculation engine (`operational_fte_burden`).
+    - **SHOW THE MATH**: Dedicated blue-accented container displaying exact algebraic formula `C_TOTAL = C_ADMIN + C_TRB`, numerical substitution, calculation drivers, and snapshot engine version.
+  - **Section 3 — Business Exposure & Isolated MQ Spend**:
+    - Two feature cards:
+      - `Representative Single-Event Exposure`: Direct product of duration (Q14) and hourly financial impact rate (Q15 or benchmark), accompanied by an amber interpretation safeguard warning against annualization.
+      - `Customer-Reported Annual MQ Spend`: Direct customer input from Q21, accompanied by an explicit isolation safeguard rule confirming spend is never added to operational labor or used to derive ROI metrics.
+    - **Footer**: `Page 2 of 3` with confidentiality notice and DATAEKO logo attribution.
+
+- **PAGE 3: Improvement Scenarios, Provenance & Governance**
+  - **Header**: meshIQ logo and running report header.
+  - **Section 4 — Improvement Scenarios & Productivity Opportunity**:
+    - Two feature cards:
+      - `Troubleshooting Productivity Opportunity (10%)`: Direct 10% productivity opportunity applied to annual troubleshooting labor, strictly isolated from the 25% scenario.
+      - `meshIQ Improvement Scenario`: Illustrative economic value recovering staff hours per year (50% routine admin share × 50% admin efficiency, plus 25% troubleshooting reduction), noted as an illustrative projection.
+  - **Section 5 — Data Provenance & Trust Classification**:
+    - Complete governance matrix classifying Customer Fact, Benchmark, Calculated, Model Baseline, and Scenario with authoritative definitions and examples.
+  - **Model Boundary — Governance & Financial Safeguards**:
+    - Four structured guardrail cards: `NO GUARANTEED CASH SAVINGS`, `NO ANNUALIZED EXPOSURE`, `NO VENDOR RECOMMENDATION`, and `DETERMINISTIC PRESENTATION`.
+  - **Architect Discussion CTA**:
+    - High-visibility banner prompting the customer to discuss findings with a meshIQ architect, including direct links to `meshiq.com/contact-us` and `meshiq.com/request-a-demo`.
+    - **Footer**: `Page 3 of 3` with confidentiality notice and DATAEKO logo attribution.
+
+- **Presentation-Only Invariants**:
+  - The PDF renderer is strictly **presentation-only**. It reads authoritative values from `CalculationSnapshot.computed_metrics` and `summary_metrics`.
+  - **Zero calculations**: Does not calculate `Q04 × 4`, annual hours, total hours, FTE, labor costs, percentages, proportions, ROI, exposure annualization, or scenario values.
+  - **Preserves Insufficient-Data States**: Unmodeled or missing data cleanly render as authoritative `—` placeholders and display appropriate narrative warnings; never synthesizes midpoint values or fictitious financial numbers.
+  - **Prohibited Reference Sections Strictly Excluded**: Omits non-reference sections such as Estate Architecture Profile, Illustrative Capacity Opportunity labor-table row, and non-authoritative economic concepts.
+
+#### 2. Client Submission Confirmation Email Redesign
+The client confirmation email builder (`backend/app/services/email_service.py`) has been upgraded to a modern, responsive, email-safe presentation while strictly preserving all existing business contracts:
+
+- **Visual Design & Layout**:
+  - 3px solid meshIQ green brandline (`#008638`).
+  - Dark hero banner (`#0D1322`) with neon green platform tag (`#8CC63E` `DATAEKO × MESHIQ ASSESSMENT PLATFORM`) and clean white heading.
+  - Structured assessment metadata table displaying Customer, Assessment Title, Reference ID (`ui-monospace`), and a green pill badge `SUBMITTED`.
+  - Finalized discovery responses table (Q01–Q22) with light gray headers (`#F1F5F9`), green section divider banners with 3.5px accent borders, green monospace question IDs, and right-aligned answers noting specified exact values in subtle text (`(Specified: ...)`).
+  - Responsive, email-safe table structure with 100% inline CSS and safe system fonts, tested for cross-client fidelity in Gmail, Outlook, and Apple Mail with zero horizontal overflow on mobile viewports.
+  - Full plain-text version maintained with exact business equivalence.
+- **Unchanged Business Contracts**:
+  - **Recipient**: Dispatched strictly to the authenticated client recipient.
+  - **Subject**: Exact character match: `DATAEKO × meshIQ Assessment Submission Confirmation: {assessment_title}`.
+  - **Attachments**: Strictly **zero attachments** (`attachments=[]`).
+  - **Data Scope**: Finalized customer Q01–Q22 answers only.
+  - **Strict Information Isolation**: Contains **no CalculationSnapshot**, no economic metrics, no ROI, no loaded labor rates, no internal recipient addresses, no Gmail/OAuth information, and no audit/transport metadata.
+
+#### 3. Validation Results Checkpoint
+The redesign was comprehensively validated against both live and historical assessment records:
+- **Backend Test Suite**: **193 passed** (0 failures, 12 warnings from third-party library deprecations in 127.97s).
+- **Frontend Test Suite**: **23 test files passed, 226 tests passed out of 226** (100% pass rate in 9.63s).
+- **Calculation Engine Suite**: **21 passed** in 0.02s.
+- **Golden Masters**: **10/10 reference scenarios passed**.
+- **TypeScript Check**: **0 errors** (`npx tsc --noEmit`).
+- **Production Bundle**: **PASS** (Next.js 16.3.6 compiled cleanly, generating all 8 static routes).
+- **PDF Deliverable Validation**: **Exactly 3 pages**, zero clipping, zero overflow, zero unrendered tokens (`NaN`, `undefined`, `null`), verified against live assessment `b9096f93-aeb1-4feb-adac-8652064a4a35`.
+- **Client Email Validation**: Complete contract conformance, zero attachments, visual QA verified on Desktop and Mobile viewports.
+- **Historical Q04 Assessment Verification**: Verified against historical assessment `07d84c6a-3469-41a8-a14e-98a067313393` (legacy dropdown `"101–250 hours"`); produces authoritative `INSUFFICIENT_DATA`, displays `—`, and synthesizes zero midpoints (no `175`, no fallback to `80`).
+
+#### 4. Generated Artifact Warning
+Generated PDF artifacts (such as `docs/artifacts/DATAEKO_meshIQ_Executive_Assessment_Report.pdf` and `docs/artifacts/test_report_b9096f93.pdf`) are local test and validation outputs. They are **not part of the application source checkpoint** and must remain excluded from Git commits.
 
 ---
 
@@ -583,15 +675,18 @@ The database schema is managed via asynchronous Alembic migrations:
 | **Q04 Pres.**  | `6a74bc7` | `fix: correct Q04 dashboard and report presentation` | Corrected Stream A dashboard display and PDF annual admin hours metric lookup. |
 | **Docs Update** | `a8fd831` | `docs: update project status and Q04 checkpoint` | Documented authoritative Q04 exact numeric quarterly hours and dashboard/report alignment. |
 | **UI Refine**   | `0cc18fa` | `feat: refine workspace presentation and branding` | Converted Consultant/Admin heroes to light treatment, elevated scope cards, subtle decorative rays, and modestly enlarged DATAEKO footer logo. |
+| **PDF & Email** | `566e35b` | `feat: redesign executive report and client submission email` | Redesigned 3-page executive PDF report deliverable and client submission confirmation email. |
 
 ---
 
 ## 12. Planned Next Increments & Product Roadmap
 
-### Current Authoritative Checkpoint (`0cc18fa`)
-- **Authoritative Commit Hash**: `0cc18fae66ef8739195e0f382468e10e64b27264`
+### Current Authoritative Checkpoint (`566e35b`)
+- **Authoritative Commit Hash**: `566e35bfbd9dd4d0ca3edb0205efc8f29ab17da1`
 - **Development Branch**: `dev` (Synchronized with `origin/dev`)
-- **Working Tree**: Clean (zero uncommitted changes)
+- **Working Tree**: Clean (application source committed; generated PDF artifacts excluded from commits)
+- **Executive PDF Report Status**: **RESOLVED** — Approved 3-page enterprise reference layout, strictly presentation-only, immutable snapshot reads.
+- **Client Submission Confirmation Email Status**: **RESOLVED** — Modern responsive dual-branded presentation, strict contract preservation.
 - **Workspace Presentation & Branding Status**: **RESOLVED** — Clean light-theme Consultant and Admin hero cards, elevated white scope cards, and enhanced footer logo visibility.
 - **Q04 Intake & Presentation Status**: **RESOLVED** — Exact numeric intake, dashboard display, and PDF report lookup aligned with authoritative workbook.
 - **P0 Status**: **RESOLVED** — Strict authentication dependency on all assessment routes (`401 Unauthorized` on anonymous access).
