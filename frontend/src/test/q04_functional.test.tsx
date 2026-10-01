@@ -9,6 +9,8 @@ import { ConsultantWorkspace } from "../components/ConsultantWorkspace";
 import { api } from "../services/api";
 import { mapSnapshotToExecutiveReport } from "../services/reportDataAdapter";
 import { ExecutiveReportView } from "../components/report/ExecutiveReportView";
+import { ExecutiveDashboard } from "../components/ExecutiveDashboard";
+import { generateReportHtml } from "../../scripts/render_report_pdf.mjs";
 import { Customer, Assessment, CalculationRunResponse } from "../types/assessment";
 
 describe("Q04 Authoritative Exact Numeric Intake & Validation", () => {
@@ -406,5 +408,153 @@ describe("Q04 Report Presentation & Non-Authoritative Fallback Removal", () => {
       />
     );
     expect(screen.getByText("Quarterly Admin: 0 hrs × 4")).toBeInTheDocument();
+  });
+});
+
+describe("Q04 Dashboard Stream A Display & PDF Render Lookup Fix", () => {
+  const mockCustomer: Customer = {
+    id: "cust-test-1",
+    name: "Acme Financial Corp",
+    industry: "Banking",
+    created_at: "2026-09-01T00:00:00Z",
+    updated_at: "2026-09-01T00:00:00Z",
+  };
+
+  const mockAssessment: Assessment = {
+    id: "ass-test-1",
+    customer_id: "cust-test-1",
+    title: "IBM MQ Assessment",
+    status: "COMPLETED",
+    created_at: "2026-09-25T10:00:00Z",
+    updated_at: "2026-09-25T12:00:00Z",
+  };
+
+  const mockCalculation: CalculationRunResponse = {
+    id: "snap-stream-a-1",
+    snapshot_id: "snap-stream-a-1",
+    assessment_id: "ass-test-1",
+    calculation_engine_version: "1.0.0",
+    assessment_version: "1.0.0",
+    calculated_at: "2026-09-25T14:00:00Z",
+    summary: {
+      admin_annual_hours: 320,
+      admin_annual_cost: 27692.31,
+      troubleshooting_annual_hours: 96,
+      troubleshooting_annual_cost: 8307.69,
+      total_operational_labor_cost: 36000,
+      operational_fte_burden: 0.20,
+      representative_single_event_exposure: 16700,
+      total_recoverable_labor_hours: 104,
+      illustrative_annual_labor_savings: 9000,
+      troubleshooting_productivity_opportunity: 830.77,
+    },
+    computed_metrics: {
+      annual_admin_hours: {
+        value: "320.00",
+        state: "VALID",
+        provenance: "CALCULATED_RESULT",
+        formula_code: "H_ADMIN = Q04_QUARTERLY_HOURS * 4",
+      },
+      annual_admin_labor_cost: {
+        value: "27692.30769230769230769230769",
+        state: "VALID",
+        provenance: "CALCULATED_RESULT",
+        formula_code: "C_ADMIN = H_ADMIN * R_HR",
+      },
+      annual_troubleshooting_hours: {
+        value: "96.0",
+        state: "VALID",
+        provenance: "CALCULATED_RESULT",
+      },
+      annual_troubleshooting_labor_cost: {
+        value: "8307.69",
+        state: "VALID",
+        provenance: "CALCULATED_RESULT",
+      },
+      total_quantified_labor_cost: {
+        value: "36000.00",
+        state: "VALID",
+        provenance: "CALCULATED_RESULT",
+      },
+      operational_fte_burden: {
+        value: "0.20",
+        state: "VALID",
+        provenance: "CALCULATED_RESULT",
+      },
+      loaded_hourly_rate: {
+        value: "86.53846153846154",
+        state: "VALID",
+        provenance: "CALCULATED_RESULT",
+      },
+    },
+  };
+
+  const renderDashboardEffortTab = (answers: Record<string, any>) => {
+    render(
+      <ExecutiveDashboard
+        calculation={mockCalculation}
+        customer={mockCustomer}
+        assessment={mockAssessment}
+        answers={answers}
+      />
+    );
+    fireEvent.click(screen.getByRole("tab", { name: /effort & operational cost/i }));
+  };
+
+  it("A. displays exact '80 hours / quarter' for Q04 = 80 in ExecutiveDashboard", () => {
+    renderDashboardEffortTab({ q04_admin_hours: 80, q04_dropdown: "OVERRIDE" });
+    expect(screen.getByText("80 hours / quarter")).toBeInTheDocument();
+    expect(screen.queryByText("OVERRIDE")).not.toBeInTheDocument();
+  });
+
+  it("B. displays exact '12.5 hours / quarter' for Q04 = 12.5 in ExecutiveDashboard", () => {
+    renderDashboardEffortTab({ q04_admin_hours: 12.5, q04_dropdown: "OVERRIDE" });
+    expect(screen.getByText("12.5 hours / quarter")).toBeInTheDocument();
+  });
+
+  it("C. displays exact '0 hours / quarter' for Q04 = 0 in ExecutiveDashboard", () => {
+    renderDashboardEffortTab({ q04_admin_hours: 0, q04_dropdown: "OVERRIDE" });
+    expect(screen.getByText("0 hours / quarter")).toBeInTheDocument();
+    expect(screen.queryByText("80 hours / quarter")).not.toBeInTheDocument();
+  });
+
+  it("D. displays 'Not sure' for Q04 = UNKNOWN / Not sure in ExecutiveDashboard", () => {
+    renderDashboardEffortTab({ q04_dropdown: "UNKNOWN" });
+    expect(screen.getByText("Not sure")).toBeInTheDocument();
+    expect(screen.queryByText("80 hours / quarter")).not.toBeInTheDocument();
+  });
+
+  it("E. preserves legacy categorical Q04 with no numeric value without synthesizing a number", () => {
+    renderDashboardEffortTab({ q04_dropdown: "101–250 hours" });
+    expect(screen.getByText("101–250 hours")).toBeInTheDocument();
+    expect(screen.queryByText("175 hours / quarter")).not.toBeInTheDocument();
+  });
+
+  it("F. verifies render_report_pdf.mjs resolves annual_admin_hours = 320.0 and displays '320'", () => {
+    const html = generateReportHtml(
+      {
+        computed_metrics: mockCalculation.computed_metrics,
+        summary_metrics: mockCalculation.summary,
+      },
+      mockCustomer,
+      mockAssessment
+    );
+    expect(html).toContain(">320</td>");
+    expect(html).not.toContain(">—</td>\n            <td class=\"text-right font-mono\" style=\"color: #64748b;\">—</td>\n            <td class=\"text-right font-mono font-bold\">$27,692</td>");
+  });
+
+  it("G. verifies annual_admin_labor_cost displays $27,692 in PDF and dashboard", () => {
+    const html = generateReportHtml(
+      {
+        computed_metrics: mockCalculation.computed_metrics,
+        summary_metrics: mockCalculation.summary,
+      },
+      mockCustomer,
+      mockAssessment
+    );
+    expect(html).toContain("$27,692");
+
+    renderDashboardEffortTab({ q04_admin_hours: 80, q04_dropdown: "OVERRIDE" });
+    expect(screen.getAllByText(/\$27,692/).length).toBeGreaterThanOrEqual(1);
   });
 });

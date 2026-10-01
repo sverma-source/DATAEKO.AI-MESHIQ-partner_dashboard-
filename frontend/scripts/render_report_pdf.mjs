@@ -601,7 +601,7 @@ export function generateReportHtml(snapshot, customer = {}, assessment = {}) {
               <div style="font-size: 7.5pt; color: #64748b;">Quarterly Admin Workload × 4 quarters</div>
             </td>
             <td>Q04 Admin Workload</td>
-            <td class="text-right font-mono font-semibold">${formatNumber(getCanonicalMetricVal("admin_annual_hours", ["routine_admin_annual_hours"]), 1)}</td>
+            <td class="text-right font-mono font-semibold">${formatNumber(getCanonicalMetricVal("annual_admin_hours", ["routine_admin_annual_hours", "admin_annual_hours"], ["admin_annual_hours"]), 1)}</td>
             <td class="text-right font-mono" style="color: #64748b;">—</td>
             <td class="text-right font-mono font-bold">${adminLaborCost}</td>
             <td class="text-center"><span class="badge badge-calc">Calculated</span></td>

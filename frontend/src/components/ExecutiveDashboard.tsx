@@ -767,7 +767,13 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                   <div className="flex justify-between py-1 border-b border-[#E2E6EE]">
                     <span className="text-[#667085]">Quarterly Admin Time Overhead:</span>
                     <span className="font-bold text-[#172033]">
-                      {answers.q04_dropdown || "80 hours / quarter"}
+                      {answers.q04_admin_hours !== undefined && answers.q04_admin_hours !== null
+                        ? `${answers.q04_admin_hours} hours / quarter`
+                        : answers.q04_dropdown === "UNKNOWN" || answers.q04_dropdown === "Not sure"
+                        ? "Not sure"
+                        : answers.q04_dropdown && answers.q04_dropdown !== "OVERRIDE"
+                        ? answers.q04_dropdown
+                        : "Not provided"}
                     </span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-[#E2E6EE]">
