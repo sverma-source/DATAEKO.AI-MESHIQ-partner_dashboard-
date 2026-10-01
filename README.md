@@ -56,23 +56,112 @@ Persisted Immutable CalculationSnapshot
 
 ## 2. Current Project Status & Checkpoint
 
-The platform is under active development on the **`dev`** branch. The critical **P0 Security** and **P1 Save/Resume Persistence** remediation batch has been completed, verified across automated and live browser tests, and pushed to the remote repository.
+The platform is under active development on the **`dev`** branch. The authoritative **Q04 Exact Numeric Intake & Presentation Alignment** checkpoint has been completed, verified across automated and live browser tests, and committed.
 
 ### Current Checkpoint Summary
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Git Checkpoint** | `1b03e1a` (`fix: secure assessments and restore draft persistence`) |
-| **Authoritative Commit Hash** | `1b03e1a458a476cb26e33caf3a33fb4f1a10de89` |
+| **Current Git Checkpoint** | `6a74bc7` (`fix: correct Q04 dashboard and report presentation`) |
+| **Authoritative Commit Hash** | `6a74bc7c20c0dd1f28b49206b020059c381c8c50` |
 | **Development Branch** | `dev` (Synchronized with `origin/dev`) |
-| **Implementation Stage** | **P0 Security & P1 Save/Resume Remediation Complete** |
+| **Implementation Stage** | **Q04 Exact Numeric Intake & Presentation Alignment Complete** |
+| **Q04 Authoritative Rule** | Exact numeric quarterly hours (`hours / quarter`); Annual hours = `Q04 × 4` |
+| **Q04 Dashboard Display** | Displays exact `{value} hours / quarter`; `"OVERRIDE"` internal token hidden |
+| **Q04 PDF Deliverable** | Resolves authoritative `annual_admin_hours` metric; shows calculated annual hours |
 | **P0 Authentication Boundary** | **RESOLVED** (`401 Unauthorized` enforced for all unauthenticated assessment API requests) |
 | **P1 Save/Resume Persistence** | **RESOLVED** (Reliable multi-cycle response persistence; nested payload stripping; dropdown/override resilience) |
 | **Submission Immutability** | **VERIFIED** (Read-only view preserved across reloads; `HTTP 409 Conflict` on post-finalization mutations) |
-| **Working Tree** | **Clean** (No uncommitted changes, no unpushed commits) |
+| **Working Tree** | **Clean** (No uncommitted changes, ready for remote push) |
 | **Next Planned Work** | **Incremental Product Roadmap Features (P2, P3, Defensible Economic Outputs, etc.)** |
 | **Deployment Status** | **Deferred** (Local development only; no production deployment performed) |
-| **Email Status** | **Headless / Isolated** (`EMAIL_ENABLED=False`; no real customer email has been sent) |
+| **Email Status** | **Gmail API + OAuth 2.0 Tested** (`gmail.send` scope; submission notification verified; secrets secured) |
+
+---
+
+### Q04 AUTHORITATIVE BUSINESS RULE & PRESENTATION ALIGNMENT
+
+**Status:** COMPLETE / QA-TESTED & VERIFIED
+**Latest Application Checkpoint:** `6a74bc7c20c0dd1f28b49206b020059c381c8c50`
+**Commit Message:** `fix: correct Q04 dashboard and report presentation`
+
+#### 1. Authoritative Business Rule & Intake Semantics
+- **Question Text**: *"Over a typical quarter, approximately how many total staff hours are spent on routine IBM MQ administration and management?"*
+- **Authoritative Semantics**:
+  - Customer provides total combined staff hours spent in a typical quarter on routine IBM MQ administration.
+  - **Unit**: `hours / quarter`.
+  - **Supported Values**: Exact numeric input, including integers (e.g., `80`) and decimals (e.g., `12.5`).
+  - **Zero (`0`) is Valid**: Strict null/undefined checks are used throughout the frontend so `0` is never treated as falsy or replaced with a default.
+  - **Negative Values Rejected**: Negative hours are blocked with inline validation errors (`"Quarterly administration hours cannot be negative"`).
+  - **No Artificial Upper Maximum**: No artificial 10,000-hr or arbitrary caps are imposed.
+  - **"Not sure" / Unknown**: Choosing *"Not sure / To be assessed"* leaves the calculation input null/blank, resulting in authoritative `INSUFFICIENT_DATA` for admin hours and cost without synthesizing any fictitious numbers.
+  - **Legacy Categorical Draft Handling**: For existing drafts containing legacy ranges (e.g., `"101–250 hours"`), the previous selection is preserved and displayed in an amber guidance banner requiring the user to enter exact hours or select *"Not sure"*; no midpoints (e.g., `20`, `70`, `175`, `375`, `600`) are ever synthesized.
+  - **Database Contract**: The database column retains its legacy column name `q04_weekly_admin_hours: Numeric(10, 2)` for backward compatibility, but its authoritative business meaning and value represent **exact quarterly hours**.
+
+#### 2. Presentation Corrections (Dashboard & PDF Report Lookup)
+The checkpoint resolved two presentation-layer display discrepancies without modifying backend calculation logic:
+1. **Interactive Executive Dashboard (`ExecutiveDashboard.tsx`)**:
+   - Stream A now evaluates `answers.q04_admin_hours` directly:
+     - Real numeric values (including `0`) display as `{value} hours / quarter` (e.g., `80 hours / quarter`).
+     - The internal frontend state token `"OVERRIDE"` is completely hidden from customer view.
+     - Unknown answers display as `Not sure`.
+     - Legacy categorical selections remain display-only and are preserved without numeric midpoint conversion.
+     - Unanswered questions display `Not provided`.
+2. **Standalone PDF Report Deliverable (`render_report_pdf.mjs`)**:
+   - In the *Operational Effort & Labor Cost Decomposition* table, line 604 previously queried metric key `"admin_annual_hours"` without summary keys, which returned `null` and displayed `—`.
+   - Corrected to query canonical key `annual_admin_hours` with summary fallback `admin_annual_hours`:
+     ```javascript
+     getCanonicalMetricVal(
+       "annual_admin_hours",
+       ["routine_admin_annual_hours", "admin_annual_hours"],
+       ["admin_annual_hours"]
+     )
+     ```
+   - For an assessment with Q04 = 80 hours / quarter, the PDF report table now correctly resolves the authoritative snapshot value and displays **Annual Hours: 320.0** rather than `—`.
+
+#### 3. Controlled Validation Assessment
+Validated end-to-end against a dedicated live test client:
+- **Assessment ID**: `b9096f93-aeb1-4feb-adac-8652064a4a35`
+- **Customer Organization**: `DATAEKO × meshIQ Q04 Dashboard Validation Client`
+- **Customer ID**: `7ae8633d-198d-4202-a193-1214133fd2dc`
+- **Q04 Response**: `80 hours / quarter` (`q04_weekly_admin_hours = 80.00`, `raw_responses.q04_admin_hours = 80`)
+- **Authoritative Persisted CalculationSnapshot**:
+  - **Snapshot ID**: `201784cc-68cf-42a6-88e9-c4e267f0c7ed`
+  - **Engine Version**: `1.0.0`
+  - **Rules Version**: `calc-rules-v1.0.0`
+  - **Assessment Status**: `SUBMITTED`
+  - **Annual Admin Hours**: `320.00` (`VALID`, `CALCULATED_RESULT`, `H_ADMIN = Q04_QUARTERLY_HOURS * 4`)
+  - **Annual Admin Labor Cost**: `$27,692.31` (`VALID`, `CALCULATED_RESULT`, `C_ADMIN = H_ADMIN * R_HR`)
+  - **Troubleshooting Annual Hours**: `96.00` (`VALID`, `H_TRB = N_EVENTS * H_INV`)
+  - **Troubleshooting Annual Cost**: `$8,307.69` (`VALID`, `C_TRB = H_TRB * R_HR`)
+  - **Total Operational Labor Cost**: `$36,000.00` (`VALID`, `C_TOTAL = C_ADMIN + C_TRB`)
+  - **Operational FTE Burden**: `0.20` (`VALID`, `FTE = (H_ADMIN + H_TRB) / 2080`)
+- *All presentation metrics originate strictly from the immutable CalculationSnapshot; no frontend recalculation occurs.*
+
+#### 4. Historical Assessment Protection & Insufficient-Data Validation
+Verified that historical submitted assessments remain immutable and uncorrupted:
+- **Historical Assessment ID**: `07d84c6a-3469-41a8-a14e-98a067313393`
+- **Customer**: `DATAEKO × meshIQ QA Test Customer`
+- **Status**: `SUBMITTED`
+- **Q04 Numeric Hours**: `None` (NULL)
+- **Legacy Raw Dropdown**: `"101–250 hours"`
+- **Snapshot Metric State**: `annual_admin_hours = INSUFFICIENT_DATA`, `value = None`
+- **Integrity Confirmed**: The assessment correctly produces `INSUFFICIENT_DATA` for administration metrics, does not synthesize any numeric midpoint, and never defaults to 80 hours.
+
+#### 5. Protected Business Logic & Architectural Invariants
+The following core assets are strictly frozen and protected:
+- **Calculation Engine**: `backend/app/calculation_engine/**` remains 100% untouched.
+- **Spreadsheet-Derived Formulas & Models**: Formulas, constants, multipliers, thresholds, and lookup tables remain unaltered.
+- **Decimal Precision & Rounding**: Pure Python `Decimal` arithmetic with standard bank rounding is preserved.
+- **Database Schema**: No schema alterations or Alembic migrations were required or executed.
+- **Q01–Q22 Semantics**: Question catalog structure, mappings, and Q15/Q20/Q21 override mechanics remain intact.
+- **Submission & Email Orchestration**: Submission state machine and email triggers remain unchanged.
+- **Immutable Rule**: *No frontend presentation or report change may recalculate, reinterpret, synthesize, or replace authoritative CalculationSnapshot values.*
+
+#### 6. Gmail API & Email Delivery Status
+- **Transport**: Google Gmail REST API via OAuth 2.0 (`gmail.send` scope).
+- **Verification**: Real end-to-end transport delivery verified; assessment submission notifications successfully delivered.
+- **Credential Safety**: OAuth credentials, refresh tokens, and secrets are stored server-side/locally and are strictly excluded from source control (`.gitignore`). No secrets or credentials are ever committed.
 
 ---
 
@@ -353,7 +442,7 @@ The database schema is managed via asynchronous Alembic migrations:
 
 ## 10. Automated Testing & Verification Status
 
-### Verified Test Suite Results (P0/P1 Remediation Checkpoint `1b03e1a`)
+### Verified Test Suite Results (Latest Checkpoint `6a74bc7`)
 
 ```text
 ================================================================================
@@ -361,7 +450,7 @@ The database schema is managed via asynchronous Alembic migrations:
 ================================================================================
 1. Backend & Calculation Suite (pytest 9.1):
    • 10/10 Golden Master Reference Scenarios (TC-01–TC-10)               PASSED
-   • 11/11 Calculation Engine Precision & Boundary Tests                 PASSED
+   • 21/21 Calculation Engine Precision & Boundary Tests                 PASSED
    • 13/13 API Integration & Submission Orchestration Tests              PASSED
            - test_assessments_api.py (unauthorized 401 & auth enforcement)
            - test_submission_orchestration.py (mutation protection & conflicts)
@@ -372,24 +461,30 @@ The database schema is managed via asynchronous Alembic migrations:
            - User Invitation & Password Reset Lifecycle (Batch 4D)
            - Authentication Session Hardening & Invalidation (Batch 4E)
    -----------------------------------------------------------------------------
-   Total Backend Suite: 141/141 PASSED (100%)
+   Total Backend Suite: 151/151 PASSED (100%)
 
 2. Frontend Test Suite (Vitest 5.0):
-   • 18/18 Test Files                                                    PASSED
-   • 115/115 Component, Wizard, Governance & Security Tests             PASSED
+   • 23/23 Test Files                                                    PASSED
+   • 226/226 Component, Wizard, Governance & Security Tests             PASSED
+           - Includes q04_functional.test.tsx (26/26 Q04 tests passed)
+           - Includes q15_q20_q21_functional.test.tsx (6/6 tests passed)
            - Includes responsePersistence.test.ts (P1 state normalization)
    -----------------------------------------------------------------------------
-   Total Frontend Suite: 115/115 PASSED (100%)
+   Total Frontend Suite: 226/226 PASSED (100%)
 
 3. Static Analysis & Build:
    • TypeScript Static Typecheck (`tsc --noEmit`):                       0 ERRORS
    • Next.js Production Turbopack Build (`next build`):                  PASSED
 
-4. Browser QA & Targeted P0/P1 E2E Verification (Chromium / Playwright):
-   • Part 1: Anonymous Assessment API Access (P0) Blocked (HTTP 401):    PASSED
-   • Part 2: Client Section A Multi-Cycle Save/Resume Persistence (P1):  PASSED
-   • Part 3: Assessment Submission & Immutability (HTTP 409 Conflict):   PASSED
-   • Finalization & Read-Only Behavior Across Page Reloads:              PASSED
+4. Controlled Q04 Regression & Deliverable Verification:
+   • Exact Integer & Decimal Intake (80.0, 12.5):                        PASSED
+   • Strict Zero (`0`) Preservation:                                     PASSED
+   • Negative Number Inline Rejection:                                   PASSED
+   • Unknown ("Not sure") Insufficient Data Handling:                    PASSED
+   • Legacy Categorical Banner Guidance without Midpoint Synthesis:      PASSED
+   • Executive Dashboard Stream A Numeric Q04 Display:                   PASSED
+   • Standalone PDF Annual Admin Hours (`annual_admin_hours` = 320.0):   PASSED
+   • Historical Assessment (`07d84c6a-...`) Immutability:                PASSED
 
 5. Database Migration Lifecycle:
    • Alembic Upgrade (0001 -> 0006):                                     PASSED
@@ -429,15 +524,19 @@ The database schema is managed via asynchronous Alembic migrations:
 | **Header Scale** | `5aa9fc5` | `feat: refine enterprise header scale` | Spacious ~77px enterprise header scale and brand mark scaling. |
 | **Header Fix** | `f0e1e96` | `fix: preserve dataeko header attribution visibility` | Top-right DATAEKO logo protected against horizontal clipping. |
 | **P0/P1 Fix** | `1b03e1a` | `fix: secure assessments and restore draft persistence` | Mandatory auth on assessment endpoints, draft state normalization, and anti-nesting. |
+| **Style Polish**| `0e60d73` | `style: refine UI branding, hover states, and login experience` | Header branding balance, subtle attribution, interactive hover states, login simplification. |
+| **Q04 Fallback**| `0ff094c` | `fix: remove non-authoritative Q04 report fallback` | Aligned Q04 intake to exact numeric quarterly hours and removed synthetic report fallbacks. |
+| **Q04 Pres.**  | `6a74bc7` | `fix: correct Q04 dashboard and report presentation` | Corrected Stream A dashboard display and PDF annual admin hours metric lookup. |
 
 ---
 
 ## 12. Planned Next Increments & Product Roadmap
 
-### Current Authoritative Checkpoint (`1b03e1a`)
-- **Authoritative Commit Hash**: `1b03e1a458a476cb26e33caf3a33fb4f1a10de89`
+### Current Authoritative Checkpoint (`6a74bc7`)
+- **Authoritative Commit Hash**: `6a74bc7c20c0dd1f28b49206b020059c381c8c50`
 - **Development Branch**: `dev` (Synchronized with `origin/dev`)
-- **Working Tree**: Clean (zero uncommitted changes, zero unpushed commits)
+- **Working Tree**: Clean (zero uncommitted changes)
+- **Q04 Intake & Presentation Status**: **RESOLVED** — Exact numeric intake, dashboard display, and PDF report lookup aligned with authoritative workbook.
 - **P0 Status**: **RESOLVED** — Strict authentication dependency on all assessment routes (`401 Unauthorized` on anonymous access).
 - **P1 Status**: **RESOLVED** — Client intake response persistence and state normalization verified across multiple save/reload cycles.
 - **Submission Finalization**: **VERIFIED** — Read-only state preserved upon submission; post-submission mutations strictly rejected with `HTTP 409 Conflict`.
