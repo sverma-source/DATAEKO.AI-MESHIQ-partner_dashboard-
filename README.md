@@ -675,14 +675,27 @@ The database schema is managed via asynchronous Alembic migrations:
 | **Q04 Pres.**  | `6a74bc7` | `fix: correct Q04 dashboard and report presentation` | Corrected Stream A dashboard display and PDF annual admin hours metric lookup. |
 | **Docs Update** | `a8fd831` | `docs: update project status and Q04 checkpoint` | Documented authoritative Q04 exact numeric quarterly hours and dashboard/report alignment. |
 | **UI Refine**   | `0cc18fa` | `feat: refine workspace presentation and branding` | Converted Consultant/Admin heroes to light treatment, elevated scope cards, subtle decorative rays, and modestly enlarged DATAEKO footer logo. |
+| **Docs Update** | `d83a94f` | `docs: update workspace presentation checkpoint` | Documented workspace presentation checkpoint and test suite validation. |
 | **PDF & Email** | `566e35b` | `feat: redesign executive report and client submission email` | Redesigned 3-page executive PDF report deliverable and client submission confirmation email. |
+| **Docs Update** | `9fe4c75` | `docs: update executive report and client email checkpoint` | Updated documentation for executive report deliverable and email redesign. |
 
 ---
 
 ## 12. Planned Next Increments & Product Roadmap
 
-### Current Authoritative Checkpoint (`566e35b`)
+### Current Demo Readiness / Demo Environment
+- **Development Branch**: `dev`
+- **Prior Checkpoint**: `9fe4c755` (`docs: update executive report and client email checkpoint`)
+- **Demo Customer Organizations**: 10 isolated demo organizations available (`DATAEKO Demo Client 01` through `DATAEKO Demo Client 10`).
+- **Demo Accounts**: 10 dedicated `CUSTOMER_ADMIN` login accounts configured under primary tenant context.
+- **Fresh Demonstration Workspaces**: Clients 06 through 10 are completely clean, dedicated demonstration workspaces configured with 0 assessments, 0 survey responses, 0 calculation snapshots, and 0 prior deliverables, prepared specifically for live manual Q01–Q22 assessment entry and end-to-end evaluation walkthroughs.
+- **Security & Customer Isolation**: Authenticated login and strict tenant/customer scoping validated across all accounts. Customer admins cannot access or mutate cross-organization records; zero system or production records are exposed in customer scopes.
+- **Calculation Engine & Business Integrity**: Golden Master tests remain **10/10 PASS**. Zero changes to calculation engine formulas, constants, thresholds, multipliers, lookup tables, or Q01–Q22 semantics.
+- **Safety Boundary**: Dedicated for live product demonstration only. Demo accounts and synthetic organizations must not be treated as production customers. No sensitive credentials, secrets, or tokens are stored in documentation or source control.
+
+### Current Authoritative Application Checkpoint (`566e35b` / `9fe4c755`)
 - **Authoritative Commit Hash**: `566e35bfbd9dd4d0ca3edb0205efc8f29ab17da1`
+- **Documentation Checkpoint**: `9fe4c755e27846ec363e40613bbe1bdf29083176`
 - **Development Branch**: `dev` (Synchronized with `origin/dev`)
 - **Working Tree**: Clean (application source committed; generated PDF artifacts excluded from commits)
 - **Executive PDF Report Status**: **RESOLVED** — Approved 3-page enterprise reference layout, strictly presentation-only, immutable snapshot reads.
