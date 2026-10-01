@@ -212,7 +212,7 @@ function ResetPasswordContent() {
           width={2048}
           height={375}
           unoptimized
-          className="w-14 sm:w-16 h-auto shrink-0"
+          className="w-[66px] sm:w-[78px] h-auto shrink-0"
         />
       </div>
     </div>

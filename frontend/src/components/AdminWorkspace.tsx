@@ -450,7 +450,7 @@ export const AdminWorkspace: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto py-3" data-testid="admin-workspace">
       {/* Enterprise Workspace Header Banner */}
-      <div className="rounded-2xl bg-[#0D1322] p-6 sm:p-7 border border-[#1E293B] shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden text-white">
+      <div className="rounded-2xl bg-gradient-to-br from-[#FAF7FD] via-[#F6F1FA] to-[#F1EBF7] p-6 sm:p-7 border border-[#E5D7F2] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden text-[#172033]">
         {/* meshIQ Governance Accent Hairline */}
         <div
           aria-hidden="true"
@@ -458,7 +458,7 @@ export const AdminWorkspace: React.FC = () => {
         />
 
         {/* Large Asymmetrical meshIQ Governance Contour / Radial Background Geometry */}
-        <div aria-hidden="true" className="hidden sm:block absolute -right-16 -top-14 w-80 h-64 md:w-[420px] md:h-[260px] pointer-events-none opacity-40">
+        <div aria-hidden="true" className="hidden sm:block absolute -right-16 -top-14 w-80 h-64 md:w-[420px] md:h-[260px] pointer-events-none opacity-25">
           <svg viewBox="0 0 420 260" className="w-full h-full" fill="none">
             {/* Governance purple and meshIQ green concentric arcs */}
             <circle cx="340" cy="50" r="140" stroke="#9333EA" strokeWidth="1" strokeDasharray="4 6" opacity="0.4" />
@@ -495,29 +495,29 @@ export const AdminWorkspace: React.FC = () => {
         <div className="space-y-1.5 max-w-3xl relative z-10">
           <div className="flex items-center space-x-2.5">
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${scopeConfig.badgeDark}`}
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${scopeConfig.badge}`}
             >
               <ShieldCheck className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
               {scopeConfig.title}
             </span>
-            <span className="text-xs text-slate-400 font-medium">
+            <span className="text-xs text-[#5B6579] font-medium">
               {scopeConfig.personaTitle}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172033] tracking-tight">
             Administration &amp; Governance Workspace
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#5B6579] leading-relaxed">
             {scopeConfig.desc}
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0 relative z-10">
-          <div className="rounded-xl bg-[#1E293B]/80 px-4 py-3 border border-[#334155] text-right">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          <div className="rounded-xl bg-white px-4 py-3 border border-[#E5D7F2] shadow-xs text-right">
+            <div className="text-[10px] font-bold text-[#5B6579] uppercase tracking-wider">
               {scopeConfig.scopeLabel}
             </div>
-            <div className="text-xs font-bold text-white font-mono mt-0.5">
+            <div className="text-xs font-bold text-[#172033] font-mono mt-0.5">
               {user?.tenant_id ? `${user.tenant_id.slice(0, 16)}...` : "System Scope"}
             </div>
           </div>
