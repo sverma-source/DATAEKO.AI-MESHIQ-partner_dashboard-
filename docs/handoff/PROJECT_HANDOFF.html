@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROJECT HANDOFF — DATAEKO × meshIQ Partner Dashboard</title>
+  <style>
+    :root {
+      --primary: #008638;
+      --primary-hover: #006b2c;
+      --primary-light: #EBF8F0;
+      --meshiq-green: #00D26A;
+      --meshiq-dark: #0B0F17;
+      --slate-900: #0F172A;
+      --slate-800: #1E293B;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748B;
+      --slate-400: #94A3B8;
+      --slate-300: #CBD5E1;
+      --slate-200: #E2E8F0;
+      --slate-100: #F1F5F9;
+      --slate-50: #F8FAFC;
+      --white: #FFFFFF;
+      --amber-600: #D97706;
+      --amber-50: #FFFBEB;
+      --red-600: #DC2626;
+      --red-50: #FEF2F2;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-800);
+      line-height: 1.65;
+    }
+
+    /* Top Accent Line */
+    .top-accent {
+      height: 4px;
+      background: linear-gradient(90deg, #008638 0%, #00D26A 50%, #C026D3 100%);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    /* Header */
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 1.25rem 2rem;
+      position: sticky;
+      top: 4px;
+      z-index: 90;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo { height: 30px; width: auto; }
+    .brand-divider { color: var(--slate-300); font-size: 1.35rem; }
+
+    .header-nav a {
+      color: var(--slate-600);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-left: 1.25rem;
+      transition: color 0.15s ease;
+    }
+
+    .header-nav a:hover { color: var(--primary); }
+
+    /* Layout: Sidebar + Main Content */
+    .layout-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      padding: 2rem;
+      gap: 2.5rem;
+    }
+
+    /* Sidebar Navigation */
+    aside.sidebar {
+      width: 290px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 90px;
+      max-height: calc(100vh - 110px);
+      overflow-y: auto;
+      padding-right: 0.75rem;
+    }
+
+    .sidebar-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--slate-500);
+      margin-bottom: 0.75rem;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: 0.25rem;
+    }
+
+    .sidebar-nav a {
+      display: block;
+      padding: 0.4rem 0.65rem;
+      color: var(--slate-600);
+      text-decoration: none;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-nav a:hover {
+      background: var(--slate-100);
+      color: var(--primary);
+    }
+
+    .sidebar-nav a.highlight-nav {
+      color: var(--red-600);
+      font-weight: 700;
+    }
+
+    /* Main Content Area */
+    main.content-area {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Hero Banner */
+    .doc-hero {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .doc-eyebrow {
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-hero h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--slate-900);
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 1rem;
+    }
+
+    .doc-hero p {
+      font-size: 1.05rem;
+      color: var(--slate-600);
+      margin-bottom: 1.5rem;
+      max-width: 860px;
+    }
+
+    .meta-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+
+    .pill {
+      background: var(--slate-100);
+      color: var(--slate-700);
+      border: 1px solid var(--slate-200);
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .pill.success {
+      background: #F0FDF4;
+      border-color: #BBF7D0;
+      color: #166534;
+      font-weight: 600;
+    }
+
+    /* Section Cards */
+    .section-card {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      padding: 2.25rem;
+      margin-bottom: 2.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .section-card h2 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--slate-900);
+      letter-spacing: -0.01em;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--slate-100);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--slate-800);
+      margin: 1.5rem 0 0.65rem;
+    }
+
+    .section-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--slate-700);
+      margin: 1.25rem 0 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    p { margin-bottom: 1rem; color: var(--slate-700); font-size: 0.95rem; }
+    ul, ol { margin-left: 1.5rem; margin-bottom: 1.25rem; font-size: 0.95rem; color: var(--slate-700); }
+    li { margin-bottom: 0.4rem; }
+
+    /* Protected Business Logic Alert Box */
+    .alert-box {
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      font-size: 0.925rem;
+    }
+
+    .alert-box.danger {
+      background: var(--red-50);
+      border-left: 5px solid var(--red-600);
+      color: #7F1D1D;
+    }
+
+    .alert-box.danger strong {
+      display: block;
+      font-size: 1.05rem;
+      margin-bottom: 0.4rem;
+      color: #991B1B;
+    }
+
+    .alert-box.warning {
+      background: var(--amber-50);
+      border-left: 5px solid var(--amber-600);
+      color: #78350F;
+    }
+
+    .alert-box.info {
+      background: var(--primary-light);
+      border-left: 5px solid var(--primary);
+      color: #064E3B;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0 1.75rem;
+      font-size: 0.875rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--slate-200);
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--slate-100);
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+    tr:hover td {
+      background: var(--slate-50);
+    }
+
+    /* Code & Technical Blocks */
+    pre {
+      background: var(--slate-900);
+      color: #E2E8F0;
+      padding: 1.15rem 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      margin: 1rem 0 1.5rem;
+      line-height: 1.55;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: var(--slate-100);
+      color: var(--slate-800);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .flow-diagram {
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.25rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .flow-node {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 6px;
+      padding: 0.65rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--slate-800);
+      width: 100%;
+      max-width: 520px;
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .flow-node.active-node {
+      background: var(--primary-light);
+      border-color: rgba(0,134,56,0.3);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .flow-conn {
+      color: var(--slate-400);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--white);
+      border-top: 1px solid var(--slate-200);
+      padding: 2rem;
+      margin-top: 4rem;
+      font-size: 0.85rem;
+      color: var(--slate-500);
+    }
+
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    @media (max-width: 992px) {
+      .layout-container { flex-direction: column; padding: 1.25rem; }
+      aside.sidebar { width: 100%; position: static; max-height: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-accent"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-content">
+      <div class="brand-group">
+        <img src="assets/meshiq-logo.png" alt="meshIQ Logo" class="brand-logo" onerror="this.style.display='none'">
+        <span class="brand-divider">×</span>
+        <img src="assets/dataeko-logo.png" alt="DATAEKO Logo" class="brand-logo" onerror="this.style.display='none'">
+      </div>
+      <nav class="header-nav">
+        <a href="START-HERE.html">&larr; Portal Home</a>
+        <a href="EMBED_GUIDE.html">Website Integration Guide</a>
+        <a href="README.txt" target="_blank">README.txt</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-container">
+
+    <!-- Sidebar Sticky Navigation (26 Sections) -->
+    <aside class="sidebar">
+      <div class="sidebar-title">Handoff Index (26 Topics)</div>
+      <ul class="sidebar-nav">
+        <li><a href="#sec-01">1. Project Overview</a></li>
+        <li><a href="#sec-02">2. Platform Purpose & Value</a></li>
+        <li><a href="#sec-03">3. Customer Workflow</a></li>
+        <li><a href="#sec-04">4. Consultant Workflow</a></li>
+        <li><a href="#sec-05">5. Admin Workflow</a></li>
+        <li><a href="#sec-06">6. Q01–Q22 Assessment</a></li>
+        <li><a href="#sec-07">7. Calculation Engine</a></li>
+        <li><a href="#sec-08">8. Economic Metrics</a></li>
+        <li><a href="#sec-09">9. CalculationSnapshot</a></li>
+        <li><a href="#sec-10">10. Executive Dashboard</a></li>
+        <li><a href="#sec-11">11. Scenario Functionality</a></li>
+        <li><a href="#sec-12">12. Executive PDF Report</a></li>
+        <li><a href="#sec-13">13. Email Workflow</a></li>
+        <li><a href="#sec-14">14. Authentication</a></li>
+        <li><a href="#sec-15">15. RBAC Permissions</a></li>
+        <li><a href="#sec-16">16. Tenant Isolation</a></li>
+        <li><a href="#sec-17">17. Frontend Architecture</a></li>
+        <li><a href="#sec-18">18. Backend Architecture</a></li>
+        <li><a href="#sec-19">19. Database Architecture</a></li>
+        <li><a href="#sec-20">20. Source Code Structure</a></li>
+        <li><a href="#sec-21">21. Testing Strategy</a></li>
+        <li><a href="#sec-22">22. Golden Master Verification</a></li>
+        <li><a href="#sec-23">23. Git Workflow</a></li>
+        <li><a href="#sec-24">24. Future Change Procedure</a></li>
+        <li><a href="#sec-25" class="highlight-nav">⚠️ 25. Protected Business Logic</a></li>
+        <li><a href="#sec-26">26. Website Integration</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Documentation Area -->
+    <main class="content-area">
+
+      <!-- Hero Summary -->
+      <section class="doc-hero">
+        <div class="doc-eyebrow">Authoritative Technical & Business Specification</div>
+        <h1>DATAEKO × meshIQ Partner Dashboard Handoff</h1>
+        <p>
+          Enterprise assessment platform designed to discover, quantify, and report the economic modernization opportunity for enterprise IBM MQ middleware environments using meshIQ observability and automation solutions.
+        </p>
+        <div class="meta-pills">
+          <span class="pill">Branch: <strong>meshiq-handoff</strong></span>
+          <span class="pill">Code Baseline: <strong>dev (e2ee663)</strong></span>
+          <span class="pill success">✓ Golden Master: <strong>10/10 PASS</strong></span>
+          <span class="pill success">✓ RBAC / Isolation: <strong>PASS</strong></span>
+          <span class="pill">PDF Engine: <strong>Chromium Headless</strong></span>
+        </div>
+      </section>
+
+      <!-- SECTION 1: Project Overview -->
+      <section id="sec-01" class="section-card">
+        <h2>1. Project Overview</h2>
+        <p>
+          The <strong>DATAEKO × meshIQ Partner Dashboard</strong> is an enterprise software solution built jointly by DATAEKO.AI and meshIQ. The application enables enterprise customers and consultants to evaluate complex IBM MQ middleware estates, analyze operational friction, and generate defensible economic valuations for modernization.
+        </p>
+        <p>
+          The platform combines a multi-step interactive intake wizard (Sections A–G), a deterministic Decimal-precision Python calculation engine, real-time executive dashboard visualizations, publication-grade 3-page executive PDF deliverables, and an asynchronous dual-branded email distribution pipeline.
+        </p>
+      </section>
+
+      <!-- SECTION 2: Purpose of the Platform -->
+      <section id="sec-02" class="section-card">
+        <h2>2. Purpose of the DATAEKO × meshIQ Assessment Platform</h2>
+        <p>
+          Enterprises operating legacy IBM MQ environments face three primary compounding costs:
+        </p>
+        <ul>
+          <li><strong>High Routine Administrative Overhead:</strong> Manual queue provisioning, channel cycling, credential rotation, and certificate audits consume thousands of specialist engineering hours annually.</li>
+          <li><strong>Prolonged Mean-Time-To-Resolution (MTTR):</strong> Lack of granular cross-queue visibility results in blind spots during incident triage, causing costly Sev-1/Sev-2 downtime.</li>
+          <li><strong>Compliance & Operational Risk:</strong> Missing message tracking and manual log gathering create significant regulatory exposure in banking, healthcare, and critical logistics.</li>
+        </ul>
+        <p>
+          The dashboard transforms discovery inputs into executive-ready metrics (3-Year Total Savings, 5-Year Cumulative ROI, Payback Months, and Hours Reclaimed) grounded in authoritative industry economic benchmarks.
+        </p>
+      </section>
+
+      <!-- SECTION 3: Customer Workflow -->
+      <section id="sec-03" class="section-card">
+        <h2>3. Customer Workflow (Client Experience)</h2>
+        <p>
+          Customers access the platform via client accounts (role <code>CUSTOMER_USER</code>). Upon authenticated login, the customer workflow proceeds as follows:
+        </p>
+        <div class="flow-diagram">
+          <div class="flow-node">1. Client Logs In (http://localhost:3000/login)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node active-node">2. Lands Directly in Assessment Wizard (Section A)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node">3. Completes Sections A through G (Q01–Q22 Manually)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node">4. Real-time Auto-Save & Resume Validation Across Sessions</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node">5. Review Summary Step (Visual Integrity Validation)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node active-node">6. Final Assessment Submission (Immutable Lock)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node">7. Read-Only Summary & Instant Confirmation Email Receipt</div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: Consultant Workflow -->
+      <section id="sec-04" class="section-card">
+        <h2>4. Consultant Workflow</h2>
+        <p>
+          Users authenticated with the <code>CONSULTANT</code> role land on the <strong>Consultant Portfolio Workspace</strong>. Consultants have elevated read and calculation access across all customer organizations within the tenant:
+        </p>
+        <ul>
+          <li><strong>Portfolio Overview:</strong> View submitted, calculated, and draft assessments across all client accounts.</li>
+          <li><strong>Economic Calculation Runs:</strong> Trigger the calculation engine on submitted customer assessments to generate immutable <code>CalculationSnapshot</code> records.</li>
+          <li><strong>Deliverable Distribution:</strong> Download executive PDF deliverables, review calculation audit logs, and trigger executive presentation packs.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 5: Admin Workflow -->
+      <section id="sec-05" class="section-card">
+        <h2>5. Admin Workflow (Platform & Partner Admins)</h2>
+        <p>
+          Users authenticated with <code>PLATFORM_ADMIN</code> or <code>PARTNER_ADMIN</code> roles have access to the <strong>Admin Governance Workspace</strong>:
+        </p>
+        <ul>
+          <li><strong>Customer Registry:</strong> Provision new customer organizations, update organizational metadata, and inspect client activity.</li>
+          <li><strong>User Lifecycle Governance:</strong> Provision new users, issue secure invitation tokens, reset credentials, and activate/deactivate accounts.</li>
+          <li><strong>Audit Trail Inspection:</strong> Real-time searchable log of all authentication events, assessment creations, response updates, and calculation executions.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 6: Q01–Q22 Assessment Questionnaire -->
+      <section id="sec-06" class="section-card">
+        <h2>6. Q01–Q22 Assessment Questionnaire (7 Sections)</h2>
+        <p>
+          The discovery questionnaire is organized into 7 structured architectural sections:
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Section</th>
+              <th>Domain</th>
+              <th>Question Codes</th>
+              <th>Primary Metrics Captured</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>A</strong></td>
+              <td>Infrastructure & Architecture</td>
+              <td>Q01, Q02, Q03</td>
+              <td>Queue managers, queues, channels, message throughput, deployment models.</td>
+            </tr>
+            <tr>
+              <td><strong>B</strong></td>
+              <td>Administration & Operations</td>
+              <td>Q04, Q05, Q06, Q07</td>
+              <td><strong>Q04 exact numeric quarterly hours</strong>, FTE count, administration hourly rate, change frequency.</td>
+            </tr>
+            <tr>
+              <td><strong>C</strong></td>
+              <td>Incidents & Problem Management</td>
+              <td>Q08, Q09, Q10, Q11</td>
+              <td>P1/P2 incident volume, MTTR triage hours, cost of downtime per hour, root-cause friction.</td>
+            </tr>
+            <tr>
+              <td><strong>D</strong></td>
+              <td>Monitoring & Observability</td>
+              <td>Q12, Q13, Q14</td>
+              <td>Tooling fragmentation, alerting blind spots, false positive rate.</td>
+            </tr>
+            <tr>
+              <td><strong>E</strong></td>
+              <td>Testing & Application Delivery</td>
+              <td>Q15, Q16, Q17</td>
+              <td>Integration testing cycle days, test harness automation, release friction.</td>
+            </tr>
+            <tr>
+              <td><strong>F</strong></td>
+              <td>Modernization & Hybrid Cloud</td>
+              <td>Q18, Q19, Q20</td>
+              <td>Cloud migration pace, hybrid connectivity, <strong>Q20 explicit default override</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>G</strong></td>
+              <td>Compliance, Security & Audit</td>
+              <td>Q21, Q22</td>
+              <td>Audit preparation weeks per year, message security governance, regulatory penalty risks.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- SECTION 7: Calculation Engine Architecture -->
+      <section id="sec-07" class="section-card">
+        <h2>7. Calculation Engine Architecture</h2>
+        <p>
+          Located in <code>backend/app/calculation_engine/</code>, the engine is implemented in pure, decoupled Python using <code>decimal.Decimal</code> to eliminate floating-point drift.
+        </p>
+        <p>
+          The engine takes normalized Q01–Q22 inputs and executes sequentially through isolated calculation streams:
+        </p>
+        <pre><code>Intake Inputs &rarr; Engine Orchestrator &rarr; Stream A &rarr; Stream B &rarr; Stream C &rarr; Stream D &rarr; Aggregate Valuation &rarr; CalculationSnapshot</code></pre>
+      </section>
+
+      <!-- SECTION 8: Economic Metrics & Formulas -->
+      <section id="sec-08" class="section-card">
+        <h2>8. Economic Metrics & Value Streams</h2>
+        <p>The valuation model decomposes economic impact into 4 distinct streams:</p>
+        <ul>
+          <li><strong>Stream A — Administrative Efficiency:</strong> Labor hours reclaimed through automated provisioning and configuration validation. Formulated from Q04 (exact quarterly hours &times; 4) and Q06 (loaded hourly rate).</li>
+          <li><strong>Stream B — Incident MTTR & Downtime Reduction:</strong> Sev-1/Sev-2 operational savings derived from incident frequency (Q08), MTTR reduction factor (Q09), and cost of downtime (Q10).</li>
+          <li><strong>Stream C — Testing & Release Velocity:</strong> Engineering labor reclaimed by accelerating middleware integration testing cycles (Q15, Q17).</li>
+          <li><strong>Stream D — Compliance & Audit Cost Avoidance:</strong> Reduction in audit preparation labor and regulatory penalty risk (Q21, Q22).</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 9: CalculationSnapshot Immutability -->
+      <section id="sec-09" class="section-card">
+        <h2>9. CalculationSnapshot Immutability</h2>
+        <p>
+          Calculations are never recalculated dynamically on report load. Instead, the backend persists an immutable <code>CalculationSnapshot</code> record upon calculation execution:
+        </p>
+        <ul>
+          <li><strong>Cryptographic Integrity:</strong> Includes input hash, model version tag (<code>1.0.0</code>), and complete serialized JSON payload.</li>
+          <li><strong>Auditable Provenance:</strong> Executive dashboards, CSV deliverables, and PDF reports read strictly from the snapshot. Historical records never shift when underlying constants or algorithms evolve in future releases.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 10: Executive Dashboard -->
+      <section id="sec-10" class="section-card">
+        <h2>10. Executive Dashboard</h2>
+        <p>
+          Rendered via <code>frontend/src/components/ExecutiveDashboard.tsx</code>, the executive view presents:
+        </p>
+        <ul>
+          <li>Top-line ROI headline metrics: 3-Year Net Savings, Cumulative ROI %, Payback Period.</li>
+          <li>Waterfall breakdown comparing Current Annual Spend vs. Projected Future Spend.</li>
+          <li>Stream A–D value contribution charts with interactive methodology tooltips.</li>
+          <li>Explicit provenance badges verifying snapshot timestamp and model integrity.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 11: Scenario Functionality -->
+      <section id="sec-11" class="section-card">
+        <h2>11. Scenario Functionality</h2>
+        <p>
+          The engine models three standardized modernization trajectories:
+        </p>
+        <ul>
+          <li><strong>Baseline (Authoritative):</strong> Default benchmark efficiency capture aligned with Golden Master tests.</li>
+          <li><strong>Conservative:</strong> Adjusted lower capture multipliers for phased migrations or highly risk-averse environments.</li>
+          <li><strong>Accelerated:</strong> Full-scale automation capture reflecting rapid enterprise-wide meshIQ adoption.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 12: Executive PDF Report Deliverable -->
+      <section id="sec-12" class="section-card">
+        <h2>12. Executive PDF Report Deliverable (3-Page Publication Layout)</h2>
+        <p>
+          Generated using headless Chromium via <code>frontend/scripts/render_report_pdf.mjs</code>, the 3-page deliverable is strictly presentation-only, reading directly from snapshot data:
+        </p>
+        <ul>
+          <li><strong>Page 1:</strong> Executive Cover, Key Value Summary, meshIQ Green header pill, Dual-brand logos, Top 4 Financial Metrics.</li>
+          <li><strong>Page 2:</strong> 5-Year Financial Projection table, Value Stream Breakdown (A–D), Efficiency vs. Risk decomposition.</li>
+          <li><strong>Page 3:</strong> Architectural Findings, Methodology Provenance, Disclaimer & Next Steps.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 13: Email Workflow & Notifications -->
+      <section id="sec-13" class="section-card">
+        <h2>13. Email Workflow & Notification Pipeline</h2>
+        <p>
+          Managed by <code>backend/app/services/email_service.py</code>:
+        </p>
+        <ul>
+          <li><strong>Client Confirmation:</strong> Automatically sent upon assessment submission with subject: <code>DATAEKO × meshIQ Assessment Submission Confirmation: {assessment_title}</code>.</li>
+          <li><strong>Dual-Branded HTML:</strong> Responsive, high-contrast, inline-styled transactional email template.</li>
+          <li><strong>Safety Invariant:</strong> In development, email delivery operates in test-mode / headless state (<code>EMAIL_ENABLED=False</code>) preventing accidental outbound email transmission.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 14: Authentication Architecture -->
+      <section id="sec-14" class="section-card">
+        <h2>14. Authentication Architecture</h2>
+        <p>
+          Implemented in <code>backend/app/core/security.py</code> and <code>backend/app/api/v1/auth.py</code>:
+        </p>
+        <ul>
+          <li><strong>HTTP-Only Cookies:</strong> Session tokens are issued in secure, HTTP-only, <code>SameSite=Lax</code> cookies preventing XSS token exfiltration.</li>
+          <li><strong>HMAC-SHA256 JWTs:</strong> Signed tokens contain subject, tenant ID, customer ID, role, and <code>auth_version</code>.</li>
+          <li><strong>Instant Invalidation:</strong> Password resets and admin deactivations increment <code>User.auth_version</code>, instantly invalidating active sessions across all devices.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 15: Role-Based Access Control (RBAC) -->
+      <section id="sec-15" class="section-card">
+        <h2>15. Role-Based Access Control (RBAC)</h2>
+        <p>The platform enforces 5 discrete roles:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Landing Experience</th>
+              <th>Permissions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>PLATFORM_ADMIN</code></td>
+              <td>Admin Governance</td>
+              <td>Full cross-tenant system administration, user management, audit logs.</td>
+            </tr>
+            <tr>
+              <td><code>PARTNER_ADMIN</code></td>
+              <td>Admin Governance</td>
+              <td>Tenant-level administration, customer onboarding, user management.</td>
+            </tr>
+            <tr>
+              <td><code>CONSULTANT</code></td>
+              <td>Consultant Portfolio</td>
+              <td>Cross-customer assessment read, calculate, and deliverable download.</td>
+            </tr>
+            <tr>
+              <td><code>CUSTOMER_ADMIN</code></td>
+              <td>Customer Admin</td>
+              <td>Manage client users within own customer organization; assessment oversight.</td>
+            </tr>
+            <tr>
+              <td><code>CUSTOMER_USER</code></td>
+              <td>Assessment Wizard</td>
+              <td>Fill out Q01–Q22 questionnaire, save draft, review, and submit own assessment.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- SECTION 16: Multi-Tenant & Customer Isolation -->
+      <section id="sec-16" class="section-card">
+        <h2>16. Multi-Tenant & Customer Isolation</h2>
+        <p>
+          All database tables enforce foreign key bindings to <code>tenants.id</code>. Customer-level users (<code>CUSTOMER_ADMIN</code> and <code>CUSTOMER_USER</code>) are additionally bound to <code>customers.id</code>:
+        </p>
+        <ul>
+          <li><strong>IDOR Defense:</strong> API endpoints verify caller customer binding; cross-organization requests return <code>404 Not Found</code>.</li>
+          <li><strong>User Directory Scoping:</strong> <code>GET /api/v1/users</code> strictly filters users to <code>User.customer_id == current_user.customer_id</code>.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 17: Frontend Architecture -->
+      <section id="sec-17" class="section-card">
+        <h2>17. Frontend Architecture</h2>
+        <ul>
+          <li><strong>Framework:</strong> Next.js 14+ (App Router) with TypeScript.</li>
+          <li><strong>State Management:</strong> React hooks with modular Context (<code>AuthContext</code>).</li>
+          <li><strong>Styling:</strong> Tailwind CSS utility tokens combined with custom meshIQ enterprise visual identity.</li>
+          <li><strong>Routing:</strong> Dynamic client-side role dispatching in <code>frontend/src/app/page.tsx</code>.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 18: Backend Architecture -->
+      <section id="sec-18" class="section-card">
+        <h2>18. Backend Architecture</h2>
+        <ul>
+          <li><strong>Framework:</strong> FastAPI (Python 3.11+, tested on 3.14).</li>
+          <li><strong>Async Database ORM:</strong> SQLAlchemy 2.0 with <code>aiosqlite</code> (local) and asyncpg (PostgreSQL).</li>
+          <li><strong>Validation:</strong> Pydantic v2 schemas for all request/response models.</li>
+          <li><strong>Observability:</strong> Structured JSON logging with request correlation IDs (<code>X-Request-ID</code>).</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 19: Database Architecture & Schema -->
+      <section id="sec-19" class="section-card">
+        <h2>19. Database Architecture & Schema</h2>
+        <p>Managed via asynchronous Alembic migrations:</p>
+        <ul>
+          <li><code>tenants</code>: Multi-tenant partitioning roots.</li>
+          <li><code>customers</code>: Enterprise client organizations.</li>
+          <li><code>users</code>: Authenticated user accounts with role and customer bindings.</li>
+          <li><code>assessments</code>: Assessment instances with lifecycle statuses (DRAFT, SUBMITTED, CALCULATED).</li>
+          <li><code>assessment_responses</code>: Serialized Q01–Q22 discovery answers.</li>
+          <li><code>calculation_snapshots</code>: Immutable point-in-time calculation outputs.</li>
+          <li><code>audit_events</code>: Immutable audit log for all system and security events.</li>
+          <li><code>user_credential_tokens</code>: SHA-256 hashed invitation and password reset tokens.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 20: Source Code Structure -->
+      <section id="sec-20" class="section-card">
+        <h2>20. Source Code Structure</h2>
+        <pre><code>DATAEKO.AI-MESHIQ-partner_dashboard-/
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/          # REST route handlers (auth, assessments, users, customers)
+│   │   ├── calculation_engine/ # Pure Python economic calculation algorithms
+│   │   ├── core/            # Security, JWT, database session, RBAC models
+│   │   ├── models/          # SQLAlchemy async ORM entity models
+│   │   ├── schemas/         # Pydantic validation schemas
+│   │   └── services/        # Email, deliverables, credential services
+│   ├── scripts/             # Operational bootstrap & seeding utilities
+│   └── tests/               # Pytest security, calculation, and API test suites
+├── frontend/
+│   ├── src/
+│   │   ├── app/             # Next.js App Router pages (login, wizard)
+│   │   ├── components/      # UI components (Wizard, QuestionCard, ExecutiveDashboard)
+│   │   ├── context/         # AuthContext & global state
+│   │   └── data/            # Q01–Q22 question catalog definitions
+│   └── scripts/             # Puppeteer PDF generation scripts
+└── docs/
+    └── handoff/             # Documentation and integration handoff package</code></pre>
+      </section>
+
+      <!-- SECTION 21: Testing Strategy -->
+      <section id="sec-21" class="section-card">
+        <h2>21. Testing Strategy</h2>
+        <p>The codebase is verified across multiple automated test layers:</p>
+        <ul>
+          <li><strong>Authentication & Session Security:</strong> 7 tests in <code>tests/security/test_authentication.py</code>.</li>
+          <li><strong>Customer Admin & Isolation:</strong> <code>tests/security/test_customer_admin_and_client_scoping.py</code>.</li>
+          <li><strong>RBAC & IDOR Defense:</strong> <code>tests/security/test_authorization_and_rbac.py</code> and <code>tests/security/test_tenant_isolation_and_idor.py</code>.</li>
+          <li><strong>Client Ownership:</strong> <code>tests/security/test_client_rbac_and_ownership.py</code>.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 22: Golden Master Tests -->
+      <section id="sec-22" class="section-card">
+        <h2>22. Golden Master Verification (10/10 PASS)</h2>
+        <p>
+          The calculation engine is continuously guarded by <strong>10 exhaustive Golden Master scenarios</strong> in <code>backend/tests/calculation_engine/test_golden_masters.py</code>:
+        </p>
+        <ul>
+          <li>Covers small, mid-size, global enterprise, cloud-native, and complex hybrid MQ estates.</li>
+          <li>Validates all Stream A–D calculations down to exact cents against approved financial models.</li>
+          <li><strong>Current Result: 10/10 PASS.</strong> Any PR causing a Golden Master divergence is immediately blocked.</li>
+        </ul>
+      </section>
+
+      <!-- SECTION 23: Git Workflow -->
+      <section id="sec-23" class="section-card">
+        <h2>23. Git Workflow & Version History</h2>
+        <ul>
+          <li><strong>Integration Branch:</strong> <code>dev</code> represents the authoritative development branch.</li>
+          <li><strong>Handoff Branch:</strong> <code>meshiq-handoff</code> contains this documentation package.</li>
+          <li><strong>Approved Commits:</strong>
+            <ul>
+              <li><code>566e35b</code>: Executive report and client submission email redesign.</li>
+              <li><code>9fe4c75</code>: Documentation checkpoint update.</li>
+              <li><code>e2ee663</code>: Demo readiness and test clients checkpoint.</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <!-- SECTION 24: Future Development Procedure -->
+      <section id="sec-24" class="section-card">
+        <h2>24. Future Development & Change Procedure</h2>
+        <p>To preserve software quality and protect business logic, all future development must follow this strict pipeline:</p>
+        <div class="flow-diagram">
+          <div class="flow-node">1. Create Feature Branch from dev (git checkout -b feat/your-feature)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node">2. Code Implementation (Preserve Protected Logic)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node active-node">3. Execute Test Suites (Security, API, Frontend)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node active-node">4. Validate Golden Masters (10/10 PASS Mandatory)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node">5. Production Frontend Build & Browser QA (npm run build)</div>
+          <div class="flow-conn">&darr;</div>
+          <div class="flow-node">6. Open Pull Request &rarr; Code Review &rarr; Merge to dev</div>
+        </div>
+      </section>
+
+      <!-- SECTION 25: Protected Business Logic -->
+      <section id="sec-25" class="section-card" style="border: 2px solid var(--red-600);">
+        <h2>⚠️ 25. Protected Business Logic (Mandatory Safeguards)</h2>
+        <div class="alert-box danger">
+          <strong>CRITICAL ARCHITECTURAL DIRECTIVE FOR FUTURE DEVELOPERS</strong>
+          The economic calculation engine, question catalog mappings, and valuation methodologies represent approved commercial intellectual property. Future engineering tasks must NOT alter the protected logic listed below without explicit, written stakeholder approval.
+        </div>
+
+        <h3>Strictly Protected Entities & Invariants:</h3>
+        <ul>
+          <li><strong>Q01–Q22 Semantics & Catalog Mappings:</strong> Question codes, unit dimensions, scoring scales, and default overrides (such as Q20) must not be renamed, reordered, or removed.</li>
+          <li><strong>Q04 Exact Numeric Intake:</strong> Q04 captures exact quarterly administration hours. It must never be replaced with synthetic ranges or approximations.</li>
+          <li><strong>Calculation Formulas & Constants:</strong> Formulas for Streams A, B, C, and D, loaded labor multipliers, incident risk factors, and payback math are mathematically binding.</li>
+          <li><strong>Decimal Arithmetic & Rounding:</strong> All calculations must use Python's <code>decimal.Decimal</code> to prevent binary floating-point drift.</li>
+          <li><strong>CalculationSnapshot Immutability:</strong> Historical snapshots must never be overwritten, recomputed, or modified after creation.</li>
+          <li><strong>Golden Master Test Invariant:</strong> All 10 Golden Master tests in <code>test_golden_masters.py</code> must pass 10/10.</li>
+          <li><strong>Tenant & Customer Isolation:</strong> Foreign key scoping (<code>tenant_id</code>, <code>customer_id</code>) and IDOR defenses must remain enforced on all API routes.</li>
+        </ul>
+        <p>
+          <em>If any future business requirement appears to conflict with these invariants, the developer must STOP and obtain formal stakeholder approval before proceeding.</em>
+        </p>
+      </section>
+
+      <!-- SECTION 26: Website Integration Guidance -->
+      <section id="sec-26" class="section-card">
+        <h2>26. Website Integration Guidance (Conceptual Overview)</h2>
+        <div class="alert-box info">
+          <strong>Notice:</strong> This section provides conceptual integration blueprints for the manager. No external websites (including <code>dataeko.ai</code> or <code>meshiq.com</code>) have been modified by this project.
+        </div>
+        <p>
+          When the project manager is ready to integrate this application into the public marketing portal, the recommended pattern is adding a call-to-action card on <code>https://dataeko.ai/partners/meshiq</code> linking to the separately hosted application:
+        </p>
+        <pre><code>DATAEKO.AI (/partners/meshiq) &rarr; "Start Assessment" &rarr; https://YOUR-ASSESSMENT-DOMAIN/meshiq</code></pre>
+        <p>
+          For complete technical details on marketing card blueprints, domain routing, and iframe trade-offs, please refer to the companion guide: <a href="EMBED_GUIDE.html"><strong>EMBED_GUIDE.html</strong></a>.
+        </p>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div>DATAEKO × meshIQ Partner Dashboard &bull; Project Handoff Specification &bull; Confidential & Proprietary</div>
+      <div>Authoritative Baseline: <code>dev</code> (Commit <code>e2ee663</code>)</div>
+    </div>
+  </footer>
+
+</body>
+</html>

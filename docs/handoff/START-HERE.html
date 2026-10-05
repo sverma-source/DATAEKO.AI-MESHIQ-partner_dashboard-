@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DATAEKO × meshIQ Partner Dashboard — Project Handoff</title>
+  <style>
+    :root {
+      --primary: #008638;
+      --primary-hover: #006b2c;
+      --primary-light: #EBF8F0;
+      --meshiq-green: #00D26A;
+      --slate-900: #0F172A;
+      --slate-800: #1E293B;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748B;
+      --slate-200: #E2E8F0;
+      --slate-100: #F1F5F9;
+      --slate-50: #F8FAFC;
+      --white: #FFFFFF;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--slate-50);
+      color: var(--slate-800);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Brand Accent */
+    .top-accent {
+      height: 4px;
+      background: linear-gradient(90deg, #008638 0%, #00D26A 50%, #C026D3 100%);
+      width: 100%;
+    }
+
+    /* Header */
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 1.25rem 2rem;
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .brand-logo {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .brand-divider {
+      color: var(--slate-300);
+      font-weight: 300;
+      font-size: 1.5rem;
+    }
+
+    .badge-dev {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: 1px solid rgba(0, 134, 56, 0.2);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+
+    .hero-eyebrow {
+      color: var(--primary);
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--slate-900);
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      line-height: 1.25;
+    }
+
+    .hero p {
+      font-size: 1.125rem;
+      color: var(--slate-600);
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.75rem;
+      margin-bottom: 3rem;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(0, 134, 56, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .card-accent-tag {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--slate-200);
+    }
+
+    .card.primary-card .card-accent-tag {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--meshiq-green) 100%);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+      background: var(--slate-100);
+      color: var(--slate-700);
+    }
+
+    .card.primary-card .card-icon {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .card-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.35rem;
+      color: var(--slate-900);
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .card p {
+      font-size: 0.925rem;
+      color: var(--slate-600);
+      margin-bottom: 1.5rem;
+      flex-grow: 1;
+    }
+
+    .card-features {
+      list-style: none;
+      margin-bottom: 1.75rem;
+      font-size: 0.85rem;
+      color: var(--slate-600);
+    }
+
+    .card-features li {
+      padding: 0.35rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-features li::before {
+      content: "✓";
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.925rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+      border: 1px solid var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: var(--slate-50);
+      color: var(--slate-700);
+      border: 1px solid var(--slate-200);
+    }
+
+    .btn-secondary:hover {
+      background: var(--slate-100);
+      color: var(--slate-900);
+    }
+
+    /* Verification Status Banner */
+    .status-banner {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .status-info h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 0.25rem;
+    }
+
+    .status-info p {
+      font-size: 0.85rem;
+      color: var(--slate-500);
+    }
+
+    .status-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .badge-pill {
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+      color: var(--slate-700);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .badge-pill strong {
+      color: var(--slate-900);
+    }
+
+    .badge-pill.success {
+      background: #F0FDF4;
+      border-color: #BBF7D0;
+      color: #166534;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--white);
+      border-top: 1px solid var(--slate-200);
+      padding: 1.5rem 2rem;
+      font-size: 0.8rem;
+      color: var(--slate-500);
+      margin-top: auto;
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-attribution {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-logo {
+      height: 18px;
+      width: auto;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+      main {
+        padding: 2rem 1rem;
+      }
+      .hero h1 {
+        font-size: 1.75rem;
+      }
+      .status-banner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Brand Accent Line -->
+  <div class="top-accent"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="brand-group">
+        <img src="assets/meshiq-logo.png" alt="meshIQ Logo" class="brand-logo" onerror="this.style.display='none'">
+        <span class="brand-divider">×</span>
+        <img src="assets/dataeko-logo.png" alt="DATAEKO Logo" class="brand-logo" onerror="this.style.display='none'">
+      </div>
+      <div>
+        <span class="badge-dev">Enterprise Handoff Package</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <div class="hero">
+      <div class="hero-eyebrow">Project Documentation & Architecture Delivery</div>
+      <h1>IBM MQ Economic Cost & Efficiency Assessment</h1>
+      <p>
+        Executive, technical, and web integration documentation package for the DATAEKO × meshIQ Partner Dashboard.
+        Select your role below to explore the authoritative documentation.
+      </p>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="status-banner">
+      <div class="status-info">
+        <h3>Repository Verification Baseline</h3>
+        <p>Branch: <code>meshiq-handoff</code> &bull; Source Baseline: <code>dev</code> (Commit <code>e2ee663</code>)</p>
+      </div>
+      <div class="status-badges">
+        <span class="badge-pill success">✓ Golden Master: <strong>10/10 PASS</strong></span>
+        <span class="badge-pill success">✓ Security & Scoping: <strong>PASS</strong></span>
+        <span class="badge-pill">Executive PDF: <strong>3-Page Approved</strong></span>
+        <span class="badge-pill">Client Email: <strong>Dual-Branded HTML</strong></span>
+      </div>
+    </div>
+
+    <!-- 3 Action Cards Grid -->
+    <div class="cards-grid">
+
+      <!-- Card 1: Project Manager / Business -->
+      <div class="card primary-card">
+        <div class="card-accent-tag"></div>
+        <div class="card-icon">📊</div>
+        <span class="card-badge">Primary Reference</span>
+        <h2>Executive & Technical Handoff</h2>
+        <p>
+          The authoritative 26-section project handoff for project managers, directors, and executives. Explains business logic, architecture, calculation engine, customer journey, and deliverables.
+        </p>
+        <ul class="card-features">
+          <li>Customer, Consultant & Admin Workflows</li>
+          <li>Q01–Q22 Methodology & Economic Formulas</li>
+          <li>CalculationSnapshots & Executive Deliverables</li>
+          <li>RBAC, Multi-Tenancy & Protected Logic</li>
+        </ul>
+        <a href="PROJECT_HANDOFF.html" class="btn btn-primary">Open PROJECT_HANDOFF.html &rarr;</a>
+      </div>
+
+      <!-- Card 2: Marketing & Web Integration -->
+      <div class="card">
+        <div class="card-accent-tag"></div>
+        <div class="card-icon">🌐</div>
+        <span class="card-badge">Portal Architecture</span>
+        <h2>Website Integration Guide</h2>
+        <p>
+          Strategic guidance and architectural blueprints for linking the assessment tool from <code>dataeko.ai/partners/meshiq</code> to a separately hosted application instance.
+        </p>
+        <ul class="card-features">
+          <li>Recommended Portal CTA / Card Blueprint</li>
+          <li>Domain & Subdomain Routing Patterns</li>
+          <li>Optional iframe Considerations & CSP</li>
+          <li>Zero External Modifications Notice</li>
+        </ul>
+        <a href="EMBED_GUIDE.html" class="btn btn-secondary">Open EMBED_GUIDE.html &rarr;</a>
+      </div>
+
+      <!-- Card 3: Engineering / Developer -->
+      <div class="card">
+        <div class="card-accent-tag"></div>
+        <div class="card-icon">💻</div>
+        <span class="card-badge">Engineering Reference</span>
+        <h2>Developer Reference & README</h2>
+        <p>
+          Plaintext manifest, repository structure, setup instructions, test suite execution guide, and Golden Master mathematical safeguards for developers.
+        </p>
+        <ul class="card-features">
+          <li>FastAPI Backend & Next.js Frontend Setup</li>
+          <li>SQLite / PostgreSQL Schema & Alembic</li>
+          <li>Golden Master Test Commands (10/10)</li>
+          <li>Safety Invariants & Secret Boundaries</li>
+        </ul>
+        <a href="README.txt" class="btn btn-secondary" target="_blank">View README.txt &rarr;</a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <div>
+        <span>DATAEKO × meshIQ Partner Dashboard &bull; Confidential & Proprietary</span>
+      </div>
+      <div class="footer-attribution">
+        <span>Powered by</span>
+        <img src="assets/dataeko-logo.png" alt="DATAEKO" class="footer-logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

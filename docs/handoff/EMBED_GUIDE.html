@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Integration & Architecture Guide — DATAEKO × meshIQ</title>
+  <style>
+    :root {
+      --primary: #008638;
+      --primary-hover: #006b2c;
+      --primary-light: #EBF8F0;
+      --meshiq-green: #00D26A;
+      --slate-900: #0F172A;
+      --slate-800: #1E293B;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748B;
+      --slate-200: #E2E8F0;
+      --slate-100: #F1F5F9;
+      --slate-50: #F8FAFC;
+      --white: #FFFFFF;
+      --amber-500: #F59E0B;
+      --amber-50: #FFFBEB;
+      --amber-900: #78350F;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-800);
+      line-height: 1.65;
+    }
+
+    .top-accent {
+      height: 4px;
+      background: linear-gradient(90deg, #008638 0%, #00D26A 50%, #C026D3 100%);
+    }
+
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 1.25rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo { height: 28px; width: auto; }
+    .brand-divider { color: var(--slate-300); font-size: 1.25rem; }
+
+    .nav-links a {
+      color: var(--slate-600);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-left: 1.5rem;
+      transition: color 0.15s ease;
+    }
+
+    .nav-links a:hover { color: var(--primary); }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    /* Prominent Mandatory Disclaimer */
+    .disclaimer-banner {
+      background: var(--amber-50);
+      border-left: 4px solid var(--amber-500);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+      color: var(--amber-900);
+      font-size: 0.95rem;
+    }
+
+    .disclaimer-banner strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 0.35rem;
+      color: #92400E;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--slate-900);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+
+    .lead {
+      font-size: 1.15rem;
+      color: var(--slate-600);
+      margin-bottom: 2.5rem;
+    }
+
+    .section-card {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--slate-800);
+      margin: 1.25rem 0 0.5rem;
+    }
+
+    p { margin-bottom: 1rem; color: var(--slate-700); font-size: 0.95rem; }
+
+    /* Architecture Flow Chart */
+    .flow-chart {
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .flow-step {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 6px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--slate-800);
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .flow-step.highlight {
+      background: var(--primary-light);
+      border-color: rgba(0,134,56,0.3);
+      color: var(--primary);
+    }
+
+    .flow-arrow {
+      color: var(--slate-400);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    /* Code Blocks */
+    pre {
+      background: var(--slate-900);
+      color: #E2E8F0;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      margin: 1rem 0 1.5rem;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: var(--slate-100);
+      color: var(--slate-800);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    /* Comparison Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    th {
+      background: var(--slate-100);
+      font-weight: 600;
+      color: var(--slate-900);
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-rec { background: #DCFCE7; color: #166534; }
+    .badge-opt { background: #FEF3C7; color: #92400E; }
+
+    footer {
+      border-top: 1px solid var(--slate-200);
+      padding: 1.5rem 2rem;
+      background: var(--white);
+      font-size: 0.85rem;
+      color: var(--slate-500);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-accent"></div>
+
+  <header>
+    <div class="header-content">
+      <div class="brand-group">
+        <img src="assets/meshiq-logo.png" alt="meshIQ" class="brand-logo" onerror="this.style.display='none'">
+        <span class="brand-divider">×</span>
+        <img src="assets/dataeko-logo.png" alt="DATAEKO" class="brand-logo" onerror="this.style.display='none'">
+      </div>
+      <nav class="nav-links">
+        <a href="START-HERE.html">&larr; Portal Home</a>
+        <a href="PROJECT_HANDOFF.html">Project Handoff</a>
+        <a href="README.txt" target="_blank">README.txt</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Mandatory Notice -->
+    <div class="disclaimer-banner">
+      <strong>⚠️ Informational & Architectural Architecture Guide Only</strong>
+      This guide is strictly informational. <strong>No external website has been modified by this project</strong> (including <code>dataeko.ai</code>, <code>dataeko.ai/partners/meshiq</code>, or <code>meshiq.com</code>). All deployment configurations, domain assignments, and website link integrations will be decided and performed separately by the project owner/manager.
+    </div>
+
+    <h1>Website Integration & Portal Architecture Guide</h1>
+    <p class="lead">
+      Architectural options and implementation blueprints for integrating the DATAEKO × meshIQ Economic Assessment tool into public-facing marketing portals.
+    </p>
+
+    <!-- SECTION 1: Recommended Architecture -->
+    <div class="section-card">
+      <h2>1. Recommended Approach: Marketing Portal CTA &rarr; Separately Hosted App <span class="badge-pill badge-rec">Recommended</span></h2>
+      <p>
+        The enterprise best-practice architecture is to keep marketing portals (e.g. <code>dataeko.ai</code>) and specialized transactional software applications (e.g. the Partner Dashboard) independently hosted.
+      </p>
+      <p>
+        In this model, the DATAEKO.AI partner page introduces the assessment value proposition and provides a clear call-to-action button that routes authenticated clients to a dedicated application domain.
+      </p>
+
+      <div class="flow-chart">
+        <div class="flow-step">DATAEKO.AI Marketing Site (https://dataeko.ai)</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">Partner Showcase Page (/partners/meshiq)</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">Existing "Visit meshIQ.com" & Hero Section</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step highlight">DATAEKO × meshIQ Assessment Section / CTA Card</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step">"Start Assessment" (or "Launch Partner Calculator")</div>
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step highlight">Separately Hosted Assessment App (https://YOUR-ASSESSMENT-DOMAIN/meshiq)</div>
+      </div>
+
+      <h3>Why This Approach is Superior:</h3>
+      <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--slate-700);">
+        <li><strong>Security & Session Cookies:</strong> The application relies on secure HTTP-only cookies (<code>SameSite=Lax</code>). Independent hosting prevents cross-site third-party cookie restrictions in Safari, Chrome, and iOS.</li>
+        <li><strong>Independent Release Cycles:</strong> Engineering can deploy dashboard updates, new calculation scenarios, or PDF template enhancements without risking marketing CMS downtime.</li>
+        <li><strong>Responsive Viewports:</strong> The assessment wizard features rich interactive tables, sliders, charts, and modal dialogs that perform best when rendered in full viewport dimensions rather than bounded frames.</li>
+        <li><strong>Performance:</strong> No overhead from marketing page tracking scripts, heavy web fonts, or CMS stylesheets interfering with application execution.</li>
+      </ul>
+
+      <h3>Conceptual Marketing Card Blueprint (HTML/CSS Example):</h3>
+      <p>Below is an illustrative snippet showing how the CTA card could appear on the <code>/partners/meshiq</code> marketing page:</p>
+
+      <pre><code>&lt;!-- Illustrative Partner Page Assessment Callout Card --&gt;
+&lt;section class="meshiq-assessment-callout" style="background: #0F172A; color: #FFFFFF; border-radius: 12px; padding: 2.5rem; margin: 3rem 0;"&gt;
+  &lt;div style="max-width: 640px;"&gt;
+    &lt;span style="color: #00D26A; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em;"&gt;Enterprise Economic Modeling&lt;/span&gt;
+    &lt;h3 style="font-size: 1.75rem; font-weight: 800; margin: 0.5rem 0 1rem; color: #FFFFFF;"&gt;IBM MQ Economic Cost &amp; Efficiency Assessment&lt;/h3&gt;
+    &lt;p style="color: #94A3B8; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem;"&gt;
+      Quantify administration savings, incident downtime reduction, and 3-year modernization ROI across your IBM MQ enterprise infrastructure.
+    &lt;/p&gt;
+    &lt;!-- Manager/Admin will replace placeholder URL with authoritative domain during deployment --&gt;
+    &lt;a href="https://YOUR-ASSESSMENT-DOMAIN/meshiq" target="_blank" rel="noopener noreferrer"
+       style="display: inline-block; background: #008638; color: #FFFFFF; font-weight: 600; padding: 0.85rem 1.75rem; border-radius: 8px; text-decoration: none;"&gt;
+      Start Assessment &rarr;
+    &lt;/a&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+    </div>
+
+    <!-- SECTION 2: Optional iframe Embedding -->
+    <div class="section-card">
+      <h2>2. Optional Alternative: iframe Embedding <span class="badge-pill badge-opt">Optional Alternative</span></h2>
+      <p>
+        An alternative conceptual approach is embedding the assessment tool inside an <code>&lt;iframe&gt;</code> on the partner page. While technically feasible, it introduces operational and security considerations that must be evaluated:
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Architecture Consideration</th>
+            <th>Dedicated Application (Recommended)</th>
+            <th>iframe Embed (Alternative)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Authentication & Cookies</strong></td>
+            <td>Standard First-Party HTTP-only cookies. Zero browser blocking.</td>
+            <td>Requires <code>SameSite=None; Secure</code> third-party cookies, which modern browsers restrict by default.</td>
+          </tr>
+          <tr>
+            <td><strong>Content Security Policy (CSP)</strong></td>
+            <td>Standard origin policy. Complete clickjacking protection.</td>
+            <td>Requires permissive <code>frame-ancestors</code> allowing <code>dataeko.ai</code> and <code>meshiq.com</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Mobile & Tablet Viewport</strong></td>
+            <td>Full responsive control, sticky section steps, touch-friendly.</td>
+            <td>Often triggers nested scrollbars and clipped modal dialogs on mobile viewports.</td>
+          </tr>
+          <tr>
+            <td><strong>PDF & Deliverable Download</strong></td>
+            <td>Direct browser downloads with native PDF previewers.</td>
+            <td>Requires specific iframe permissions (<code>allow-downloads</code>, <code>allow-popups</code>).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>If iframe Embedding is Chosen by Management:</h3>
+      <p>If management decides to implement iframe embedding in the future, the backend will require adjusting CSP headers and cookie flags as follows:</p>
+      <pre><code># Required backend configuration if embedded within an iframe:
+# 1. Content Security Policy:
+Content-Security-Policy: frame-ancestors 'self' https://dataeko.ai https://*.dataeko.ai https://meshiq.com;
+
+# 2. Session Cookie Flag:
+Set-Cookie: access_token=...; SameSite=None; Secure; HttpOnly;</code></pre>
+    </div>
+
+    <!-- SECTION 3: Production Deployment & Routing Checklist -->
+    <div class="section-card">
+      <h2>3. Production Deployment & Domain Checklist</h2>
+      <p>When preparing the production deployment, the following steps should be completed by the DevOps or project lead:</p>
+      <ol style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--slate-700); line-height: 1.8;">
+        <li><strong>Domain Provisioning:</strong> Allocate a subdomain such as <code>meshiq-assessment.dataeko.ai</code> or <code>partners.dataeko.ai/meshiq</code>.</li>
+        <li><strong>SSL / TLS Termination:</strong> Ensure HTTPS is enforced with valid enterprise certificates.</li>
+        <li><strong>Environment Variables:</strong> Configure production API URLs, secure database connection strings, and strong JWT secrets (never use dev defaults in production).</li>
+        <li><strong>CORS Configuration:</strong> Set <code>BACKEND_CORS_ORIGINS</code> to include the authoritative portal domain.</li>
+        <li><strong>Portal Link Update:</strong> Replace all <code>https://YOUR-ASSESSMENT-DOMAIN/meshiq</code> placeholders on marketing pages with the authoritative live URL.</li>
+      </ol>
+    </div>
+  </main>
+
+  <footer>
+    <div>DATAEKO × meshIQ Assessment Platform &bull; Website Integration Architecture Guide &bull; Informational Only</div>
+  </footer>
+
+</body>
+</html>
