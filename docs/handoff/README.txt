@@ -28,23 +28,30 @@ The primary document for the project manager is:
    - Central landing page designed for stakeholders opening the package.
    - Provides 1-click links to Business Handoff, Web Integration, and Technical docs.
 
-2. PROJECT_HANDOFF.html
+2. CLIENT_EXPERIENCE.html
+   - Standalone, interactive client application walkthrough for manager & co-founder review.
+   - Visually demonstrates what an authentic client (CUSTOMER_USER) sees after login:
+     all 7 sections, all 22 questions, Q04 exact numeric fact (200 hrs/qtr), pre-submission
+     review summary, confirmation modal, and finalized read-only record.
+   - 100% self-contained offline HTML with embedded assets and zero dependencies.
+
+3. PROJECT_HANDOFF.html
    - The primary comprehensive 26-section technical and business specification.
    - Covers: Architecture, Customer/Consultant/Admin workflows, Q01-Q22 questionnaire,
      Calculation Engine, Economic formulas, Snapshots, Executive PDF & Email deliverables,
      Security (RBAC, Multi-tenancy, Auth), Golden Master testing, and Protected Logic.
 
-3. EMBED_GUIDE.html
+4. EMBED_GUIDE.html
    - Architectural guidance for future website integration.
    - Conceptual models for adding an assessment card/CTA to dataeko.ai/partners/meshiq
      pointing to a separately hosted application instance (Recommended), as well as
      optional iframe considerations.
    - NOTE: Informational only. No external website was modified by this project.
 
-4. README.txt (this file)
+5. README.txt (this file)
    - Plaintext summary, manifest, and local verification instructions.
 
-5. assets/
+6. assets/
    - Official DATAEKO and meshIQ logo assets for offline browser rendering.
 
 --------------------------------------------------------------------------------
@@ -52,6 +59,9 @@ The primary document for the project manager is:
 --------------------------------------------------------------------------------
 To view the documentation, simply double-click or open any of the HTML files in
 any modern web browser (Chrome, Safari, Firefox, Edge):
+
+- For interactive client experience walkthrough:
+    Open: docs/handoff/CLIENT_EXPERIENCE.html
 
 - For executive & business review:
     Open: docs/handoff/START-HERE.html  or  docs/handoff/PROJECT_HANDOFF.html
