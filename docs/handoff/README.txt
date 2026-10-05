@@ -4,8 +4,8 @@ IBM MQ Economic Cost & Efficiency Assessment Platform
 ================================================================================
 
 Target Audience: Project Manager, Executive Leadership, Development & Web Teams
-Branch: meshiq-handoff
-Approved Baseline: dev (commit e2ee663)
+Application Source Baseline: dev @ e2ee663
+Handoff Documentation Checkpoint: meshiq-handoff @ 8ca76a2b30cdf86e8742a47baba7d0448a704b43
 Status: Complete, Validated, Ready for Integration Decision
 
 --------------------------------------------------------------------------------
@@ -14,9 +14,9 @@ Status: Complete, Validated, Ready for Integration Decision
 This documentation package provides complete technical and business architecture
 handoff for the DATAEKO × meshIQ Partner Dashboard.
 
-The platform quantifies the economic value, labor efficiency gains, and risk
-reduction of modernizing enterprise IBM MQ estates using meshIQ middleware
-analytics and automation.
+The platform quantifies IBM MQ operational effort, business exposure, customer-reported
+MQ spend, recovered hours, and illustrative productivity opportunity, with explicit
+data provenance and scenario classification.
 
 The primary document for the project manager is:
     docs/handoff/PROJECT_HANDOFF.html

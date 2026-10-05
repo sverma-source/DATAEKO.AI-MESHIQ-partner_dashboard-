@@ -290,7 +290,7 @@
         The enterprise best-practice architecture is to keep marketing portals (e.g. <code>dataeko.ai</code>) and specialized transactional software applications (e.g. the Partner Dashboard) independently hosted.
       </p>
       <p>
-        In this model, the DATAEKO.AI partner page introduces the assessment value proposition and provides a clear call-to-action button that routes authenticated clients to a dedicated application domain.
+        In this model, the DATAEKO.AI partner page introduces the assessment value proposition and provides a clear call-to-action that routes users to the dedicated assessment application, where authentication is handled by the application.
       </p>
 
       <div class="flow-chart">
@@ -324,7 +324,7 @@
     &lt;span style="color: #00D26A; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em;"&gt;Enterprise Economic Modeling&lt;/span&gt;
     &lt;h3 style="font-size: 1.75rem; font-weight: 800; margin: 0.5rem 0 1rem; color: #FFFFFF;"&gt;IBM MQ Economic Cost &amp; Efficiency Assessment&lt;/h3&gt;
     &lt;p style="color: #94A3B8; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem;"&gt;
-      Quantify administration savings, incident downtime reduction, and 3-year modernization ROI across your IBM MQ enterprise infrastructure.
+      Quantify IBM MQ operational effort, business exposure, customer-reported MQ spend, recovered hours, and illustrative productivity opportunity, with explicit data provenance and scenario classification.
     &lt;/p&gt;
     &lt;!-- Manager/Admin will replace placeholder URL with authoritative domain during deployment --&gt;
     &lt;a href="https://YOUR-ASSESSMENT-DOMAIN/meshiq" target="_blank" rel="noopener noreferrer"
@@ -337,7 +337,10 @@
 
     <!-- SECTION 2: Optional iframe Embedding -->
     <div class="section-card">
-      <h2>2. Optional Alternative: iframe Embedding <span class="badge-pill badge-opt">Optional Alternative</span></h2>
+      <h2>2. Optional Future Architecture: iframe Embedding <span class="badge-pill badge-opt">Optional Future Architecture</span></h2>
+      <p style="font-weight: 600; color: var(--amber-900); background: var(--amber-50); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid #FDE68A;">
+        Optional future architecture — not implemented or tested as a production integration.
+      </p>
       <p>
         An alternative conceptual approach is embedding the assessment tool inside an <code>&lt;iframe&gt;</code> on the partner page. While technically feasible, it introduces operational and security considerations that must be evaluated:
       </p>

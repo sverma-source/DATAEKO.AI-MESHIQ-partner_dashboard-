@@ -476,8 +476,8 @@
           Enterprise assessment platform designed to discover, quantify, and report the economic modernization opportunity for enterprise IBM MQ middleware environments using meshIQ observability and automation solutions.
         </p>
         <div class="meta-pills">
-          <span class="pill">Branch: <strong>meshiq-handoff</strong></span>
-          <span class="pill">Code Baseline: <strong>dev (e2ee663)</strong></span>
+          <span class="pill">Application source baseline: <strong>dev @ e2ee663</strong></span>
+          <span class="pill">Handoff documentation checkpoint: <strong>meshiq-handoff @ 8ca76a2b30cdf86e8742a47baba7d0448a704b43</strong></span>
           <span class="pill success">✓ Golden Master: <strong>10/10 PASS</strong></span>
           <span class="pill success">✓ RBAC / Isolation: <strong>PASS</strong></span>
           <span class="pill">PDF Engine: <strong>Chromium Headless</strong></span>
@@ -507,7 +507,7 @@
           <li><strong>Compliance & Operational Risk:</strong> Missing message tracking and manual log gathering create significant regulatory exposure in banking, healthcare, and critical logistics.</li>
         </ul>
         <p>
-          The dashboard transforms discovery inputs into executive-ready metrics (3-Year Total Savings, 5-Year Cumulative ROI, Payback Months, and Hours Reclaimed) grounded in authoritative industry economic benchmarks.
+          The dashboard transforms discovery inputs to quantify IBM MQ operational effort, business exposure, customer-reported MQ spend, recovered hours, and illustrative productivity opportunity, with explicit data provenance and scenario classification.
         </p>
       </section>
 
@@ -518,7 +518,7 @@
           Customers access the platform via client accounts (role <code>CUSTOMER_USER</code>). Upon authenticated login, the customer workflow proceeds as follows:
         </p>
         <div class="flow-diagram">
-          <div class="flow-node">1. Client Logs In (http://localhost:3000/login)</div>
+          <div class="flow-node">1. Client signs in through the assessment application</div>
           <div class="flow-conn">&darr;</div>
           <div class="flow-node active-node">2. Lands Directly in Assessment Wizard (Section A)</div>
           <div class="flow-conn">&darr;</div>
@@ -665,10 +665,10 @@
           Rendered via <code>frontend/src/components/ExecutiveDashboard.tsx</code>, the executive view presents:
         </p>
         <ul>
-          <li>Top-line ROI headline metrics: 3-Year Net Savings, Cumulative ROI %, Payback Period.</li>
-          <li>Waterfall breakdown comparing Current Annual Spend vs. Projected Future Spend.</li>
-          <li>Stream A–D value contribution charts with interactive methodology tooltips.</li>
-          <li>Explicit provenance badges verifying snapshot timestamp and model integrity.</li>
+          <li>Primary economic headline metrics: Total Quantified Operational Labor Cost, Operational FTE Burden, Annual Incident Downtime Exposure, and Annual Hours Reclaimed.</li>
+          <li>Operational breakdown quantifying customer-reported MQ spend, operational effort, and recovered hours across baseline and modeled scenarios.</li>
+          <li>Stream A–D value contribution views with interactive methodology tooltips.</li>
+          <li>Explicit provenance badges verifying snapshot timestamp, calculation model version, and data integrity.</li>
         </ul>
       </section>
 
@@ -692,9 +692,9 @@
           Generated using headless Chromium via <code>frontend/scripts/render_report_pdf.mjs</code>, the 3-page deliverable is strictly presentation-only, reading directly from snapshot data:
         </p>
         <ul>
-          <li><strong>Page 1:</strong> Executive Cover, Key Value Summary, meshIQ Green header pill, Dual-brand logos, Top 4 Financial Metrics.</li>
-          <li><strong>Page 2:</strong> 5-Year Financial Projection table, Value Stream Breakdown (A–D), Efficiency vs. Risk decomposition.</li>
-          <li><strong>Page 3:</strong> Architectural Findings, Methodology Provenance, Disclaimer & Next Steps.</li>
+          <li><strong>Page 1:</strong> Executive Overview & Key Impact Metrics (MQ estate sizing, annual administration hours, business exposure, customer-reported MQ spend, recovered hours, illustrative productivity opportunity).</li>
+          <li><strong>Page 2:</strong> Operational Effort & Labor Cost Decomposition (value stream decomposition across Streams A–D, labor rates, and efficiency opportunity).</li>
+          <li><strong>Page 3:</strong> Incident Triage, Testing Acceleration & Audit Governance (incident impact, MTTR, testing cycles, audit preparation, methodology provenance, and next steps).</li>
         </ul>
       </section>
 
@@ -714,6 +714,10 @@
       <!-- SECTION 14: Authentication Architecture -->
       <section id="sec-14" class="section-card">
         <h2>14. Authentication Architecture</h2>
+        <div class="alert-box info">
+          <strong>Current Authentication / Demo Environment:</strong>
+          The current environment includes controlled demo/presentation accounts for evaluation. Production identity integration for DATAEKO/meshIQ corporate users, enterprise SSO/IdP integration, and final production login UX remain future decisions and are not part of this website integration handoff. Production user provisioning and identity architecture must be finalized with DATAEKO/meshIQ stakeholders before production deployment.
+        </div>
         <p>
           Implemented in <code>backend/app/core/security.py</code> and <code>backend/app/api/v1/auth.py</code>:
         </p>
@@ -870,9 +874,9 @@
       <section id="sec-23" class="section-card">
         <h2>23. Git Workflow & Version History</h2>
         <ul>
-          <li><strong>Integration Branch:</strong> <code>dev</code> represents the authoritative development branch.</li>
-          <li><strong>Handoff Branch:</strong> <code>meshiq-handoff</code> contains this documentation package.</li>
-          <li><strong>Approved Commits:</strong>
+          <li><strong>Application Source Baseline:</strong> <code>dev @ e2ee663</code> (Authoritative application source code).</li>
+          <li><strong>Handoff Documentation Checkpoint:</strong> <code>meshiq-handoff @ 8ca76a2b30cdf86e8742a47baba7d0448a704b43</code> (Dedicated documentation branch).</li>
+          <li><strong>Approved Commits on dev:</strong>
             <ul>
               <li><code>566e35b</code>: Executive report and client submission email redesign.</li>
               <li><code>9fe4c75</code>: Documentation checkpoint update.</li>
@@ -913,7 +917,7 @@
         <ul>
           <li><strong>Q01–Q22 Semantics & Catalog Mappings:</strong> Question codes, unit dimensions, scoring scales, and default overrides (such as Q20) must not be renamed, reordered, or removed.</li>
           <li><strong>Q04 Exact Numeric Intake:</strong> Q04 captures exact quarterly administration hours. It must never be replaced with synthetic ranges or approximations.</li>
-          <li><strong>Calculation Formulas & Constants:</strong> Formulas for Streams A, B, C, and D, loaded labor multipliers, incident risk factors, and payback math are mathematically binding.</li>
+          <li><strong>Calculation Formulas & Constants:</strong> Formulas for Streams A, B, C, and D, loaded labor multipliers, incident risk factors, and valuation algorithms are mathematically binding.</li>
           <li><strong>Decimal Arithmetic & Rounding:</strong> All calculations must use Python's <code>decimal.Decimal</code> to prevent binary floating-point drift.</li>
           <li><strong>CalculationSnapshot Immutability:</strong> Historical snapshots must never be overwritten, recomputed, or modified after creation.</li>
           <li><strong>Golden Master Test Invariant:</strong> All 10 Golden Master tests in <code>test_golden_masters.py</code> must pass 10/10.</li>
@@ -928,7 +932,7 @@
       <section id="sec-26" class="section-card">
         <h2>26. Website Integration Guidance (Conceptual Overview)</h2>
         <div class="alert-box info">
-          <strong>Notice:</strong> This section provides conceptual integration blueprints for the manager. No external websites (including <code>dataeko.ai</code> or <code>meshiq.com</code>) have been modified by this project.
+          <strong>Notice:</strong> This section provides conceptual integration blueprints for the manager. <strong>No external website has been modified</strong> (including <code>dataeko.ai</code>, <code>dataeko.ai/partners/meshiq</code>, or <code>meshiq.com</code>). The handoff contains architectural guidance only; the production assessment URL is currently a placeholder (<code>https://YOUR-ASSESSMENT-DOMAIN/meshiq</code>); and all live deployment, domain provisioning, and website link integrations will be performed later by the project owner/manager.
         </div>
         <p>
           When the project manager is ready to integrate this application into the public marketing portal, the recommended pattern is adding a call-to-action card on <code>https://dataeko.ai/partners/meshiq</code> linking to the separately hosted application:
@@ -946,7 +950,7 @@
   <footer>
     <div class="footer-content">
       <div>DATAEKO × meshIQ Partner Dashboard &bull; Project Handoff Specification &bull; Confidential & Proprietary</div>
-      <div>Authoritative Baseline: <code>dev</code> (Commit <code>e2ee663</code>)</div>
+      <div>Application source baseline: <code>dev @ e2ee663</code> &bull; Handoff documentation checkpoint: <code>meshiq-handoff @ 8ca76a2b30cdf86e8742a47baba7d0448a704b43</code></div>
     </div>
   </footer>
 
