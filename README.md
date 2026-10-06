@@ -56,28 +56,134 @@ Persisted Immutable CalculationSnapshot
 
 ## 2. Current Project Status & Checkpoint
 
-The platform is under active development on the **`dev`** branch. The authoritative **Executive Report & Client Submission Email Redesign** checkpoint has been completed, verified across automated and live browser tests, and committed.
+The platform is under active development on the **`meshiq-handoff`** documentation and demonstration branch, established from the authoritative application source baseline on **`dev`** (`e2ee663`).
+
+### Current Status Overview
+
+- **Core Assessment Application**: Implemented and operational across customer, consultant, and platform administrator roles.
+- **Q01–Q22 Workflow**: Fully implemented across 7 canonical thematic sections (A–G) with autosave, resume, pre-flight review summary, and formal submission orchestration.
+- **Deterministic Calculation Engine**: Implemented in pure Python using `Decimal` arithmetic; verified with 10/10 passing Golden Master reference scenarios.
+- **Immutable Calculation Snapshots**: Implemented and enforced; calculation runs generate immutable database snapshots that feed all downstream reporting.
+- **Executive Dashboard**: Implemented with 3-tier KPI hierarchy, operational effort decomposition, impact gauges, and provenance classification tags.
+- **Scenario Functionality**: Implemented with controlled efficiency and incident reduction modeling, visually isolated from baseline facts.
+- **3-Page Executive PDF Report**: Implemented using headless Chromium with deterministic snapshot data lookup and governance guardrails.
+- **Internal & Client Email Workflows**: Implemented via Gmail API OAuth 2.0; delivers internal advisor notifications (with PDF + CSV) and client confirmation notices (zero attachments, zero financial metrics).
+- **Audit Logging, RBAC & Tenant Isolation**: Implemented with 5 canonical roles, individual client assessment ownership, and customer-scoped administration.
+- **Standalone Client Experience Deliverable (`CLIENT_EXPERIENCE.html`)**: Fully implemented, pixel-faithful, self-contained offline HTML artifact available for meshIQ stakeholder and executive review.
+- **Manager & Co-Founder Handoff Documentation (`docs/handoff/`)**: Comprehensive technical and architectural documentation package available.
+- **Golden Master Test Suite**: 10/10 reference scenarios passing (`backend/tests/calculation_engine/test_golden_masters.py`).
+- **External Website Invariant**: **No external DATAEKO.AI or meshIQ website modified** (`dataeko.ai`, `dataeko.ai/partners/meshiq`, `meshiq.com`).
+- **Future Deployment & Identity**: Production identity (enterprise SSO / IdP SAML/OIDC) and final website hosting deployment remain future architectural decisions.
 
 ### Current Checkpoint Summary
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Git Checkpoint** | `566e35b` (`feat: redesign executive report and client submission email`) |
-| **Authoritative Commit Hash** | `566e35bfbd9dd4d0ca3edb0205efc8f29ab17da1` |
-| **Development Branch** | `dev` (Synchronized with `origin/dev`) |
-| **Implementation Stage** | **Executive Report & Client Submission Email Redesign Complete (Presentation-Only)** |
-| **Executive PDF Template** | **Approved 3-Page Enterprise Reference** (Exec Summary & 4 KPIs, Effort Decomposition & Show the Math, Isolated MQ Spend, Scenarios, Provenance & Governance Safeguards) |
-| **Client Email Presentation** | **DATAEKO × meshIQ Dual Branding** (Green accent, dark hero, SUBMITTED badge, Q01–Q22 table, responsive inline CSS, strict contract preservation) |
+| **Current Git Checkpoint** | `cbeb275` (`fix(demo): resolve icon sizing and align client experience demo with real application`) |
+| **Documentation & Handoff Branch** | `meshiq-handoff` |
+| **Application Source Baseline** | `dev` @ `e2ee663` |
+| **Primary Executive Deliverable** | `docs/handoff/CLIENT_EXPERIENCE.html` (Self-contained offline client experience walkthrough) |
+| **Handoff Documentation Package** | `docs/handoff/` (`START-HERE.html`, `PROJECT_HANDOFF.html`, `EMBED_GUIDE.html`, `README.txt`, `assets/`, `.zip`) |
+| **Calculation Engine Status** | Pure Python Decimal engine, 10/10 Golden Masters passing, 100% frozen |
 | **Q04 Authoritative Rule** | Exact numeric quarterly hours (`hours / quarter`); Annual hours = `Q04 × 4` |
 | **Q04 Dashboard Display** | Displays exact `{value} hours / quarter`; `"OVERRIDE"` internal token hidden |
 | **Q04 PDF Deliverable** | Resolves authoritative `annual_admin_hours` metric; shows calculated annual hours |
 | **P0 Authentication Boundary** | **RESOLVED** (`401 Unauthorized` enforced for all unauthenticated assessment API requests) |
 | **P1 Save/Resume Persistence** | **RESOLVED** (Reliable multi-cycle response persistence; nested payload stripping; dropdown/override resilience) |
 | **Submission Immutability** | **VERIFIED** (Read-only view preserved across reloads; `HTTP 409 Conflict` on post-finalization mutations) |
-| **Working Tree** | **Clean** (Application code committed; generated PDFs intentionally outside source commits) |
-| **Next Planned Work** | **Incremental Product Roadmap Features (P2, P3, Defensible Economic Outputs, etc.)** |
-| **Deployment Status** | **Deferred** (Local development only; no production deployment performed) |
-| **Email Status** | **Client Submission Confirmation Redesigned & Tested** (Exact subject contract, zero attachments, zero economics exposed) |
+| **Working Tree** | **Clean** (All documentation, demo artifacts, and tests verified) |
+| **Deployment Status** | **Deferred** (Local development and offline review; no external production deployment performed) |
+| **Email Status** | **Tested & Validated** (Exact subject contract, zero attachments, zero economics exposed to client) |
+
+---
+
+### Standalone Client Experience Deliverable (`CLIENT_EXPERIENCE.html`)
+
+A primary deliverable of this checkpoint is the self-contained client-facing experience located at:
+`docs/handoff/CLIENT_EXPERIENCE.html`
+
+This artifact enables meshIQ leadership, co-founders, and stakeholders to experience the authentic client assessment journey directly in any modern browser without requiring a running development environment, local servers, APIs, or database installations.
+
+#### Key Capabilities & Architecture:
+- **Offline & Zero-Dependency**: Entirely self-contained (HTML, compiled CSS, pure vanilla JS, embedded base64 brand assets). Double-clickable and operable without an internet connection or localhost server.
+- **Authentic Client Visual Fidelity**: Reproduces the actual client-facing application layout, color palette (`#008638`, `#172033`), typography, and spacing from production components (`login/page.tsx`, `QuestionCard.tsx`, `SectionNavigation.tsx`, `ReviewSummary.tsx`, `SubmittedResponsesView.tsx`).
+- **Bounded SVG & Vector Rendering**: All 44 vector icons have explicit inline dimension boundaries (`12px` to `20px`) and component-scoped classes (`.lucide`, `.shrink-0`), eliminating SVG distortion across all browsers.
+- **New Assessment Initial State**: Opens immediately to a newly initialized assessment state:
+  - Header: `SECTION 1 OF 7 · 0 OF 22 QUESTIONS ANSWERED`
+  - Progress: `0%` completion bar
+  - Status: `✓ Draft initialized`
+  - Section A: `0/5 Answered`
+  - Questions Q01 and Q02 start in a clean, unanswered dropdown state (`-- Choose an assessment response --`).
+- **Discreet Presentation Shortcuts**: Demo aids (`Pre-fill 22 Demo Responses`, `Reset to Clean Assessment`, `View Review Screen`, `View Finalized View`) are housed inside the authenticated User Menu dropdown (`client@dataeko.ai`), keeping the main client UI authentic.
+
+#### The 7 Canonical Assessment Sections (Q01–Q22):
+1. **Section A: Environment & Cost Baseline (Q01–Q05)** — Queue manager estate scale, staffing & administration resources, operational model, quarterly administration hours (Q04), and legacy infrastructure debt.
+2. **Section B: Troubleshooting Economics (Q06–Q08)** — Incident frequency, staff labor hours expended per investigation (Q07), and elapsed diagnostic clock duration.
+3. **Section C: Operational Complexity & Productivity (Q09–Q11)** — Monitoring tool sprawl, cross-technology manual tracing friction, and primary productivity constraints.
+4. **Section D: Business Consequence & Financial Exposure (Q12–Q15)** — Outage severity, recent disruption history, disruption duration (Q14), and estimated hourly downtime cost override (Q15).
+5. **Section E: Cost Reduction & Organizational Pressure (Q16–Q17)** — Executive OpEx reduction mandate and target reduction percentage.
+6. **Section F: Cybersecurity & Remediation (Q18–Q19)** — Regulatory audit pressure and vulnerability remediation friction.
+7. **Section G: Economic Inputs & Timing (Q20–Q22)** — Fully loaded annual labor rate override (Q20), customer-reported annual MQ spend (Q21), and target modernization timeframe.
+
+#### Q04 Treatment:
+- **Exact Numeric Fact**: `200 hours / quarter` for the representative demo profile.
+- **Feeds Calculation Badge**: Explicitly flagged as a calculation driver (`H_admin = Q04 × 4`).
+- **Customer Fact**: Distinguished from categorical dropdown selections; never converted to weekly hours or range lookups.
+
+#### Recommended Stakeholder Review Flow (10 Steps):
+1. **Download/Save Locally**: Download or save `docs/handoff/CLIENT_EXPERIENCE.html` to a local folder.
+2. **Open in Browser**: Double-click or open the file directly in any modern browser (Google Chrome, Microsoft Edge, Safari, Firefox).
+3. **Client Login Experience**: Start from the client login page featuring official meshIQ branding, dark-accent platform title, and credential fields.
+4. **1-Click Demo Login**: Click **"Continue as Demo Client →"** (or use the presentation access card for `client@dataeko.ai`).
+5. **Walk Through Sections A–G**: Navigate through all 7 canonical sections using the sticky Section Navigation bar.
+6. **Review Q01–Q22 in Clean State**: Inspect question cards in their initial state (unanswered dropdowns, exact customer fact inputs, compact Engine Impact cards, and expandable Consultant Probing guidance).
+7. **Review Representative Demo Responses**: Either enter responses manually or click the user menu (`client@dataeko.ai`) and select **"Pre-fill 22 Demo Responses"** to populate the approved presentation profile.
+8. **Continue through Review & Submit**: Access the **"Review & Submit"** tab to inspect the 22-question audit breakdown, standard vs. customer fact provenance counts, and submit confirmation modal.
+9. **Review Final/Read-Only Customer Experience**: Confirm submission to view the finalized, read-only discovery record with immutable response badges and submission metadata.
+10. **Provide Feedback**: Share stakeholder feedback on usability, question wording, thematic organization, visual branding, and overall customer journey.
+
+> [!IMPORTANT]
+> **Stakeholder Demonstration Boundaries:**
+> - `CLIENT_EXPERIENCE.html` is a standalone demonstration and review export. It does **not** represent production hosting, enterprise SSO, or live database connectivity.
+> - The embedded presentation profile uses **representative demonstration data only** and must **NOT** be represented as real customer data or verified customer claims.
+> - The platform and demo **do not** make unsupported claims regarding guaranteed cash savings, 3-year modernization ROI, or payback periods.
+
+---
+
+### Manager & Co-Founder Handoff Package (`docs/handoff/`)
+
+To support project handoff to leadership and future web integration teams, a comprehensive documentation package is maintained under `docs/handoff/`:
+
+| Document | Purpose & Audience |
+| :--- | :--- |
+| **`START-HERE.html`** | Executive launchpad and project orientation. Outlines core workflows, deliverables, and quick links. |
+| **`PROJECT_HANDOFF.html`** | Definitive 26-section technical and architectural handoff covering backend, frontend, calculation engine, data model, RBAC, testing, and deployment options. |
+| **`EMBED_GUIDE.html`** | Architectural options and technical considerations for future DATAEKO.AI website integration. |
+| **`CLIENT_EXPERIENCE.html`** | Self-contained client experience walkthrough for meshIQ stakeholder and executive review. |
+| **`README.txt`** | Plaintext distribution summary, file inventory, and verification instructions. |
+| **`assets/`** | Official high-resolution logo assets (`meshiq-logo.png`, `dataeko-logo.png`). |
+| **`DATAEKO-MESHIQ-Partner-Dashboard-Handoff.zip`** | Portable offline archive containing the complete handoff package for easy distribution. |
+
+#### Architectural Boundaries & Website Integration Guidance:
+- **No External Websites Modified**: This project has **NOT** made any modifications to `dataeko.ai`, `dataeko.ai/partners/meshiq`, `meshiq.com`, or any external web property. All external website changes will be evaluated and performed independently by the web integration team.
+- **Recommended Website Integration**: The recommended architecture is a direct link / CTA button (e.g., *"Start MQ Economic Assessment"*) on the `DATAEKO.AI /partners/meshiq` page pointing to a separately hosted assessment application domain (e.g., `assessment.dataeko.ai` or `meshiq-assessment.dataeko.ai`).
+- **Optional Iframe Architecture**: Iframe embedding is documented in `EMBED_GUIDE.html` as an architectural option for future consideration, but is **not** currently a production-tested integration.
+- **Enterprise Identity & SSO**: Enterprise Identity Provider integration (SAML 2.0 / OIDC / Azure AD / Okta) and final production deployment topology remain future architectural decisions.
+
+---
+
+### Protected Business Logic & Architectural Invariants
+
+The following core modules are strictly frozen and protected across all development and documentation checkpoints:
+
+1. **Deterministic Calculation Engine**: Pure Python Decimal arithmetic in `backend/app/calculation_engine/**`. Zero floats, zero synthetic midpoints, zero heuristic recalculations.
+2. **Authoritative Mathematical Models**: All formulas (`C_ADMIN`, `C_TRB`, `C_TOTAL`, `Exposure`, `Scenario`), constants, multipliers, and lookup tables remain unaltered.
+3. **Q01–Q22 Semantics**: Question catalog structure, question codes, option mappings, and override mechanics (`Q15`, `Q20`, `Q21`) are strictly preserved.
+4. **Q04 Quarterly Intake Contract**: `Q04` captures exact quarterly hours (`hours / quarter`). Annual hours = `Q04 × 4`. The database column retains legacy name `q04_weekly_admin_hours` for schema compatibility, but its authoritative semantics represent quarterly hours.
+5. **Calculation Snapshot Immutability**: Persisted calculation snapshots in the database are immutable; report views, dashboards, and deliverables read exclusively from snapshot fields without recalculating.
+6. **Database Schema & Migrations**: Baseline schema through migration `0006_user_auth_version.py` remain frozen.
+7. **Security, RBAC & Customer Scoping**: 5-tier role hierarchy, individual client assessment ownership, customer-scoped user administration, token hashing, and per-user session invalidation (`auth_version`) remain intact.
+8. **Golden Master Test Suite**: All 10/10 reference test scenarios (TC-01 through TC-10) must pass without modification.
 
 ---
 
@@ -675,9 +781,13 @@ The database schema is managed via asynchronous Alembic migrations:
 | **Q04 Pres.**  | `6a74bc7` | `fix: correct Q04 dashboard and report presentation` | Corrected Stream A dashboard display and PDF annual admin hours metric lookup. |
 | **Docs Update** | `a8fd831` | `docs: update project status and Q04 checkpoint` | Documented authoritative Q04 exact numeric quarterly hours and dashboard/report alignment. |
 | **UI Refine**   | `0cc18fa` | `feat: refine workspace presentation and branding` | Converted Consultant/Admin heroes to light treatment, elevated scope cards, subtle decorative rays, and modestly enlarged DATAEKO footer logo. |
-| **Docs Update** | `d83a94f` | `docs: update workspace presentation checkpoint` | Documented workspace presentation checkpoint and test suite validation. |
 | **PDF & Email** | `566e35b` | `feat: redesign executive report and client submission email` | Redesigned 3-page executive PDF report deliverable and client submission confirmation email. |
 | **Docs Update** | `9fe4c75` | `docs: update executive report and client email checkpoint` | Updated documentation for executive report deliverable and email redesign. |
+| **Demo Setup**  | `e2ee663` | `docs: checkpoint demo readiness and test clients` | Configured 10 isolated demo customer organizations and verified fresh demo accounts. |
+| **Handoff Pkg** | `8ca76a2` | `docs: create standalone manager handoff package` | Created `docs/handoff/` package (`START-HERE.html`, `PROJECT_HANDOFF.html`, `EMBED_GUIDE.html`). |
+| **Handoff Refine** | `7b7fee8` | `docs: refine manager handoff documentation` | Aligned handoff documentation wording to operational effort & exposure quantification. |
+| **Client Demo** | `70b7fea` | `docs: create standalone client experience demo` | Created `docs/handoff/CLIENT_EXPERIENCE.html` standalone client walkthrough. |
+| **Demo Polish** | `cbeb275` | `fix(demo): resolve icon sizing and align client experience demo with real application` | Systematic SVG sizing fix, removed demo toolbar, verified clean 0% initial intake state. |
 
 ---
 
@@ -685,7 +795,6 @@ The database schema is managed via asynchronous Alembic migrations:
 
 ### Current Demo Readiness / Demo Environment
 - **Development Branch**: `dev`
-- **Prior Checkpoint**: `9fe4c755` (`docs: update executive report and client email checkpoint`)
 - **Demo Customer Organizations**: 10 isolated demo organizations available (`DATAEKO Demo Client 01` through `DATAEKO Demo Client 10`).
 - **Demo Accounts**: 10 dedicated `CUSTOMER_ADMIN` login accounts configured under primary tenant context.
 - **Fresh Demonstration Workspaces**: Clients 06 through 10 are completely clean, dedicated demonstration workspaces configured with 0 assessments, 0 survey responses, 0 calculation snapshots, and 0 prior deliverables, prepared specifically for live manual Q01–Q22 assessment entry and end-to-end evaluation walkthroughs.
@@ -693,11 +802,11 @@ The database schema is managed via asynchronous Alembic migrations:
 - **Calculation Engine & Business Integrity**: Golden Master tests remain **10/10 PASS**. Zero changes to calculation engine formulas, constants, thresholds, multipliers, lookup tables, or Q01–Q22 semantics.
 - **Safety Boundary**: Dedicated for live product demonstration only. Demo accounts and synthetic organizations must not be treated as production customers. No sensitive credentials, secrets, or tokens are stored in documentation or source control.
 
-### Current Authoritative Application Checkpoint (`566e35b` / `9fe4c755`)
-- **Authoritative Commit Hash**: `566e35bfbd9dd4d0ca3edb0205efc8f29ab17da1`
-- **Documentation Checkpoint**: `9fe4c755e27846ec363e40613bbe1bdf29083176`
-- **Development Branch**: `dev` (Synchronized with `origin/dev`)
-- **Working Tree**: Clean (application source committed; generated PDF artifacts excluded from commits)
+### Current Authoritative Application Checkpoint (`meshiq-handoff`)
+- **Authoritative Source Baseline**: `dev` @ `e2ee663`
+- **Documentation & Handoff Branch**: `meshiq-handoff`
+- **Working Tree**: Clean (all application code committed; documentation and demo artifacts verified)
+- **Executive Deliverable**: `docs/handoff/CLIENT_EXPERIENCE.html` (Self-contained offline client experience walkthrough)
 - **Executive PDF Report Status**: **RESOLVED** — Approved 3-page enterprise reference layout, strictly presentation-only, immutable snapshot reads.
 - **Client Submission Confirmation Email Status**: **RESOLVED** — Modern responsive dual-branded presentation, strict contract preservation.
 - **Workspace Presentation & Branding Status**: **RESOLVED** — Clean light-theme Consultant and Admin hero cards, elevated white scope cards, and enhanced footer logo visibility.
