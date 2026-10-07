@@ -172,6 +172,33 @@ To support project handoff to leadership and future web integration teams, a com
 
 ---
 
+### AI Context & Architecture Knowledge Base (`docs/ai-context/`)
+
+To support automated architectural evaluation, security auditing, and continuous design enhancements without regressing protected business logic, a comprehensive 18-document AI-readable knowledge base is maintained under [`docs/ai-context/`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/):
+
+| Document | Authoritative Scope |
+| :--- | :--- |
+| **[`00_AI_CONTEXT_INDEX.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/00_AI_CONTEXT_INDEX.md)** | **Master Knowledge Base Index**, navigation map, and AI consumption instructions. |
+| **[`01_PROJECT_OVERVIEW.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/01_PROJECT_OVERVIEW.md)** | Executive vision, DATAEKO × meshIQ partnership context, and technical stack. |
+| **[`02_CLIENT_EXPERIENCE.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/02_CLIENT_EXPERIENCE.md)** | Detailed client persona, assessment wizard, sections A–G, and Q01–Q22 workflow. |
+| **[`03_CONSULTANT_EXPERIENCE.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/03_CONSULTANT_EXPERIENCE.md)** | Consultant portfolio, calculation runs, 3-tier dashboard, and provenance drawers. |
+| **[`04_ADMIN_EXPERIENCE.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/04_ADMIN_EXPERIENCE.md)** | Platform/Partner/Customer admin tiers, RBAC capabilities, and user management. |
+| **[`05_FRONTEND_ARCHITECTURE.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/05_FRONTEND_ARCHITECTURE.md)** | Next.js 16 App Router, React 19, state management, and component architecture. |
+| **[`06_BACKEND_ARCHITECTURE.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/06_BACKEND_ARCHITECTURE.md)** | FastAPI async services, dependency injection, and correlation ID middleware. |
+| **[`07_DATABASE_AND_DATA_MODEL.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/07_DATABASE_AND_DATA_MODEL.md)** | SQLAlchemy async ORM, Alembic migrations 0001–0006, and snapshot schemas. |
+| **[`08_CALCULATION_AND_BUSINESS_LOGIC.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/08_CALCULATION_AND_BUSINESS_LOGIC.md)** | Pure Decimal math, Q04 quarterly rule, constants, and 10/10 Golden Masters. |
+| **[`09_SECURITY_AND_RBAC.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/09_SECURITY_AND_RBAC.md)** | Multi-tenant isolation, IDOR defenses, token lifecycle, and security controls. |
+| **[`10_API_AND_DATA_FLOW.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/10_API_AND_DATA_FLOW.md)** | REST API endpoints, RBAC scopes, request lifecycles, and data pipeline. |
+| **[`11_REPORTING_EMAIL_AND_EXPORTS.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/11_REPORTING_EMAIL_AND_EXPORTS.md)** | 3-page executive PDF, dual Gmail API workflows, and client privacy rules. |
+| **[`12_TESTING_AND_QUALITY.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/12_TESTING_AND_QUALITY.md)** | Pytest calculation suites, 226 Vitest tests, and Golden Master philosophy. |
+| **[`13_UI_UX_AND_BRANDING.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/13_UI_UX_AND_BRANDING.md)** | meshIQ visual identity, color tokens, typography, and accessibility (a11y). |
+| **[`14_INTEGRATION_AND_DEPLOYMENT.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/14_INTEGRATION_AND_DEPLOYMENT.md)** | Local vs. production topology, external website CTA rules, and iframe security. |
+| **[`15_PROTECTED_AREAS_AND_CHANGE_RULES.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/15_PROTECTED_AREAS_AND_CHANGE_RULES.md)** | 3-tier change classification and mandatory change impact checklist. |
+| **[`16_KNOWN_GAPS_AND_FUTURE_OPPORTUNITIES.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/16_KNOWN_GAPS_AND_FUTURE_OPPORTUNITIES.md)** | Repository-backed roadmap, P1/P2/P3 gap analysis, and enhancement areas. |
+| **[`17_AI_REVIEW_GUIDE.md`](file:///Users/roop/DATAEKO.AI-MESHIQ-partner_dashboard-/docs/ai-context/17_AI_REVIEW_GUIDE.md)** | Mandatory 14-field proposal schema and evaluation rules for future AI systems. |
+
+---
+
 ### Protected Business Logic & Architectural Invariants
 
 The following core modules are strictly frozen and protected across all development and documentation checkpoints:
