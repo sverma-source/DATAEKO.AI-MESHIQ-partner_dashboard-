@@ -57,8 +57,8 @@ async def list_customers(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
-    # Enforce customer scoping for CUSTOMER_USER: only return authorized assigned organization
-    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+    # Enforce customer scoping for CUSTOMER_USER and CUSTOMER_ADMIN: only return authorized assigned organization
+    if current_user and current_user.role in (Role.CUSTOMER_USER.value, Role.CUSTOMER_ADMIN.value):
         if not current_user.customer_id:
             return []
         try:
@@ -80,8 +80,8 @@ async def get_customer(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
-    # Enforce boundary: CUSTOMER_USER cannot retrieve unauthorized customer organizations
-    if current_user and current_user.role == Role.CUSTOMER_USER.value:
+    # Enforce boundary: CUSTOMER_USER and CUSTOMER_ADMIN cannot retrieve unauthorized customer organizations
+    if current_user and current_user.role in (Role.CUSTOMER_USER.value, Role.CUSTOMER_ADMIN.value):
         if not current_user.customer_id or customer_id != current_user.customer_id:
             raise PermissionDeniedError("Access to this customer organization is forbidden.")
     return await CustomerService.get_customer(db, tenant_id, customer_id)
@@ -99,6 +99,9 @@ async def update_customer(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(require_permission(Permission.CUSTOMER_UPDATE)),
 ):
+    if current_user.role == Role.CUSTOMER_ADMIN.value:
+        if not current_user.customer_id or customer_id != current_user.customer_id:
+            raise PermissionDeniedError("Access to this customer organization is forbidden.")
     customer = await CustomerService.update_customer(db, tenant_id, customer_id, payload)
     await log_audit_event(
         session=db,

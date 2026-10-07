@@ -33,10 +33,14 @@ def check_assessment_access(
     assessment: Assessment,
     user_id: str,
     user_role: str,
+    customer_id: Optional[str] = None,
 ) -> None:
-    """Enforces user-level ownership access for CUSTOMER_USER."""
+    """Enforces customer-level and user-level ownership access."""
     if user_role == Role.CUSTOMER_USER.value:
         if not assessment.created_by_user_id or assessment.created_by_user_id != user_id:
+            raise PermissionDeniedError("Access denied to this assessment.")
+    elif user_role == Role.CUSTOMER_ADMIN.value:
+        if not customer_id or assessment.customer_id != customer_id:
             raise PermissionDeniedError("Access denied to this assessment.")
 
 
@@ -52,7 +56,7 @@ async def create_assessment(
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role == Role.CUSTOMER_USER.value:
+    if current_user.role in (Role.CUSTOMER_USER.value, Role.CUSTOMER_ADMIN.value):
         if current_user.customer_id and payload.customer_id != current_user.customer_id:
             raise PermissionDeniedError("Clients cannot create assessments for other customer organizations.")
 
@@ -94,6 +98,9 @@ async def list_assessments(
         if user_role == Role.CUSTOMER_USER.value
         else None
     )
+    if user_role in (Role.CUSTOMER_ADMIN.value, Role.CUSTOMER_USER.value):
+        customer_id = current_user.customer_id
+
     return await AssessmentService.list_assessments(
         db,
         tenant_id,
@@ -121,7 +128,7 @@ async def get_assessment(
     assessment = await AssessmentService.get_assessment(
         db, tenant_id, assessment_id, load_details=True
     )
-    check_assessment_access(assessment, user_id, user_role)
+    check_assessment_access(assessment, user_id, user_role, current_user.customer_id)
 
     # For CUSTOMER_USER, sanitize latest_snapshot = None so internal economic metrics are never exposed
     latest_snapshot = None
@@ -165,7 +172,7 @@ async def update_assessment(
     user_role = current_user.role
 
     existing = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
-    check_assessment_access(existing, user_id, user_role)
+    check_assessment_access(existing, user_id, user_role, current_user.customer_id)
 
     assessment = await AssessmentService.update_assessment(
         db, tenant_id, assessment_id, payload
@@ -200,7 +207,7 @@ async def save_assessment_responses(
     user_role = current_user.role
 
     existing = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
-    check_assessment_access(existing, user_id, user_role)
+    check_assessment_access(existing, user_id, user_role, current_user.customer_id)
 
     saved_resp = await AssessmentService.save_responses(
         db, tenant_id, assessment_id, payload
@@ -236,7 +243,7 @@ async def get_assessment_responses(
     assessment = await AssessmentService.get_assessment(
         db, tenant_id, assessment_id, load_details=True
     )
-    check_assessment_access(assessment, user_id, user_role)
+    check_assessment_access(assessment, user_id, user_role, current_user.customer_id)
     if not assessment.response:
         raise EntityNotFoundError("AssessmentResponse", assessment_id)
     return assessment.response
@@ -257,7 +264,7 @@ async def submit_assessment_endpoint(
     user_role = current_user.role
 
     existing = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
-    check_assessment_access(existing, user_id, user_role)
+    check_assessment_access(existing, user_id, user_role, current_user.customer_id)
 
     assessment = await AssessmentService.submit_assessment(
         db, tenant_id, assessment_id, user_id=user_id, current_user=current_user
@@ -304,6 +311,9 @@ async def calculate_assessment_endpoint(
     if current_user.role == Role.CUSTOMER_USER.value:
         raise PermissionDeniedError("Calculation execution is restricted to consultants and platform administrators.")
 
+    existing = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
+    check_assessment_access(existing, current_user.id, current_user.role, current_user.customer_id)
+
     calc_result = await CalculationService.run_calculation(db, tenant_id, assessment_id)
     await log_audit_event(
         session=db,
@@ -336,7 +346,9 @@ async def list_calculation_snapshots(
     if current_user.role == Role.CUSTOMER_USER.value:
         raise PermissionDeniedError("Calculation snapshots are restricted to consultants and platform administrators.")
 
-    await AssessmentService.get_assessment(db, tenant_id, assessment_id)
+    assessment = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
+    check_assessment_access(assessment, current_user.id, current_user.role, current_user.customer_id)
+
     return await CalculationService.list_snapshots(db, tenant_id, assessment_id)
 
 
@@ -354,6 +366,9 @@ async def get_latest_calculation_snapshot(
     if current_user.role == Role.CUSTOMER_USER.value:
         raise PermissionDeniedError("Calculation snapshots are restricted to consultants and platform administrators.")
 
+    assessment = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
+    check_assessment_access(assessment, current_user.id, current_user.role, current_user.customer_id)
+
     return await CalculationService.get_latest_snapshot(db, tenant_id, assessment_id)
 
 
@@ -370,6 +385,9 @@ async def delete_assessment(
 ):
     if current_user.role == Role.CUSTOMER_USER.value:
         raise PermissionDeniedError("Assessment deletion is restricted to consultants and platform administrators.")
+
+    existing = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
+    check_assessment_access(existing, current_user.id, current_user.role, current_user.customer_id)
 
     await AssessmentService.delete_assessment(db, tenant_id, assessment_id)
     await log_audit_event(
@@ -401,6 +419,8 @@ async def download_assessment_csv(
     assessment = await DeliverableService.get_assessment_for_deliverable(
         db, tenant_id, assessment_id
     )
+    check_assessment_access(assessment, current_user.id, current_user.role, current_user.customer_id)
+
     if not assessment.response:
         raise EntityNotFoundError("AssessmentResponse", f"for assessment {assessment_id}")
     csv_content = DeliverableService.generate_csv(assessment)
@@ -431,6 +451,8 @@ async def download_assessment_pdf(
     assessment = await DeliverableService.get_assessment_for_deliverable(
         db, tenant_id, assessment_id
     )
+    check_assessment_access(assessment, current_user.id, current_user.role, current_user.customer_id)
+
     pdf_bytes = DeliverableService.generate_pdf(assessment)
     filename = f"DATAEKO_meshIQ_Executive_Report_{assessment_id}.pdf"
     return Response(
