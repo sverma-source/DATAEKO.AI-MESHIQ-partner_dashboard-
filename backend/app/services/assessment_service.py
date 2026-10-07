@@ -97,6 +97,23 @@ class AssessmentService:
         db: AsyncSession, tenant_id: str, assessment_id: str, payload: AssessmentUpdate
     ) -> Assessment:
         assessment = await AssessmentService.get_assessment(db, tenant_id, assessment_id)
+
+        # Enforce submission immutability and disallow reopening or mutating finalized assessments
+        if payload.status is not None and payload.status != assessment.status:
+            if assessment.status in (
+                AssessmentStatus.SUBMITTED,
+                AssessmentStatus.CALCULATED,
+                AssessmentStatus.COMPLETED,
+            ):
+                raise ConflictError(
+                    f"The assessment has been finalized ({assessment.status.value}) and its status cannot be modified or reopened.",
+                    {
+                        "assessment_id": assessment_id,
+                        "current_status": assessment.status.value,
+                        "requested_status": payload.status.value,
+                    },
+                )
+
         update_data = payload.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(assessment, key, value)
