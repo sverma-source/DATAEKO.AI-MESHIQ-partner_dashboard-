@@ -84,6 +84,7 @@ export function generateReportHtml(snapshot, customer = {}, assessment = {}) {
     ["annual_troubleshooting_labor_cost", "troubleshooting_annual_cost"]
   );
   const loadedRateVal = getCanonicalMetricVal("loaded_hourly_rate", [], ["loaded_hourly_rate"]);
+  const loadedAnnualCostVal = getCanonicalMetricVal("loaded_annual_labor_cost", [], ["loaded_annual_labor_cost"]);
   const fteBurdenVal = getCanonicalMetricVal(
     "operational_fte_burden",
     ["quantified_fte_burden"],
@@ -169,6 +170,9 @@ export function generateReportHtml(snapshot, customer = {}, assessment = {}) {
 
   const effectiveLoadedRate = loadedRateVal ? Number(loadedRateVal) : 86.54;
   const roundedLoadedRate = Math.round(effectiveLoadedRate);
+  const annualLaborCost = loadedAnnualCostVal ? Number(loadedAnnualCostVal) : 180000;
+  const annualLaborCostAbbr = annualLaborCost >= 1000 ? `$${Math.round(annualLaborCost / 1000)}k` : `$${annualLaborCost}`;
+  const annualLaborCostFormatted = formatCurrency(annualLaborCost);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -898,7 +902,7 @@ export function generateReportHtml(snapshot, customer = {}, assessment = {}) {
           <tr class="total-row">
             <td>
               <strong>Total Quantified Operational Labor</strong>
-              <div style="font-size: 6.8pt; color: #64748B; font-weight: normal;">Loaded rate $${roundedLoadedRate}/hr ($180k ÷ 2,080 h)</div>
+              <div style="font-size: 6.8pt; color: #64748B; font-weight: normal;">Loaded rate $${roundedLoadedRate}/hr (${annualLaborCostAbbr} ÷ 2,080 h)</div>
             </td>
             <td>Admin + Troubleshooting</td>
             <td class="text-right font-mono">${totalHoursFormatted}</td>
@@ -917,7 +921,7 @@ export function generateReportHtml(snapshot, customer = {}, assessment = {}) {
         <div class="math-formula">C_TOTAL = C_ADMIN + C_TRB</div>
         <div class="math-formula-sub">${totalLaborCost} = ${adminLaborCost} + ${trbLaborCost}</div>
         <div class="math-inputs">
-          <strong>Inputs:</strong> Q04 quarterly admin workload (annualized × 4) · Q06 incident frequency · Q07 staff hours per investigation · Loaded annual labor cost $180,000 ÷ 2,080 hours = $${effectiveLoadedRate.toFixed(2)} (rounded to $${roundedLoadedRate}/hr in narrative).
+          <strong>Inputs:</strong> Q04 quarterly admin workload (annualized × 4) · Q06 incident frequency · Q07 staff hours per investigation · Loaded annual labor cost ${annualLaborCostFormatted} ÷ 2,080 hours = $${effectiveLoadedRate.toFixed(2)} (rounded to $${roundedLoadedRate}/hr in narrative).
         </div>
         <div class="math-engine">
           <strong>Engine:</strong> v${engineVersion} · values rendered directly from the immutable calculation snapshot.

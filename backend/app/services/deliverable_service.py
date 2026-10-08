@@ -122,43 +122,69 @@ class DeliverableService:
             is_unknown = False
 
             if q_id == "Q01":
-                response_val = str(raw.get("q01_scale") or resp.q03_environment_scale if resp else "") or "Not answered"
+                val01 = raw.get("q01_scale") or (resp.q03_environment_scale if resp else None)
+                response_val = str(val01) if val01 else "Not answered"
                 if raw.get("q01_override") is not None:
                     exact_val = str(raw.get("q01_override"))
             elif q_id == "Q02":
-                response_val = str(raw.get("q02_staffing") or "") or "Not answered"
+                val02 = raw.get("q02_staffing")
+                response_val = str(val02) if val02 else "Not answered"
                 if raw.get("q02_override") is not None:
                     exact_val = str(raw.get("q02_override"))
             elif q_id == "Q03":
-                response_val = str(raw.get("q03_staffing_model") or resp.q05_mq_role_split if resp else "") or "Not answered"
+                val03 = raw.get("q03_staffing_model") or (resp.q05_mq_role_split if resp else None)
+                response_val = str(val03) if val03 else "Not answered"
             elif q_id == "Q04":
-                response_val = str(raw.get("q04_dropdown") or "") or "Not answered"
+                raw_q04 = raw.get("q04_dropdown")
                 admin_hrs = raw.get("q04_admin_hours") if raw.get("q04_admin_hours") is not None else (resp.q04_weekly_admin_hours if resp else None)
                 if admin_hrs is not None:
                     exact_val = str(admin_hrs)
+                if raw_q04 == "UNKNOWN":
+                    response_val = "Not sure / To be assessed"
+                elif raw_q04 and raw_q04 != "OVERRIDE":
+                    response_val = str(raw_q04)
+                elif admin_hrs is not None:
+                    response_val = f"{exact_val} hours / quarter"
+                else:
+                    response_val = "Not answered"
             elif q_id == "Q05":
-                response_val = str(raw.get("q05_tech_debt") or "") or "Not answered"
+                val05 = raw.get("q05_tech_debt")
+                response_val = str(val05) if val05 else "Not answered"
             elif q_id == "Q06":
-                response_val = str(raw.get("q06_frequency") or resp.q06_frequency_text if resp else "") or "Not answered"
+                val06 = raw.get("q06_frequency") or (resp.q06_frequency_text if resp else None)
+                response_val = str(val06) if val06 else "Not answered"
             elif q_id == "Q07":
-                response_val = str(raw.get("q07_labor_hours") or resp.q07_labor_hours_text if resp else "") or "Not answered"
-                override = raw.get("q07_override") if raw.get("q07_override") is not None else (resp.q07_labor_hours_override if resp else None)
-                if override is not None:
-                    exact_val = str(override)
+                raw_q07 = raw.get("q07_labor_hours") or (resp.q07_labor_hours_text if resp else None)
+                override_q07 = raw.get("q07_override") if raw.get("q07_override") is not None else (resp.q07_labor_hours_override if resp else None)
+                if override_q07 is not None:
+                    exact_val = str(override_q07)
+                if raw_q07:
+                    response_val = str(raw_q07)
+                elif override_q07 is not None:
+                    response_val = f"{exact_val} hours (Exact override)"
+                else:
+                    response_val = "Not answered"
             elif q_id == "Q08":
-                response_val = str(raw.get("q08_duration") or resp.q08_duration_text if resp else "") or "Not answered"
+                val08 = raw.get("q08_duration") or (resp.q08_duration_text if resp else None)
+                response_val = str(val08) if val08 else "Not answered"
             elif q_id == "Q09":
-                response_val = str(raw.get("q09_tools_count") or resp.q09_root_cause_categories if resp else "") or "Not answered"
+                val09 = raw.get("q09_tools_count") or (resp.q09_root_cause_categories if resp else None)
+                response_val = str(val09) if val09 else "Not answered"
             elif q_id == "Q10":
-                response_val = str(raw.get("q10_manual_tracing") or resp.q10_problem_types if resp else "") or "Not answered"
+                val10 = raw.get("q10_manual_tracing") or (resp.q10_problem_types if resp else None)
+                response_val = str(val10) if val10 else "Not answered"
             elif q_id == "Q11":
-                response_val = str(raw.get("q11_productivity_constraint") or resp.q11_monitoring_status if resp else "") or "Not answered"
+                val11 = raw.get("q11_productivity_constraint") or (resp.q11_monitoring_status if resp else None)
+                response_val = str(val11) if val11 else "Not answered"
             elif q_id == "Q12":
-                response_val = str(raw.get("q12_business_impact") or resp.q12_business_impact if resp else "") or "Not answered"
+                val12 = raw.get("q12_business_impact") or (resp.q12_business_impact if resp else None)
+                response_val = str(val12) if val12 else "Not answered"
             elif q_id == "Q13":
-                response_val = str(raw.get("q13_recent_disruptions") or "") or "Not answered"
+                val13 = raw.get("q13_recent_disruptions")
+                response_val = str(val13) if val13 else "Not answered"
             elif q_id == "Q14":
-                response_val = str(raw.get("q14_disruption_duration") or resp.q14_duration_text if resp else "") or "Not answered"
+                val14 = raw.get("q14_disruption_duration") or (resp.q14_duration_text if resp else None)
+                response_val = str(val14) if val14 else "Not answered"
             elif q_id == "Q15":
                 is_unknown = bool(raw.get("q15_is_unknown"))
                 hourly_cost = raw.get("q15_hourly_cost_override") if raw.get("q15_hourly_cost_override") is not None else (resp.q15_hourly_cost_override if resp else None)
@@ -170,15 +196,25 @@ class DeliverableService:
                 else:
                     response_val = "Not provided"
             elif q_id == "Q16":
-                response_val = str(raw.get("q16_cost_mandate") or resp.q16_config_management_method if resp else "") or "Not answered"
+                val16 = raw.get("q16_cost_mandate") or (resp.q16_config_management_method if resp else None)
+                response_val = str(val16) if val16 else "Not answered"
             elif q_id == "Q17":
-                response_val = str(raw.get("q17_opex_reduction") or "") or "Not answered"
-                if raw.get("q17_override") is not None:
-                    exact_val = str(raw.get("q17_override"))
+                raw_q17 = raw.get("q17_opex_reduction")
+                override_q17 = raw.get("q17_override")
+                if override_q17 is not None:
+                    exact_val = str(override_q17)
+                if raw_q17:
+                    response_val = str(raw_q17)
+                elif override_q17 is not None:
+                    response_val = f"{exact_val}% (Exact target)"
+                else:
+                    response_val = "Not answered"
             elif q_id == "Q18":
-                response_val = str(raw.get("q18_audit_effort") or resp.q18_audit_effort if resp else "") or "Not answered"
+                val18 = raw.get("q18_audit_effort") or (resp.q18_audit_effort if resp else None)
+                response_val = str(val18) if val18 else "Not answered"
             elif q_id == "Q19":
-                response_val = str(raw.get("q19_documentation_effort") or resp.q19_documentation_effort if resp else "") or "Not answered"
+                val19 = raw.get("q19_documentation_effort") or (resp.q19_documentation_effort if resp else None)
+                response_val = str(val19) if val19 else "Not answered"
             elif q_id == "Q20":
                 use_default = raw.get("q20_use_default", True)
                 salary = raw.get("q20_annual_labor_rate") if raw.get("q20_annual_labor_rate") is not None else (resp.q20_annual_labor_rate if resp else None)
@@ -199,7 +235,8 @@ class DeliverableService:
                 else:
                     response_val = "Not provided"
             elif q_id == "Q22":
-                response_val = str(raw.get("q22_migration_plans") or resp.q22_migration_plans if resp else "") or "Not answered"
+                val22 = raw.get("q22_migration_plans") or (resp.q22_migration_plans if resp else None)
+                response_val = str(val22) if val22 else "Not answered"
 
             rows.append({
                 "question_id": q_id,

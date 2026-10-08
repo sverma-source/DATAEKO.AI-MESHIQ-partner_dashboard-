@@ -556,7 +556,13 @@ class EmailService:
             exact_val = item.get("exact_value", "")
 
             if exact_val and str(exact_val).strip():
-                val_str = f"{resp_val} (Specified: {exact_val})"
+                if resp_val and resp_val not in ("None", "Not answered", "Not provided"):
+                    if "(Exact" in resp_val or exact_val in resp_val:
+                        val_str = resp_val
+                    else:
+                        val_str = f"{resp_val} (Specified: {exact_val})"
+                else:
+                    val_str = f"Specified: {exact_val}"
             else:
                 val_str = resp_val or "Not answered"
 
@@ -590,7 +596,13 @@ class EmailService:
             exact_val = item.get("exact_value", "")
 
             if exact_val and str(exact_val).strip():
-                val_str = f"<strong>{resp_val}</strong> <span style='color: #64748B; font-weight: normal; font-size: 12px;'>(Specified: {exact_val})</span>"
+                if resp_val and resp_val not in ("None", "Not answered", "Not provided"):
+                    if "(Exact" in resp_val or exact_val in resp_val:
+                        val_str = f"<strong>{resp_val}</strong>"
+                    else:
+                        val_str = f"<strong>{resp_val}</strong> <span style='color: #64748B; font-weight: normal; font-size: 12px;'>(Specified: {exact_val})</span>"
+                else:
+                    val_str = f"<strong>Specified: {exact_val}</strong>"
             else:
                 val_str = f"<strong>{resp_val or 'Not answered'}</strong>"
 
