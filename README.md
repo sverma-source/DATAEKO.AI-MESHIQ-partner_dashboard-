@@ -56,97 +56,134 @@ Persisted Immutable CalculationSnapshot
 
 ## 2. Current Project Status & Checkpoint
 
-The platform is under active development on the **`meshiq-handoff`** documentation and demonstration branch, established from the authoritative application source baseline on **`dev`** (`e2ee663`).
+The platform is an enterprise-grade digital assessment platform for **DATAEKO × meshIQ IBM MQ Economic Cost & Efficiency Assessment**. It is under active development on the **`meshiq-handoff`** branch, prepared for remote Git checkpoint synchronization.
 
 ### Current Status Overview
 
 - **Core Assessment Application**: Implemented and operational across customer, consultant, and platform administrator roles.
-- **Q01–Q22 Workflow**: Fully implemented across 7 canonical thematic sections (A–G) with autosave, resume, pre-flight review summary, and formal submission orchestration.
-- **Deterministic Calculation Engine**: Implemented in pure Python using `Decimal` arithmetic; verified with 10/10 passing Golden Master reference scenarios.
-- **Immutable Calculation Snapshots**: Implemented and enforced; calculation runs generate immutable database snapshots that feed all downstream reporting.
+- **Q01–Q22 Workflow**: Fully implemented across 7 canonical thematic sections (A–G) with single-section wizard stepping, autosave, resume, answered-only review summary, and formal submission orchestration.
+- **Deterministic Calculation Engine**: Implemented in pure Python using `Decimal` arithmetic (Engine `v1.0.0`, Rules `calc-rules-v1.0.0`); verified with 10/10 passing Golden Master reference scenarios. Zero frontend authoritative financial recalculation.
+- **Immutable Calculation Snapshots**: Implemented and enforced; calculation runs generate immutable database snapshots that feed all downstream reporting and deliverables.
 - **Executive Dashboard**: Implemented with 3-tier KPI hierarchy, operational effort decomposition, impact gauges, and provenance classification tags.
 - **Scenario Functionality**: Implemented with controlled efficiency and incident reduction modeling, visually isolated from baseline facts.
-- **3-Page Executive PDF Report**: Implemented using headless Chromium with deterministic snapshot data lookup and governance guardrails.
-- **Internal & Client Email Workflows**: Implemented via Gmail API OAuth 2.0; delivers internal advisor notifications (with PDF + CSV) and client confirmation notices (zero attachments, zero financial metrics).
+- **3-Page Executive PDF Report**: Implemented using headless Chromium with deterministic snapshot data lookup and dynamic Q20 narrative derivation.
+- **Internal & Client Email Workflows**: Implemented via Gmail API OAuth 2.0; delivers internal advisor notifications (with PDF + CSV) and client confirmation notices (clean formatted values, zero attachments, zero economics exposed to client).
 - **Audit Logging, RBAC & Tenant Isolation**: Implemented with 5 canonical roles, individual client assessment ownership, and customer-scoped administration.
-- **Standalone Client Experience Deliverable (`CLIENT_EXPERIENCE.html`)**: Fully implemented, pixel-faithful, self-contained offline HTML artifact available for meshIQ stakeholder and executive review.
+- **Latest Standalone Client Preview (`CLIENT_EXPERIENCE_CURRENT.html`)**: Fully updated standalone offline HTML artifact matching the current application experience for meshIQ review.
 - **Manager & Co-Founder Handoff Documentation (`docs/handoff/`)**: Comprehensive technical and architectural documentation package available.
 - **Golden Master Test Suite**: 10/10 reference scenarios passing (`backend/tests/calculation_engine/test_golden_masters.py`).
-- **External Website Invariant**: **No external DATAEKO.AI or meshIQ website modified** (`dataeko.ai`, `dataeko.ai/partners/meshiq`, `meshiq.com`).
+- **External Website Invariant**: **No external DATAEKO.AI or meshIQ website modified** (`dataeko.ai`, `dataeko.ai/partners/meshiq`, `meshiq.com`). Website integration remains an external product owner step.
 - **Future Deployment & Identity**: Production identity (enterprise SSO / IdP SAML/OIDC) and final website hosting deployment remain future architectural decisions.
 
 ### Current Checkpoint Summary
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Git Checkpoint** | `cbeb275` (`fix(demo): resolve icon sizing and align client experience demo with real application`) |
-| **Documentation & Handoff Branch** | `meshiq-handoff` |
-| **Application Source Baseline** | `dev` @ `e2ee663` |
-| **Primary Executive Deliverable** | `docs/handoff/CLIENT_EXPERIENCE.html` (Self-contained offline client experience walkthrough) |
+| **Current Git Branch** | `meshiq-handoff` |
+| **Current Checkpoint Commit** | `eef5791` (`fix: finalize deliverable overrides and customer-facing outputs`) |
+| **Latest Standalone Customer Preview** | `docs/handoff/CLIENT_EXPERIENCE_CURRENT.html` (Standalone offline customer assessment preview) |
+| **Reference Handoff Deliverable** | `docs/handoff/CLIENT_EXPERIENCE.html` (Baseline visual/structural reference) |
 | **Handoff Documentation Package** | `docs/handoff/` (`START-HERE.html`, `PROJECT_HANDOFF.html`, `EMBED_GUIDE.html`, `README.txt`, `assets/`, `.zip`) |
-| **Calculation Engine Status** | Pure Python Decimal engine, 10/10 Golden Masters passing, 100% frozen |
+| **Calculation Engine Version** | Engine `v1.0.0` · Rules `calc-rules-v1.0.0` (Pure Python Decimal, 10/10 Golden Masters, 100% frozen) |
 | **Q04 Authoritative Rule** | Exact numeric quarterly hours (`hours / quarter`); Annual hours = `Q04 × 4` |
-| **Q04 Dashboard Display** | Displays exact `{value} hours / quarter`; `"OVERRIDE"` internal token hidden |
-| **Q04 PDF Deliverable** | Resolves authoritative `annual_admin_hours` metric; shows calculated annual hours |
+| **Q04 Intake Experience** | Estimated quarterly hours (approximate is fine); helper guidance; direct "Not sure" handling |
+| **Section G Customer Title** | `Team Economics & Transformation Timeline` (Subtitle: `Labor rate assumptions, customer annual IBM MQ spend, and transformation timeline`) |
 | **P0 Authentication Boundary** | **RESOLVED** (`401 Unauthorized` enforced for all unauthenticated assessment API requests) |
 | **P1 Save/Resume Persistence** | **RESOLVED** (Reliable multi-cycle response persistence; nested payload stripping; dropdown/override resilience) |
 | **Submission Immutability** | **VERIFIED** (Read-only view preserved across reloads; `HTTP 409 Conflict` on post-finalization mutations) |
-| **Working Tree** | **Clean** (All documentation, demo artifacts, and tests verified) |
+| **Deliverable Overrides & Formatting** | **VERIFIED** (Q07/Q17 primary serialization, no None leakage, clean email values, dynamic Q20 PDF narrative) |
+| **Automated Verification Status** | **200/200 Backend Passed** · **228/228 Frontend Passed** · **0 TypeScript Errors** · **10/10 Golden Masters** |
 | **Deployment Status** | **Deferred** (Local development and offline review; no external production deployment performed) |
-| **Email Status** | **Tested & Validated** (Exact subject contract, zero attachments, zero economics exposed to client) |
+| **Email Status** | **Tested & Validated** (Clean customer presentation, exact subject contract, zero attachments, zero economics to client) |
 
 ---
 
-### Standalone Client Experience Deliverable (`CLIENT_EXPERIENCE.html`)
+### Current Customer Assessment Experience
 
-A primary deliverable of this checkpoint is the self-contained client-facing experience located at:
-`docs/handoff/CLIENT_EXPERIENCE.html`
+The platform provides a streamlined, customer-friendly intake workflow:
 
-This artifact enables meshIQ leadership, co-founders, and stakeholders to experience the authentic client assessment journey directly in any modern browser without requiring a running development environment, local servers, APIs, or database installations.
+1. **22 Standardized Questions across 7 Thematic Sections (A–G)**:
+   - **Section A: Environment & Cost Baseline (Q01–Q05)** — Queue manager estate scale, staffing & administration resources, operational model, quarterly administration hours (Q04), and older/inactive queue managers (Q05).
+   - **Section B: Troubleshooting Economics (Q06–Q08)** — Incident frequency (Q06), staff labor hours per investigation (Q07), and elapsed diagnostic duration (Q08).
+   - **Section C: Operational Complexity & Productivity (Q09–Q11)** — Monitoring tool sprawl (Q09), cross-technology manual tracing friction (Q10), and operational productivity constraints (Q11).
+   - **Section D: Business Consequence & Financial Exposure (Q12–Q15)** — Outage severity (Q12), recent disruption history (Q13), disruption duration (Q14), and estimated hourly downtime cost override (Q15).
+   - **Section E: Cost Reduction & Modernization Focus (Q16–Q17)** — Executive cost-reduction / modernization mandate (Q16) and target cost reduction percentage (Q17).
+   - **Section F: Cybersecurity & Remediation (Q18–Q19)** — Cybersecurity/audit pressure (Q18) and vulnerability remediation friction (Q19).
+   - **Section G: Team Economics & Transformation Timeline (Q20–Q22)** — Annual engineering labor cost (Q20), customer-reported annual IBM MQ spend (Q21), and target improvement timeline (Q22).
 
-#### Key Capabilities & Architecture:
-- **Offline & Zero-Dependency**: Entirely self-contained (HTML, compiled CSS, pure vanilla JS, embedded base64 brand assets). Double-clickable and operable without an internet connection or localhost server.
-- **Authentic Client Visual Fidelity**: Reproduces the actual client-facing application layout, color palette (`#008638`, `#172033`), typography, and spacing from production components (`login/page.tsx`, `QuestionCard.tsx`, `SectionNavigation.tsx`, `ReviewSummary.tsx`, `SubmittedResponsesView.tsx`).
-- **Bounded SVG & Vector Rendering**: All 44 vector icons have explicit inline dimension boundaries (`12px` to `20px`) and component-scoped classes (`.lucide`, `.shrink-0`), eliminating SVG distortion across all browsers.
-- **New Assessment Initial State**: Opens immediately to a newly initialized assessment state:
-  - Header: `SECTION 1 OF 7 · 0 OF 22 QUESTIONS ANSWERED`
-  - Progress: `0%` completion bar
-  - Status: `✓ Draft initialized`
-  - Section A: `0/5 Answered`
-  - Questions Q01 and Q02 start in a clean, unanswered dropdown state (`-- Choose an assessment response --`).
-- **Discreet Presentation Shortcuts**: Demo aids (`Pre-fill 22 Demo Responses`, `Reset to Clean Assessment`, `View Review Screen`, `View Finalized View`) are housed inside the authenticated User Menu dropdown (`client@dataeko.ai`), keeping the main client UI authentic.
+2. **One Section at a Time**: Focused wizard displaying one section per view with smooth step progression and Section Navigation tabs.
+3. **Consistent "IBM MQ" Terminology**: Customer-facing labels, hints, questions, and options consistently use "IBM MQ" rather than standalone "MQ".
+4. **Dynamic Progress & Timing Indicator**: Real-time indicator displaying `Section X of 7 · Y of 22 answered · about Z minutes left` with an animated progress bar.
+5. **Direct "Not sure" Handling**: Prominently visible "Not sure" button/chip in the question card control row for questions supporting unknown responses, recording the unknown state in one click.
+6. **Q04 Approximate Quarterly Hours Experience**: Formatted with label *"Estimated quarterly hours (approximate is fine)"*, helper text *"Enter a rough estimate of total team hours per quarter. An exact figure isn't required."*, and hint *"Example: 80 hours per quarter"*.
+7. **Numeric / Currency / Percentage Input Hints**: Free-entry numeric inputs feature contextual hints (e.g., *"Example: 24 queue managers"*, *"Example: 3 engineers"*, *"Example: $100,000 per hour"*, *"Example: 20% target reduction"*, *"Example: $180,000 per year"*, *"Example: $450,000 per year on licenses and support"*).
+8. **Customer-Friendly Question Titles**: Questions feature clean, simplified titles aligned with the current question catalog.
+9. **Hidden Internal Engine & Seller Information**: Theme tags, "Feeds Calculation" badges, "ENGINE IMPACT" formulas, and "Consultant Probing & Seller Guidance" notes are hidden from default customer view.
+10. **Answered-Only Review Experience**: Pre-submission review summary displays only answered questions per section, with a neutral skip disclaimer: *"Questions you skipped will use standard baseline assumptions."*
+11. **Final Locked Customer Snapshot**: After confirmation, clients view a one-page Snapshot featuring an immutable status hero banner, context metadata cards, Next Steps advisory card, 4 high-level organization facts (*Estate Scale*, *Staffing Model*, *Primary Focus*, *Timeline*), and a collapsible 22-question recorded responses ledger.
 
-#### The 7 Canonical Assessment Sections (Q01–Q22):
-1. **Section A: Environment & Cost Baseline (Q01–Q05)** — Queue manager estate scale, staffing & administration resources, operational model, quarterly administration hours (Q04), and legacy infrastructure debt.
-2. **Section B: Troubleshooting Economics (Q06–Q08)** — Incident frequency, staff labor hours expended per investigation (Q07), and elapsed diagnostic clock duration.
-3. **Section C: Operational Complexity & Productivity (Q09–Q11)** — Monitoring tool sprawl, cross-technology manual tracing friction, and primary productivity constraints.
-4. **Section D: Business Consequence & Financial Exposure (Q12–Q15)** — Outage severity, recent disruption history, disruption duration (Q14), and estimated hourly downtime cost override (Q15).
-5. **Section E: Cost Reduction & Organizational Pressure (Q16–Q17)** — Executive OpEx reduction mandate and target reduction percentage.
-6. **Section F: Cybersecurity & Remediation (Q18–Q19)** — Regulatory audit pressure and vulnerability remediation friction.
-7. **Section G: Economic Inputs & Timing (Q20–Q22)** — Fully loaded annual labor rate override (Q20), customer-reported annual MQ spend (Q21), and target modernization timeframe.
+---
 
-#### Q04 Treatment:
-- **Exact Numeric Fact**: `200 hours / quarter` for the representative demo profile.
-- **Feeds Calculation Badge**: Explicitly flagged as a calculation driver (`H_admin = Q04 × 4`).
-- **Customer Fact**: Distinguished from categorical dropdown selections; never converted to weekly hours or range lookups.
+### Latest Standalone Customer Preview (`CLIENT_EXPERIENCE_CURRENT.html`)
 
-#### Recommended Stakeholder Review Flow (10 Steps):
-1. **Download/Save Locally**: Download or save `docs/handoff/CLIENT_EXPERIENCE.html` to a local folder.
-2. **Open in Browser**: Double-click or open the file directly in any modern browser (Google Chrome, Microsoft Edge, Safari, Firefox).
-3. **Client Login Experience**: Start from the client login page featuring official meshIQ branding, dark-accent platform title, and credential fields.
-4. **1-Click Demo Login**: Click **"Continue as Demo Client →"** (or use the presentation access card for `client@dataeko.ai`).
-5. **Walk Through Sections A–G**: Navigate through all 7 canonical sections using the sticky Section Navigation bar.
-6. **Review Q01–Q22 in Clean State**: Inspect question cards in their initial state (unanswered dropdowns, exact customer fact inputs, compact Engine Impact cards, and expandable Consultant Probing guidance).
-7. **Review Representative Demo Responses**: Either enter responses manually or click the user menu (`client@dataeko.ai`) and select **"Pre-fill 22 Demo Responses"** to populate the approved presentation profile.
-8. **Continue through Review & Submit**: Access the **"Review & Submit"** tab to inspect the 22-question audit breakdown, standard vs. customer fact provenance counts, and submit confirmation modal.
-9. **Review Final/Read-Only Customer Experience**: Confirm submission to view the finalized, read-only discovery record with immutable response badges and submission metadata.
-10. **Provide Feedback**: Share stakeholder feedback on usability, question wording, thematic organization, visual branding, and overall customer journey.
+A primary standalone review artifact is located at:
+`docs/handoff/CLIENT_EXPERIENCE_CURRENT.html`
+
+This artifact represents the latest customer experience prepared for meshIQ stakeholder review.
+
+#### Review & Demonstration Characteristics:
+- **Browser-Openable Demo Artifact**: Openable directly by double-clicking or loading `file:///.../docs/handoff/CLIENT_EXPERIENCE_CURRENT.html` in modern web browsers (Chrome, Edge, Safari, Firefox).
+- **Zero Dependencies / No Installation**: Completely self-contained HTML with embedded CSS and inline SVG icons. Does not require Node.js, Python, a local server, or internet access.
+- **Offline / Disconnected Boundary**: Does **NOT** connect to the production backend, APIs, database, or email service. It is strictly a presentation and demonstration prototype.
+- **Clean Initial State**: Initializes to a fresh, unanswered assessment state (`0%` progress, Section A, clean dropdowns).
+- **Presentation Pre-Fill Option**: The top-right user menu (`client@dataeko.ai`) includes a discreet **"Pre-fill 22 Demo Responses (100%)"** action to instantly demonstrate a completed intake session.
+- **Login Demo Entry**: Features the simplified enterprise login card with **"Continue as Demo Client →"** and 1-click role selection.
 
 > [!IMPORTANT]
-> **Stakeholder Demonstration Boundaries:**
-> - `CLIENT_EXPERIENCE.html` is a standalone demonstration and review export. It does **not** represent production hosting, enterprise SSO, or live database connectivity.
-> - The embedded presentation profile uses **representative demonstration data only** and must **NOT** be represented as real customer data or verified customer claims.
-> - The platform and demo **do not** make unsupported claims regarding guaranteed cash savings, 3-year modernization ROI, or payback periods.
+> **Standalone Preview Invariant:**
+> `CLIENT_EXPERIENCE_CURRENT.html` is an offline demo preview for stakeholder evaluation. It must **not** be described as or mistaken for a live, production-connected application.
+
+---
+
+### Q16 / Q17 Status & meshIQ Feedback Clarification
+
+The wording of **Q16** and **Q17** is currently **intentionally unchanged** pending structural clarification from meshIQ:
+
+- **Current Application Structure**:
+  - **Q16** (*Cost Reduction & Modernization Focus*): Captures whether leadership is under an active mandate to reduce OpEx or modernize legacy messaging (options: *Yes, aggressive OpEx reduction target*; *Yes, moderate efficiency goal*; *Cost-neutral / Flat budget*; *Growing investment budget*; *Not sure*).
+  - **Q17** (*Target Cost Reduction Percentage*): Captures the specific percentage target (options: *5–10%*; *10–20%*; *20–30%*; *30%+*; *No specific % target*; *Not sure*; plus numeric override).
+- **meshIQ Feedback Context**:
+  - meshIQ previously provided alternate feedback text for Q16 that conceptually overlapped with the percentage target captured in Q17.
+  - To prevent conflating whether a mandate exists (Q16) with the target percentage magnitude (Q17), no further structural changes to Q16 or Q17 have been made.
+- **Next Step**:
+  - The current distinct semantics are preserved until meshIQ confirms the intended question structure and separation between mandate existence and target percentage.
+
+---
+
+### Protected Calculation Engine & Business Invariants
+
+The deterministic calculation engine remains strictly protected across all checkpoints:
+
+1. **Engine Identification**: Pure Python Decimal calculation engine (`Engine v1.0.0`, Rules `calc-rules-v1.0.0`) in `backend/app/calculation_engine/**`.
+2. **Deterministic Arithmetic**: Pure `Decimal` arithmetic with standard bank rounding. Zero floats, zero synthetic midpoints, zero unverified assumptions.
+3. **Golden Master Reference Suite**: All 10/10 reference test scenarios (TC-01 through TC-10) pass with exact expected decimal precision.
+4. **No Frontend Recalculation**: All economic metrics originate strictly from the immutable backend `CalculationSnapshot`. The frontend never recalculates financial metrics.
+5. **Q04 Calculation Driver**: Routine administration labor uses exact quarterly hours (`H_admin = Q04 × 4`).
+
+---
+
+### Recent Deliverable & Email Presentation Fixes
+
+The following deliverable and serialization corrections were completed, tested, and validated:
+
+1. **Q07 Override-Only Primary Serialization**: When a user inputs an exact numeric override for Q07 without choosing a categorical dropdown, the exact response serializes correctly as the primary answer rather than leaking internal tokens.
+2. **Q17 Override-Only Primary Serialization**: Exact percentage overrides for Q17 serialize cleanly as the primary response.
+3. **Elimination of "None" / "Not Answered" Leakage**: Override-only customer responses serialize reliably across all deliverable outputs without spurious `None` or `Not answered` text.
+4. **Email Output Cleanup**: Client confirmation email no longer redundantly appends `(Specified: ...)` when the exact customer response is already the primary formatted value.
+5. **Dynamic Q20 PDF Narrative Derivation**: In the Executive PDF report, the engineer loaded labor rate narrative now derives dynamically from the authoritative calculation snapshot (`R_HR × 2080`), eliminating the previous static `$180,000` text when a custom rate is specified.
+6. **Regression Coverage**: Comprehensive test coverage added in `backend/tests/services/test_deliverable_overrides.py`, `backend/tests/services/test_client_submission_email.py`, and `frontend/src/test/q20_pdf_narrative.test.ts`.
+
+---
 
 ---
 
@@ -709,15 +746,9 @@ The database schema is managed via asynchronous Alembic migrations:
 - **Server**: [Uvicorn](https://www.uvicorn.org/)
 - **Data Validation & Settings**: [Pydantic v2](https://docs.pydantic.dev/) & Pydantic Settings
 - **ORM & Database**: [SQLAlchemy 2.0 Async](https://www.sqlalchemy.org/), [Alembic](https://alembic.sqlalchemy.org/)
-- **Async Database Drivers**: `asyncpg` (PostgreSQL) / `aiosqlite` (Local Development)
-- **Security & Crypto**: `passlib` (Bcrypt), `pyjwt`, `python-multipart`
-- **Testing**: [pytest 9.1+](https://docs.pytest.org/), pytest-asyncio, pytest-cov
+- **Async Database ## 10. Automated Testing & Verification Status
 
----
-
-## 10. Automated Testing & Verification Status
-
-### Verified Test Suite Results (Latest Checkpoint `0cc18fa`)
+### Verified Test Suite Results (Latest Checkpoint `eef5791` / `meshiq-handoff`)
 
 ```text
 ================================================================================
@@ -726,36 +757,47 @@ The database schema is managed via asynchronous Alembic migrations:
 1. Backend & Calculation Suite (pytest 9.1):
    • 10/10 Golden Master Reference Scenarios (TC-01–TC-10)               PASSED
    • 21/21 Calculation Engine Precision & Boundary Tests                 PASSED
-   • 13/13 API Integration & Submission Orchestration Tests              PASSED
+   • 28/28 API Integration & Submission Orchestration Tests              PASSED
            - test_assessments_api.py (unauthorized 401 & auth enforcement)
-           - test_submission_orchestration.py (mutation protection & conflicts)
+           - test_submission_api.py (submission lifecycle)
+           - test_deliverables_api.py (report & deliverable access)
    • 13/13 Observability, Health Probes & Structured Logging Tests       PASSED
    • 94/94 Security & Governance Tests                                   PASSED
            - Auth, RBAC, IDOR, Rate Limiting, Bootstrap Admin
            - Customer Scoping & Client Assessment Ownership (Batch 4C)
            - User Invitation & Password Reset Lifecycle (Batch 4D)
            - Authentication Session Hardening & Invalidation (Batch 4E)
+           - R1 Submission Immutability Lock (test_submission_immutability_lock.py)
+           - R2 Customer Admin Scoping (test_customer_admin_scoping_r2.py)
+   • 34/34 Services, Deliverable Overrides & Email Tests                 PASSED
+           - test_deliverable_overrides.py (Q07/Q17 primary serialization)
+           - test_client_submission_email.py (clean customer-facing email values)
+           - test_email_service.py (Gmail OAuth transport contracts)
    -----------------------------------------------------------------------------
-   Total Backend Suite: 151/151 PASSED (100%)
+   Total Backend Suite: 200/200 PASSED (100%, 12 deprecation warnings)
 
 2. Frontend Test Suite (Vitest 5.0):
-   • 23/23 Test Files                                                    PASSED
-   • 226/226 Component, Wizard, Governance & Security Tests             PASSED
+   • 24/24 Test Files                                                    PASSED
+   • 228/228 Component, Wizard, Governance & Security Tests             PASSED
            - Includes consultantWorkspace.test.tsx (4/4 tests passed)
            - Includes adminWorkspace.test.tsx (8/8 tests passed)
            - Includes roleWorkspaces.test.tsx (5/5 tests passed)
            - Includes q04_functional.test.tsx (26/26 Q04 tests passed)
            - Includes q15_q20_q21_functional.test.tsx (6/6 tests passed)
-           - Includes responsePersistence.test.ts (P1 state normalization)
+           - Includes q20_pdf_narrative.test.ts (2/2 tests passed)
+           - Includes submittedResponsesView.test.tsx (4/4 tests passed)
+           - Includes intakeWorkflow.test.tsx (P1 state normalization & UX v2)
    -----------------------------------------------------------------------------
-   Total Frontend Suite: 226/226 PASSED (100%)
+   Total Frontend Suite: 228/228 PASSED (100%)
 
 3. Static Analysis & Build:
    • TypeScript Static Typecheck (`tsc --noEmit`):                       0 ERRORS
    • Next.js Production Turbopack Build (`next build`):                  PASSED
 
-4. Controlled Presentation & Q04 Verification:
-   • Workspace Presentation & Branding Refinement (Light Heroes & Footer): PASSED
+4. Controlled Presentation & Deliverable Verification:
+   • Q07 & Q17 Override-Only Primary Serialization:                      PASSED
+   • Clean Customer Confirmation Email Values:                           PASSED
+   • Dynamic Q20 PDF Report Narrative Derivation:                        PASSED
    • Exact Integer & Decimal Intake (80.0, 12.5):                        PASSED
    • Strict Zero (`0`) Preservation:                                     PASSED
    • Negative Number Inline Rejection:                                   PASSED
@@ -815,27 +857,31 @@ The database schema is managed via asynchronous Alembic migrations:
 | **Handoff Refine** | `7b7fee8` | `docs: refine manager handoff documentation` | Aligned handoff documentation wording to operational effort & exposure quantification. |
 | **Client Demo** | `70b7fea` | `docs: create standalone client experience demo` | Created `docs/handoff/CLIENT_EXPERIENCE.html` standalone client walkthrough. |
 | **Demo Polish** | `cbeb275` | `fix(demo): resolve icon sizing and align client experience demo with real application` | Systematic SVG sizing fix, removed demo toolbar, verified clean 0% initial intake state. |
+| **Client Exp V2** | `8f3e63e` | `feat(ux): implement meshIQ client experience v2` | One-section wizard, IBM MQ terminology, direct Not sure handling, customer titles, Section G. |
+| **Override Fix** | `c23b26a` | `fix: correct override response exports and q20 report narrative` | Fixed Q07/Q17 primary serialization and Q20 dynamic PDF report narrative derivation. |
+| **Deliverable Fix** | `eef5791` | `fix: finalize deliverable overrides and customer-facing outputs` | Clean email response presentation without redundant 'Specified' tokens. |
+| **Checkpoint** | `HEAD` | `docs: update project status and customer experience checkpoint` | Documentation update and standalone customer preview CLIENT_EXPERIENCE_CURRENT.html. |
 
 ---
 
 ## 12. Planned Next Increments & Product Roadmap
 
 ### Current Demo Readiness / Demo Environment
-- **Development Branch**: `dev`
+- **Development Branch**: `meshiq-handoff`
 - **Demo Customer Organizations**: 10 isolated demo organizations available (`DATAEKO Demo Client 01` through `DATAEKO Demo Client 10`).
-- **Demo Accounts**: 10 dedicated `CUSTOMER_ADMIN` login accounts configured under primary tenant context.
+- **Demo Accounts**: Dedicated login accounts configured under primary tenant context.
 - **Fresh Demonstration Workspaces**: Clients 06 through 10 are completely clean, dedicated demonstration workspaces configured with 0 assessments, 0 survey responses, 0 calculation snapshots, and 0 prior deliverables, prepared specifically for live manual Q01–Q22 assessment entry and end-to-end evaluation walkthroughs.
 - **Security & Customer Isolation**: Authenticated login and strict tenant/customer scoping validated across all accounts. Customer admins cannot access or mutate cross-organization records; zero system or production records are exposed in customer scopes.
 - **Calculation Engine & Business Integrity**: Golden Master tests remain **10/10 PASS**. Zero changes to calculation engine formulas, constants, thresholds, multipliers, lookup tables, or Q01–Q22 semantics.
 - **Safety Boundary**: Dedicated for live product demonstration only. Demo accounts and synthetic organizations must not be treated as production customers. No sensitive credentials, secrets, or tokens are stored in documentation or source control.
 
 ### Current Authoritative Application Checkpoint (`meshiq-handoff`)
-- **Authoritative Source Baseline**: `dev` @ `e2ee663`
+- **Authoritative Source Baseline**: `dev` @ `e2ee663` / `meshiq-handoff` @ `eef5791`
 - **Documentation & Handoff Branch**: `meshiq-handoff`
 - **Working Tree**: Clean (all application code committed; documentation and demo artifacts verified)
-- **Executive Deliverable**: `docs/handoff/CLIENT_EXPERIENCE.html` (Self-contained offline client experience walkthrough)
-- **Executive PDF Report Status**: **RESOLVED** — Approved 3-page enterprise reference layout, strictly presentation-only, immutable snapshot reads.
-- **Client Submission Confirmation Email Status**: **RESOLVED** — Modern responsive dual-branded presentation, strict contract preservation.
+- **Primary Deliverables**: `docs/handoff/CLIENT_EXPERIENCE_CURRENT.html` (Latest standalone customer experience preview) and `docs/handoff/CLIENT_EXPERIENCE.html` (Baseline reference).
+- **Executive PDF Report Status**: **RESOLVED** — Approved 3-page enterprise reference layout, strictly presentation-only, immutable snapshot reads, dynamic Q20 narrative.
+- **Client Submission Confirmation Email Status**: **RESOLVED** — Clean customer-facing formatted values, strict contract preservation, zero financial leakage.
 - **Workspace Presentation & Branding Status**: **RESOLVED** — Clean light-theme Consultant and Admin hero cards, elevated white scope cards, and enhanced footer logo visibility.
 - **Q04 Intake & Presentation Status**: **RESOLVED** — Exact numeric intake, dashboard display, and PDF report lookup aligned with authoritative workbook.
 - **P0 Status**: **RESOLVED** — Strict authentication dependency on all assessment routes (`401 Unauthorized` on anonymous access).
@@ -900,13 +946,17 @@ npm run dev
 - **Liveness Probe**: [http://localhost:8000/api/v1/health/live](http://localhost:8000/api/v1/health/live)
 - **Readiness Probe**: [http://localhost:8000/api/v1/health/ready](http://localhost:8000/api/v1/health/ready)
 
-### Pre-Configured Development Credentials
-When running in `ENVIRONMENT=development`, pre-seeded development accounts are available:
-- **Platform Admin**: `admin@dataeko.ai` / `AdminPass123!`
-- **Partner Admin**: `partner@dataeko.ai` / `PartnerPass123!`
-- **Consultant**: `consultant@dataeko.ai` / `Consultant123!`
-- **Customer Admin**: `customer_admin@dataeko.ai` / `CustAdmin123!`
-- **Customer User (Client)**: `customer_user@dataeko.ai` / `CustUser123!`
+### Development Account Personas (Local Environment Only)
+When running in `ENVIRONMENT=development`, pre-seeded development account personas are available:
+- **Platform Admin**: `admin@dataeko.ai`
+- **Partner Admin**: `partner@dataeko.ai`
+- **Consultant**: `consultant@dataeko.ai`
+- **Customer Admin**: `customer_admin@dataeko.ai`
+- **Customer User (Client)**: `customer_user@dataeko.ai`
+
+> [!NOTE]
+> In accordance with enterprise security policy, credentials and authentication secrets are never committed to version control or documented in the repository. Passwords and session secrets are managed strictly via local `.env.local` / local development configuration and are disabled in non-development environments.
+
 
 ---
 
