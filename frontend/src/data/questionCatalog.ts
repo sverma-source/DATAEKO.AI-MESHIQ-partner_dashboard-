@@ -146,7 +146,7 @@ export const QUESTIONS: Record<string, QuestionDefinition> = {
     number: 5,
     code: "Q05",
     sectionId: "A",
-    title: "Retired Infrastructure & Technical Debt",
+    title: "Older or Inactive Queue Managers",
     questionText: "Do you still run or maintain older or unused IBM MQ queue managers or applications because shutting them down could disrupt other systems?",
     responseType: "DROPDOWN_SINGLE_SELECT",
     options: [
@@ -260,7 +260,7 @@ export const QUESTIONS: Record<string, QuestionDefinition> = {
     number: 10,
     code: "Q10",
     sectionId: "C",
-    title: "Cross-Technology Manual Correlation Friction",
+    title: "End-to-End Transaction Tracing",
     questionText: "How much manual effort is required to trace a message transaction across IBM MQ, brokers, applications, and hybrid/cloud endpoints?",
     responseType: "DROPDOWN_SINGLE_SELECT",
     options: [
@@ -387,7 +387,7 @@ export const QUESTIONS: Record<string, QuestionDefinition> = {
     number: 16,
     code: "Q16",
     sectionId: "E",
-    title: "Cost-Reduction Mandate",
+    title: "Cost Reduction & Modernization Focus",
     questionText: "Is your infrastructure / middleware leadership under an active mandate to reduce operating expenditures (OpEx) or modernize legacy messaging?",
     responseType: "DROPDOWN_SINGLE_SELECT",
     options: [
@@ -407,7 +407,7 @@ export const QUESTIONS: Record<string, QuestionDefinition> = {
     number: 17,
     code: "Q17",
     sectionId: "E",
-    title: "Target OpEx Reduction Percentage",
+    title: "Target Cost Reduction Percentage",
     questionText: "What percentage reduction in operational effort or middleware tooling spend is leadership targeting over the next 12–24 months?",
     responseType: "DROPDOWN_PERCENTAGE_OR_NUMERIC",
     options: [
@@ -470,7 +470,7 @@ export const QUESTIONS: Record<string, QuestionDefinition> = {
     number: 20,
     code: "Q20",
     sectionId: "G",
-    title: "Fully Loaded Annual Labor Cost Override",
+    title: "Annual Engineering Labor Cost",
     questionText: "What is the estimated annual cost of an infrastructure or middleware engineer, including salary, bonus, benefits, and overhead?",
     responseType: "NUMERIC_CURRENCY_OR_DEFAULT",
     options: [
@@ -515,7 +515,7 @@ export const QUESTIONS: Record<string, QuestionDefinition> = {
     number: 22,
     code: "Q22",
     sectionId: "G",
-    title: "Time to Act & Measurable Improvement Target",
+    title: "Target Improvement Timeline",
     questionText: "What is your timeline for improving messaging operations and reducing costs?",
     responseType: "DROPDOWN_SINGLE_SELECT",
     options: [

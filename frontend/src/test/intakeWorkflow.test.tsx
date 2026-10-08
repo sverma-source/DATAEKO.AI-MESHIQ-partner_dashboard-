@@ -130,7 +130,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
       expect(screen.getByRole("heading", { name: "C. Operational Complexity & Productivity" })).toBeInTheDocument();
     });
     expect(screen.getByText("Monitoring Tools & Management Consoles")).toBeInTheDocument();
-    expect(screen.getByText("Cross-Technology Manual Correlation Friction")).toBeInTheDocument();
+    expect(screen.getByText("End-to-End Transaction Tracing")).toBeInTheDocument();
     expect(screen.getByText("Operational Productivity Constraint")).toBeInTheDocument();
 
     // Move to Section D
@@ -146,8 +146,8 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "E. Cost Reduction & Organizational Pressure" })).toBeInTheDocument();
     });
-    expect(screen.getByText("Cost-Reduction Mandate")).toBeInTheDocument();
-    expect(screen.getByText("Target OpEx Reduction Percentage")).toBeInTheDocument();
+    expect(screen.getByText("Cost Reduction & Modernization Focus")).toBeInTheDocument();
+    expect(screen.getByText("Target Cost Reduction Percentage")).toBeInTheDocument();
 
     // Move to Section F
     fireEvent.click(screen.getByRole("button", { name: /next: section f/i }));
@@ -162,9 +162,9 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "G. Team Economics & Transformation Timeline" })).toBeInTheDocument();
     });
-    expect(screen.getByText("Fully Loaded Annual Labor Cost Override")).toBeInTheDocument();
+    expect(screen.getByText("Annual Engineering Labor Cost")).toBeInTheDocument();
     expect(screen.getByText("Customer-Reported Total Annual IBM MQ Spend")).toBeInTheDocument();
-    expect(screen.getByText("Time to Act & Measurable Improvement Target")).toBeInTheDocument();
+    expect(screen.getByText("Target Improvement Timeline")).toBeInTheDocument();
 
     // Move to Review
     fireEvent.click(screen.getByRole("button", { name: /proceed to review/i }));

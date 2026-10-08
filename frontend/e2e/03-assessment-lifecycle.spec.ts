@@ -169,7 +169,7 @@ test.describe('End-to-End Assessment Lifecycle, Save/Resume, Validation & Calcul
 
     // Navigate to Section G
     await page.locator('nav button:has-text("Section G")').click();
-    await expect(page.getByRole('heading', { name: 'G. Economic Inputs & Timing' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'G. Team Economics & Transformation Timeline' })).toBeVisible();
 
     // Verify Q20 default loaded labor rate is preselected
     await expect(page.locator('#select-Q20')).toHaveValue('DEFAULT');
@@ -276,9 +276,9 @@ test.describe('End-to-End Assessment Lifecycle, Save/Resume, Validation & Calcul
     await page.locator('button:has-text("Next: Section G")').click();
 
     // -------------------------------------------------------------------------
-    // 9. Section G: Economic Inputs & Timing (Q20–Q22)
+    // 9. Section G: Team Economics & Transformation Timeline (Q20–Q22)
     // -------------------------------------------------------------------------
-    await expect(page.getByRole('heading', { name: 'G. Economic Inputs & Timing' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'G. Team Economics & Transformation Timeline' })).toBeVisible();
     await page.selectOption('#select-Q20', 'DEFAULT');
     await page.selectOption('#select-Q21', 'OVERRIDE');
     const q21Toggle = page.locator('.space-y-6 button:has-text("Provide exact customer fact")').last();

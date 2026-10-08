@@ -92,6 +92,23 @@ describe("SubmittedResponsesView Component", () => {
       const qCode = `Q${String(i).padStart(2, "0")}`;
       expect(screen.getByText(qCode)).toBeInTheDocument();
     }
+
+    // Customer-friendly question titles must be displayed
+    expect(screen.getByText("Older or Inactive Queue Managers")).toBeInTheDocument();
+    expect(screen.getByText("End-to-End Transaction Tracing")).toBeInTheDocument();
+    expect(screen.getByText("Cost Reduction & Modernization Focus")).toBeInTheDocument();
+    expect(screen.getByText("Target Cost Reduction Percentage")).toBeInTheDocument();
+    expect(screen.getByText("Annual Engineering Labor Cost")).toBeInTheDocument();
+    expect(screen.getByText("Target Improvement Timeline")).toBeInTheDocument();
+
+    // Internal audit-style labels must NOT appear
+    expect(screen.queryByText("Retired Infrastructure & Technical Debt")).not.toBeInTheDocument();
+    expect(screen.queryByText("Cross-Technology Manual Correlation Friction")).not.toBeInTheDocument();
+    expect(screen.queryByText("Cost-Reduction Mandate")).not.toBeInTheDocument();
+    expect(screen.queryByText("Target OpEx Reduction Percentage")).not.toBeInTheDocument();
+    expect(screen.queryByText("Fully Loaded Annual Labor Cost Override")).not.toBeInTheDocument();
+    expect(screen.queryByText("Time to Act & Measurable Improvement Target")).not.toBeInTheDocument();
+    expect(screen.queryByText("Economic Inputs & Timing")).not.toBeInTheDocument();
   });
 
   it("is strictly read-only and contains NO edit, input, slider, or submission controls", () => {

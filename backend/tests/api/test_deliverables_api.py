@@ -151,7 +151,7 @@ async def test_csv_deliverable_generation_and_content(
     assert sections[11] == "D. Business Consequence & Financial Exposure"  # Q12
     assert sections[15] == "E. Cost Reduction & Organizational Pressure"  # Q16
     assert sections[17] == "F. Cybersecurity & Remediation"  # Q18
-    assert sections[19] == "G. Economic Inputs & Timing"  # Q20
+    assert sections[19] == "G. Team Economics & Transformation Timeline"  # Q20
 
     # Verify immutability: assessment status remains SUBMITTED
     get_res = await client.get(f"/api/v1/assessments/{assessment_id}", headers=auth_headers)

@@ -86,7 +86,7 @@ describe("AssessmentWizardPage Full Integration", () => {
     expect(screen.getByText("Staffing & Administration Resources")).toBeInTheDocument();
     expect(screen.getByText("Staffing & Operational Model")).toBeInTheDocument();
     expect(screen.getByText("Quarterly Administration Time Overhead")).toBeInTheDocument();
-    expect(screen.getByText("Retired Infrastructure & Technical Debt")).toBeInTheDocument();
+    expect(screen.getByText("Older or Inactive Queue Managers")).toBeInTheDocument();
   });
 
   it("allows answering questions, navigating sections, saving draft, and calculating", async () => {

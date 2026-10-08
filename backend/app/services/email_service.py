@@ -22,6 +22,7 @@ except ImportError:  # pragma: no cover
     google_api_build = None  # type: ignore
     HttpError = Exception  # type: ignore
 
+from app.calculation_engine.constants import DEFAULT_ANNUAL_LOADED_LABOR_COST
 from app.config import Settings, settings as global_settings
 from app.core.errors import AppError
 
@@ -506,6 +507,107 @@ class EmailService:
         return cleaned.lower()
 
     @staticmethod
+    def format_client_response_value(q_id: str, resp_val: Optional[str], exact_val: Optional[Any]) -> str:
+        """
+        Formats customer-facing response value for confirmation emails.
+        Guarantees that human-readable values are rendered consistently with the UI
+        and internal override tokens (e.g. OVERRIDE, DEFAULT) are never exposed to clients.
+        """
+        exact_str = str(exact_val).strip() if exact_val is not None else ""
+        raw_resp = "" if resp_val in (None, "None", "null") else str(resp_val).strip()
+
+        if q_id == "Q04":
+            if exact_str:
+                try:
+                    f_val = float(exact_str)
+                    clean_hrs = f"{int(f_val)}" if f_val.is_integer() else f"{f_val:g}"
+                except (ValueError, TypeError):
+                    clean_hrs = exact_str
+                return f"{clean_hrs} hours / quarter"
+            if raw_resp in ("UNKNOWN", "Not sure", "Not sure / To be assessed"):
+                return "Not sure / To be assessed"
+            if raw_resp and raw_resp not in ("OVERRIDE", "DEFAULT"):
+                return raw_resp
+            return "Not answered"
+
+        if q_id == "Q07":
+            if exact_str:
+                try:
+                    f_val = float(exact_str)
+                    clean_hrs = f"{int(f_val)}" if f_val.is_integer() else f"{f_val:g}"
+                except (ValueError, TypeError):
+                    clean_hrs = exact_str
+                return f"{clean_hrs} hours (Exact override)"
+            if raw_resp and raw_resp not in ("None", "Not answered", "Not provided", "OVERRIDE"):
+                return raw_resp
+            return "Not answered"
+
+        if q_id == "Q15":
+            if exact_str:
+                try:
+                    f_val = float(exact_str)
+                    curr = f"${int(f_val):,}" if f_val.is_integer() else f"${f_val:,.2f}"
+                except (ValueError, TypeError):
+                    curr = f"${exact_str}"
+                return f"{curr} / hour"
+            if raw_resp in ("UNKNOWN", "Not sure", "Unknown / Not sure (Using Benchmark if eligible)"):
+                return "Unknown / Use Industry Benchmark if applicable"
+            if raw_resp and raw_resp not in ("OVERRIDE", "DEFAULT"):
+                return raw_resp
+            return "Not provided"
+
+        if q_id == "Q17":
+            if exact_str:
+                try:
+                    f_val = float(exact_str)
+                    clean_pct = f"{int(f_val)}" if f_val.is_integer() else f"{f_val:g}"
+                except (ValueError, TypeError):
+                    clean_pct = exact_str
+                return f"{clean_pct}% (Exact target)"
+            if raw_resp and raw_resp not in ("None", "Not answered", "Not provided", "OVERRIDE"):
+                return raw_resp
+            return "Not answered"
+
+        if q_id == "Q20":
+            if exact_str:
+                try:
+                    f_val = float(exact_str)
+                    curr = f"${int(f_val):,}" if f_val.is_integer() else f"${f_val:,.2f}"
+                except (ValueError, TypeError):
+                    curr = f"${exact_str}"
+                return f"{curr} / year"
+            if raw_resp and raw_resp not in ("OVERRIDE", "DEFAULT"):
+                return raw_resp
+            return f"${int(DEFAULT_ANNUAL_LOADED_LABOR_COST):,} / year"
+
+        if q_id == "Q21":
+            if exact_str:
+                try:
+                    f_val = float(exact_str)
+                    curr = f"${int(f_val):,}" if f_val.is_integer() else f"${f_val:,.2f}"
+                except (ValueError, TypeError):
+                    curr = f"${exact_str}"
+                return f"{curr} / year"
+            if raw_resp in ("UNKNOWN", "Not sure", "Unknown / Not Disclosed"):
+                return "Unknown / Not Disclosed"
+            if raw_resp and raw_resp not in ("OVERRIDE", "DEFAULT"):
+                return raw_resp
+            return "Not provided"
+
+        # General handling for any other question
+        if exact_str:
+            if raw_resp and raw_resp not in ("Not answered", "Not provided", "OVERRIDE", "DEFAULT"):
+                if "(Exact" in raw_resp or exact_str in raw_resp:
+                    return raw_resp
+                return f"{raw_resp} (Specified: {exact_str})"
+            return f"Specified: {exact_str}"
+
+        if raw_resp in ("OVERRIDE", "DEFAULT", ""):
+            return "Not answered"
+
+        return raw_resp
+
+    @staticmethod
     def create_client_submission_email(
         recipient_email: str,
         recipient_name: Optional[str],
@@ -555,17 +657,7 @@ class EmailService:
             resp_val = item.get("response", "")
             exact_val = item.get("exact_value", "")
 
-            if exact_val and str(exact_val).strip():
-                if resp_val and resp_val not in ("None", "Not answered", "Not provided"):
-                    if "(Exact" in resp_val or exact_val in resp_val:
-                        val_str = resp_val
-                    else:
-                        val_str = f"{resp_val} (Specified: {exact_val})"
-                else:
-                    val_str = f"Specified: {exact_val}"
-            else:
-                val_str = resp_val or "Not answered"
-
+            val_str = EmailService.format_client_response_value(q_id, resp_val, exact_val)
             lines.append(f"[{q_id}] {title}: {val_str}")
 
         lines.extend([
@@ -595,22 +687,20 @@ class EmailService:
             resp_val = item.get("response", "")
             exact_val = item.get("exact_value", "")
 
-            if exact_val and str(exact_val).strip():
-                if resp_val and resp_val not in ("None", "Not answered", "Not provided"):
-                    if "(Exact" in resp_val or exact_val in resp_val:
-                        val_str = f"<strong>{resp_val}</strong>"
-                    else:
-                        val_str = f"<strong>{resp_val}</strong> <span style='color: #64748B; font-weight: normal; font-size: 12px;'>(Specified: {exact_val})</span>"
-                else:
-                    val_str = f"<strong>Specified: {exact_val}</strong>"
+            val_str = EmailService.format_client_response_value(q_id, resp_val, exact_val)
+
+            if " (Specified: " in val_str:
+                base_part, _, spec_part = val_str.partition(" (Specified: ")
+                spec_part = spec_part.rstrip(")")
+                val_html = f"<strong>{base_part}</strong> <span style='color: #64748B; font-weight: normal; font-size: 12px;'>(Specified: {spec_part})</span>"
             else:
-                val_str = f"<strong>{resp_val or 'Not answered'}</strong>"
+                val_html = f"<strong>{val_str}</strong>"
 
             html_rows.append(
                 f"<tr style='border-bottom: 1px solid #F1F5F9;'>"
                 f"<td style='padding: 8px 12px; font-weight: 800; color: #008638; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; width: 45px; vertical-align: top;'>{q_id}</td>"
                 f"<td style='padding: 8px 12px; color: #334155; font-size: 12.5px; vertical-align: top;'>{title}</td>"
-                f"<td style='padding: 8px 12px; color: #0F172A; font-size: 12.5px; vertical-align: top; text-align: right;'>{val_str}</td>"
+                f"<td style='padding: 8px 12px; color: #0F172A; font-size: 12.5px; vertical-align: top; text-align: right;'>{val_html}</td>"
                 f"</tr>"
             )
 

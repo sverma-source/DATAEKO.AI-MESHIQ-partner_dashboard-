@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.calculation_engine.constants import DEFAULT_ANNUAL_LOADED_LABOR_COST
 from app.core.errors import AppError, EntityNotFoundError
 from app.models.assessment import Assessment, AssessmentStatus
 from app.models.calculation_snapshot import CalculationSnapshot
@@ -48,7 +49,7 @@ CANONICAL_SECTIONS = [
     },
     {
         "id": "G",
-        "title": "G. Economic Inputs & Timing",
+        "title": "G. Team Economics & Transformation Timeline",
         "question_ids": ["Q20", "Q21", "Q22"],
     },
 ]
@@ -58,24 +59,24 @@ QUESTION_METADATA = {
     "Q02": {"section": "A. Environment & Cost Baseline", "title": "Staffing & Administration Resources"},
     "Q03": {"section": "A. Environment & Cost Baseline", "title": "Staffing & Operational Model"},
     "Q04": {"section": "A. Environment & Cost Baseline", "title": "Quarterly Administration Time Overhead"},
-    "Q05": {"section": "A. Environment & Cost Baseline", "title": "Retired Infrastructure & Technical Debt"},
+    "Q05": {"section": "A. Environment & Cost Baseline", "title": "Older or Inactive Queue Managers"},
     "Q06": {"section": "B. Troubleshooting Economics", "title": "Troubleshooting & Incident Frequency"},
     "Q07": {"section": "B. Troubleshooting Economics", "title": "Staff Hours Expended Per Investigation (Staff Effort)"},
     "Q08": {"section": "B. Troubleshooting Economics", "title": "Elapsed Investigation Duration (Clock Time)"},
     "Q09": {"section": "C. Operational Complexity & Productivity", "title": "Monitoring Tools & Management Consoles"},
-    "Q10": {"section": "C. Operational Complexity & Productivity", "title": "Cross-Technology Manual Correlation Friction"},
+    "Q10": {"section": "C. Operational Complexity & Productivity", "title": "End-to-End Transaction Tracing"},
     "Q11": {"section": "C. Operational Complexity & Productivity", "title": "Operational Productivity Constraint"},
     "Q12": {"section": "D. Business Consequence & Financial Exposure", "title": "Severity of Business Impact"},
     "Q13": {"section": "D. Business Consequence & Financial Exposure", "title": "Recent Disruption Experience"},
     "Q14": {"section": "D. Business Consequence & Financial Exposure", "title": "Representative Disruption Duration"},
     "Q15": {"section": "D. Business Consequence & Financial Exposure", "title": "Estimated Financial Cost Per Hour of Downtime"},
-    "Q16": {"section": "E. Cost Reduction & Organizational Pressure", "title": "Cost-Reduction Mandate"},
-    "Q17": {"section": "E. Cost Reduction & Organizational Pressure", "title": "Target OpEx Reduction Percentage"},
+    "Q16": {"section": "E. Cost Reduction & Organizational Pressure", "title": "Cost Reduction & Modernization Focus"},
+    "Q17": {"section": "E. Cost Reduction & Organizational Pressure", "title": "Target Cost Reduction Percentage"},
     "Q18": {"section": "F. Cybersecurity & Remediation", "title": "Cybersecurity & Audit Pressure"},
     "Q19": {"section": "F. Cybersecurity & Remediation", "title": "Vulnerability Remediation & Configuration Friction"},
-    "Q20": {"section": "G. Economic Inputs & Timing", "title": "Fully Loaded Annual Labor Cost Override"},
-    "Q21": {"section": "G. Economic Inputs & Timing", "title": "Customer-Reported Total Annual IBM MQ Spend"},
-    "Q22": {"section": "G. Economic Inputs & Timing", "title": "Time to Act & Measurable Improvement Target"},
+    "Q20": {"section": "G. Team Economics & Transformation Timeline", "title": "Annual Engineering Labor Cost"},
+    "Q21": {"section": "G. Team Economics & Transformation Timeline", "title": "Customer-Reported Total Annual IBM MQ Spend"},
+    "Q22": {"section": "G. Team Economics & Transformation Timeline", "title": "Target Improvement Timeline"},
 }
 
 
@@ -138,7 +139,11 @@ class DeliverableService:
                 raw_q04 = raw.get("q04_dropdown")
                 admin_hrs = raw.get("q04_admin_hours") if raw.get("q04_admin_hours") is not None else (resp.q04_weekly_admin_hours if resp else None)
                 if admin_hrs is not None:
-                    exact_val = str(admin_hrs)
+                    try:
+                        f_hrs = float(admin_hrs)
+                        exact_val = f"{int(f_hrs)}" if f_hrs.is_integer() else f"{f_hrs:g}"
+                    except (ValueError, TypeError):
+                        exact_val = str(admin_hrs)
                 if raw_q04 == "UNKNOWN":
                     response_val = "Not sure / To be assessed"
                 elif raw_q04 and raw_q04 != "OVERRIDE":
@@ -155,10 +160,18 @@ class DeliverableService:
                 response_val = str(val06) if val06 else "Not answered"
             elif q_id == "Q07":
                 raw_q07 = raw.get("q07_labor_hours") or (resp.q07_labor_hours_text if resp else None)
+                if raw_q07 in ("None", "null", ""):
+                    raw_q07 = None
                 override_q07 = raw.get("q07_override") if raw.get("q07_override") is not None else (resp.q07_labor_hours_override if resp else None)
                 if override_q07 is not None:
-                    exact_val = str(override_q07)
-                if raw_q07:
+                    try:
+                        f_val = float(override_q07)
+                        exact_val = f"{int(f_val)}" if f_val.is_integer() else f"{f_val:g}"
+                    except (ValueError, TypeError):
+                        exact_val = str(override_q07)
+                if override_q07 is not None and not raw_q07:
+                    response_val = f"{exact_val} hours (Exact override)"
+                elif raw_q07:
                     response_val = str(raw_q07)
                 elif override_q07 is not None:
                     response_val = f"{exact_val} hours (Exact override)"
@@ -220,7 +233,7 @@ class DeliverableService:
                 salary = raw.get("q20_annual_labor_rate") if raw.get("q20_annual_labor_rate") is not None else (resp.q20_annual_labor_rate if resp else None)
                 if use_default or salary is None:
                     response_val = "DEFAULT"
-                    exact_val = "180000"
+                    exact_val = str(int(DEFAULT_ANNUAL_LOADED_LABOR_COST))
                 else:
                     response_val = "OVERRIDE"
                     exact_val = str(salary)

@@ -217,7 +217,7 @@ describe("Q15 — Estimated Financial Cost Per Hour of Downtime (Regression & Pe
   });
 });
 
-describe("Q20 — Fully Loaded Annual Labor Cost Override (Regression & Persistence)", () => {
+describe("Q20 — Annual Engineering Labor Cost (Regression & Persistence)", () => {
   it("allows selecting 'Customer Specific Annual Loaded Cost', does not revert to baseline, and displays amount input", () => {
     let latestState: AssessmentResponseState = {};
     const spy = vi.fn((state) => {
@@ -226,7 +226,7 @@ describe("Q20 — Fully Loaded Annual Labor Cost Override (Regression & Persiste
 
     render(<PageHarness questionCode="Q20" onChangeSpy={spy} />);
 
-    const selectEl = screen.getByLabelText("Q20: Fully Loaded Annual Labor Cost Override") as HTMLSelectElement;
+    const selectEl = screen.getByLabelText("Q20: Annual Engineering Labor Cost") as HTMLSelectElement;
     expect(selectEl.value).toBe("DEFAULT");
 
     // 1. Select "Customer Specific Annual Loaded Cost ($/year)"
@@ -286,7 +286,7 @@ describe("Q20 — Fully Loaded Annual Labor Cost Override (Regression & Persiste
     expect(latestState.q20_dropdown).toBe("DEFAULT");
     expect(latestState.q20_annual_labor_rate).toBeUndefined();
 
-    const selectEl = screen.getByLabelText("Q20: Fully Loaded Annual Labor Cost Override") as HTMLSelectElement;
+    const selectEl = screen.getByLabelText("Q20: Annual Engineering Labor Cost") as HTMLSelectElement;
     expect(selectEl.value).toBe("DEFAULT");
   });
 });

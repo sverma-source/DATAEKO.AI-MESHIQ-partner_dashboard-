@@ -430,7 +430,7 @@ export class ReportDataAdapter {
         techDebtInfrastructure: {
           category: "Technical Debt",
           questionCode: "Q05",
-          questionTitle: "Retired Infrastructure & Technical Debt",
+          questionTitle: "Older or Inactive Queue Managers",
           customerResponse: answers.q05_tech_debt || "Multiple legacy and unsupported versions in production",
           interpretation: "Qualitative indicator of maintenance friction and migration backlogs.",
         },
