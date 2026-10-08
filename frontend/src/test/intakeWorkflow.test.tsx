@@ -160,7 +160,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     // Move to Section G
     fireEvent.click(screen.getByRole("button", { name: /next: section g/i }));
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "G. Economic Inputs & Timing" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "G. Team Economics & Transformation Timeline" })).toBeInTheDocument();
     });
     expect(screen.getByText("Fully Loaded Annual Labor Cost Override")).toBeInTheDocument();
     expect(screen.getByText("Customer-Reported Total Annual IBM MQ Spend")).toBeInTheDocument();
@@ -169,7 +169,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     // Move to Review
     fireEvent.click(screen.getByRole("button", { name: /proceed to review/i }));
     await waitFor(() => {
-      expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
+      expect(screen.getByText("Review & Submit Assessment")).toBeInTheDocument();
     });
   });
 
@@ -223,12 +223,12 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     fireEvent.click(screen.getByRole("button", { name: /next: section g/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "G. Economic Inputs & Timing" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "G. Team Economics & Transformation Timeline" })).toBeInTheDocument();
     });
 
     // Expand override for Q20
     const q20OverrideToggle = screen.getByRole("button", {
-      name: /provide exact customer fact \(custom annual loaded salary/i,
+      name: /provide.*salary/i,
     });
     fireEvent.click(q20OverrideToggle);
 
@@ -238,7 +238,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
 
     // Expand override for Q21
     const q21OverrideToggle = screen.getByRole("button", {
-      name: /provide exact customer fact \(total annual mq spend/i,
+      name: /provide.*spend/i,
     });
     fireEvent.click(q21OverrideToggle);
 
@@ -259,7 +259,7 @@ describe("Comprehensive Assessment Intake Workflow (Q01–Q22)", () => {
     fireEvent.click(reviewTab);
 
     await waitFor(() => {
-      expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
+      expect(screen.getByText("Review & Submit Assessment")).toBeInTheDocument();
     });
 
     // Submit assessment with confirmation modal

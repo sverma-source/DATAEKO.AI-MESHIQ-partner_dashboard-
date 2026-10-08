@@ -127,7 +127,7 @@ describe("AssessmentWizardPage Full Integration", () => {
     fireEvent.click(reviewTab);
 
     await waitFor(() => {
-      expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
+      expect(screen.getByText("Review & Submit Assessment")).toBeInTheDocument();
     });
 
     // 6. Submit assessment with confirmation modal
@@ -169,7 +169,7 @@ describe("AssessmentWizardPage Full Integration", () => {
     fireEvent.click(reviewTab);
 
     await waitFor(() => {
-      expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
+      expect(screen.getByText("Review & Submit Assessment")).toBeInTheDocument();
     });
 
     // 3. Click Submit Assessment

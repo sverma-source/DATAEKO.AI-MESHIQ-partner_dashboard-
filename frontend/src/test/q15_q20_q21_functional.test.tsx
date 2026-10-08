@@ -310,7 +310,7 @@ describe("Q21 — Customer-Reported Total Annual IBM MQ Spend (Regression & Pers
     expect(latestState.q21_is_unknown).toBe(false);
 
     // 2. Custom spend input appears immediately
-    const inputEl = screen.getByLabelText("Q21 exact numeric value: Total Annual MQ Spend ($/yr)") as HTMLInputElement;
+    const inputEl = screen.getByLabelText("Q21 exact numeric value: Total Annual IBM MQ Spend ($/yr)") as HTMLInputElement;
     expect(inputEl).toBeInTheDocument();
 
     // 3. Enter annual spend 345678

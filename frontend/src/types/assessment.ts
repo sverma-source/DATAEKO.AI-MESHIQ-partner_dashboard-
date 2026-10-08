@@ -40,6 +40,7 @@ export interface QuestionDefinition {
   feedsCalculation: boolean;
   calculationNote?: string;
   defaultValue?: string | number;
+  exampleHint?: string;
 }
 
 export interface SectionDefinition {

@@ -28,7 +28,8 @@ describe("WizardHeader Component", () => {
     );
 
     expect(screen.getByText("Section 1 of 7")).toBeInTheDocument();
-    expect(screen.getByText("11 of 22 Questions Answered")).toBeInTheDocument();
+    expect(screen.getByText(/11 of 22 answered/i)).toBeInTheDocument();
+    expect(screen.getByText(/about 6 minutes left/i)).toBeInTheDocument();
     expect(screen.getByText("50%")).toBeInTheDocument();
     expect(screen.getByText("Progress saved")).toBeInTheDocument();
 
@@ -131,7 +132,7 @@ describe("SectionNavigation Component", () => {
     expect(screen.getByText("D. Business Consequence & Financial Exposure")).toBeInTheDocument();
     expect(screen.getByText("E. Cost Reduction & Organizational Pressure")).toBeInTheDocument();
     expect(screen.getByText("F. Cybersecurity & Remediation")).toBeInTheDocument();
-    expect(screen.getByText("G. Economic Inputs & Timing")).toBeInTheDocument();
+    expect(screen.getByText("G. Team Economics & Transformation Timeline")).toBeInTheDocument();
     expect(screen.getByText("Review & Submit")).toBeInTheDocument();
 
     const secBBtn = screen.getByRole("button", { name: /b\. troubleshooting economics/i });
@@ -179,7 +180,7 @@ describe("SectionNavigation Component", () => {
     expect(reviewBtn).toHaveAttribute("data-section-id", "REVIEW");
 
     // Focus on Section G (simulating keyboard tab navigation)
-    const secGBtn = screen.getByRole("button", { name: /g\. economic inputs & timing/i });
+    const secGBtn = screen.getByRole("button", { name: /g\. team economics & transformation timeline/i });
     fireEvent.focus(secGBtn);
     expect(secGBtn).toBeInTheDocument();
 
@@ -210,6 +211,7 @@ describe("QuestionCard Component", () => {
         selectedValue="About weekly"
         onSelectOption={handleSelect}
         onOverrideChange={handleOverride}
+        userRole="CONSULTANT"
       />
     );
 
@@ -236,8 +238,8 @@ describe("QuestionCard Component", () => {
       />
     );
 
-    expect(screen.getByLabelText("Exact Quarterly Administration Hours")).toBeInTheDocument();
-    const inputEl = screen.getByLabelText("Exact Quarterly Administration Hours");
+    expect(screen.getByLabelText("Estimated quarterly hours (approximate is fine)")).toBeInTheDocument();
+    const inputEl = screen.getByLabelText("Estimated quarterly hours (approximate is fine)");
     expect(inputEl).toHaveValue(80);
 
     fireEvent.change(inputEl, { target: { value: "95" } });
@@ -255,7 +257,7 @@ describe("QuestionCard Component", () => {
       />
     );
 
-    const inputEl = screen.getByLabelText("Exact Quarterly Administration Hours");
+    const inputEl = screen.getByLabelText("Estimated quarterly hours (approximate is fine)");
     const blurSpy = vi.spyOn(inputEl, "blur");
 
     fireEvent.wheel(inputEl);
@@ -274,7 +276,7 @@ describe("QuestionCard Component", () => {
       />
     );
 
-    const inputEl = screen.getByLabelText("Exact Quarterly Administration Hours");
+    const inputEl = screen.getByLabelText("Estimated quarterly hours (approximate is fine)");
     expect(inputEl).toHaveAttribute("aria-invalid", "true");
     expect(inputEl).toHaveAttribute("aria-describedby", "error-Q04");
     expect(screen.getByRole("alert")).toHaveTextContent("Hours must be a non-negative number.");
@@ -287,6 +289,7 @@ describe("QuestionCard Component", () => {
         selectedValue="51–100"
         onSelectOption={vi.fn()}
         onOverrideChange={vi.fn()}
+        userRole="CONSULTANT"
       />
     );
 
@@ -408,7 +411,7 @@ describe("ReviewSummary Component", () => {
       />
     );
 
-    expect(screen.getByText("Ready to Submit Assessment")).toBeInTheDocument();
+    expect(screen.getByText("Review & Submit Assessment")).toBeInTheDocument();
     expect(screen.getByText("80 hours / quarter")).toBeInTheDocument();
     expect(screen.getByText("About weekly")).toBeInTheDocument();
 

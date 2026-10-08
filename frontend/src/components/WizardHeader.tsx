@@ -26,16 +26,26 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
   isSaving,
 }) => {
   const percentage = Math.round((answeredCount / totalQuestions) * 100);
+  const remainingQuestions = Math.max(0, totalQuestions - answeredCount);
+  const estimatedMinutes = Math.max(1, Math.round((remainingQuestions * 30) / 60));
+  const progressTimeText =
+    remainingQuestions === 0
+      ? "Completed"
+      : estimatedMinutes === 1
+      ? "about 1 minute left"
+      : `about ${estimatedMinutes} minutes left`;
 
   return (
     <div className="bg-white border-b border-[#E2E6EE] px-4 py-4 sm:px-6 lg:px-8 shadow-xs">
       <div className="mx-auto max-w-7xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         {/* Section Context & Hierarchy */}
         <div>
-          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#008638]">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#008638]">
             <span>Section {currentSectionIndex} of {totalSections}</span>
-            <span className="text-[#CBD2DE]" aria-hidden="true">•</span>
-            <span>{answeredCount} of {totalQuestions} Questions Answered</span>
+            <span className="text-[#CBD2DE]" aria-hidden="true">·</span>
+            <span>{answeredCount} of {totalQuestions} answered</span>
+            <span className="text-[#CBD2DE]" aria-hidden="true">·</span>
+            <span className="font-semibold text-[#5B6579] normal-case">{progressTimeText}</span>
           </div>
           <h1 className="text-xl font-extrabold text-[#172033] sm:text-2xl tracking-tight mt-0.5">
             {currentSection.title}

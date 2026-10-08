@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   CheckCircle2,
   FileCheck2,
@@ -9,6 +9,13 @@ import {
   Calendar,
   Hash,
   ShieldCheck,
+  Sparkles,
+  Server,
+  Users,
+  AlertCircle,
+  Clock,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import {
   Assessment,
@@ -33,6 +40,8 @@ export const SubmittedResponsesView: React.FC<SubmittedResponsesViewProps> = ({
   questionsMap,
   answers,
 }) => {
+  const [showDetailedResponses, setShowDetailedResponses] = useState<boolean>(true);
+
   // Format Response Value for Question
   const formatAnswerDisplay = (q: QuestionDefinition) => {
     switch (q.id) {
@@ -117,6 +126,16 @@ export const SubmittedResponsesView: React.FC<SubmittedResponsesViewProps> = ({
       })
     : "Recently submitted";
 
+  // Key Organization Facts Summary
+  const estateScaleFact =
+    answers.q01_override !== undefined
+      ? `${answers.q01_override} Queue Managers`
+      : answers.q01_scale || "In Discovery";
+
+  const staffingFact = answers.q03_staffing_model || "Shared / Dedicated Team";
+  const challengeFact = answers.q11_productivity_constraint || "Standard Operations";
+  const timelineFact = answers.q22_migration_plans || "Strategic Timeline";
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-16" data-testid="submitted-responses-view">
       {/* Submitted Status Hero Banner */}
@@ -189,77 +208,151 @@ export const SubmittedResponsesView: React.FC<SubmittedResponsesViewProps> = ({
         </div>
       </div>
 
-      {/* Grouped Discovery Responses by Canonical 7 Sections */}
+      {/* Next Steps Advisory Card */}
+      <div className="rounded-2xl bg-[#0D1322] border border-[#1E293B] p-6 text-white shadow-md">
+        <div className="flex items-start space-x-4">
+          <div className="p-2.5 rounded-xl bg-[#38B449]/20 text-[#8CC63E] border border-[#38B449]/40 shrink-0 mt-0.5">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-base font-bold text-white tracking-tight">
+              Next Steps
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl">
+              Your meshIQ advisory team is preparing your formal Economic Assessment &amp; Opportunity Analysis.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* High-Level Organization Snapshot Facts */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="rounded-xl border border-[#E2E6EE] bg-white p-4 shadow-xs">
+          <div className="flex items-center space-x-2 text-[#5B6579] mb-1.5">
+            <Server className="h-4 w-4 text-[#008638]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-[#738096]">Estate Scale</span>
+          </div>
+          <div className="text-sm font-bold text-[#172033]">{estateScaleFact}</div>
+        </div>
+
+        <div className="rounded-xl border border-[#E2E6EE] bg-white p-4 shadow-xs">
+          <div className="flex items-center space-x-2 text-[#5B6579] mb-1.5">
+            <Users className="h-4 w-4 text-[#008638]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-[#738096]">Staffing Model</span>
+          </div>
+          <div className="text-sm font-bold text-[#172033] truncate" title={staffingFact}>
+            {staffingFact}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-[#E2E6EE] bg-white p-4 shadow-xs">
+          <div className="flex items-center space-x-2 text-[#5B6579] mb-1.5">
+            <AlertCircle className="h-4 w-4 text-[#008638]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-[#738096]">Primary Focus</span>
+          </div>
+          <div className="text-sm font-bold text-[#172033] truncate" title={challengeFact}>
+            {challengeFact}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-[#E2E6EE] bg-white p-4 shadow-xs">
+          <div className="flex items-center space-x-2 text-[#5B6579] mb-1.5">
+            <Clock className="h-4 w-4 text-[#008638]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-[#738096]">Timeline</span>
+          </div>
+          <div className="text-sm font-bold text-[#172033]">{timelineFact}</div>
+        </div>
+      </div>
+
+      {/* Detailed Grouped Discovery Responses by Canonical 7 Sections */}
       <div className="space-y-6">
-        {sections.map((section) => {
-          const sectionQuestions = (section.questionIds || []).map((qId) => questionsMap[qId]).filter(Boolean);
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-[#172033] uppercase tracking-wider">
+            Recorded Responses (22 Questions)
+          </h2>
+          <button
+            type="button"
+            onClick={() => setShowDetailedResponses(!showDetailedResponses)}
+            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-[#008638] hover:text-[#006B2D] cursor-pointer"
+          >
+            <span>{showDetailedResponses ? "Hide Details" : "Show Details"}</span>
+            {showDetailedResponses ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+        </div>
 
-          return (
-            <div
-              key={section.id}
-              className="rounded-2xl border border-[#E2E6EE] bg-white overflow-hidden shadow-xs transition-shadow duration-200"
-            >
-              {/* Section Header */}
-              <div className="px-6 py-4 bg-[#F7F8FA] border-b border-[#E2E6EE] flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className="w-6 h-6 rounded-md bg-[#E2E6EE] text-[#172033] font-bold text-xs flex items-center justify-center">
-                    {section.id}
-                  </span>
-                  <h2 className="text-sm font-bold text-[#172033] tracking-tight">
-                    {section.title}
-                  </h2>
-                </div>
-                <span className="text-xs font-medium text-[#738096]">
-                  {sectionQuestions.length} Questions
-                </span>
-              </div>
+        {showDetailedResponses && (
+          <div className="space-y-6">
+            {sections.map((section) => {
+              const sectionQuestions = (section.questionIds || []).map((qId) => questionsMap[qId]).filter(Boolean);
 
-              {/* Questions List */}
-              <div className="divide-y divide-[#E2E6EE]">
-                {sectionQuestions.map((q) => {
-                  const displayValue = formatAnswerDisplay(q);
-                  const isNotAnswered = displayValue === "Not answered" || displayValue === "Not provided";
-
-                  return (
-                    <div
-                      key={q.id}
-                      className="p-5 sm:p-6 hover:bg-[#FAFBFD] transition-colors"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                        <div className="space-y-1.5 max-w-xl">
-                          <div className="flex items-center space-x-2">
-                            <span className="px-2 py-0.5 rounded bg-[#F0F2F6] text-[#5B6579] font-mono text-[11px] font-semibold border border-[#E2E6EE]">
-                              {q.id}
-                            </span>
-                            <span className="text-xs font-bold text-[#172033]">
-                              {q.title}
-                            </span>
-                          </div>
-                          <p className="text-xs text-[#5B6579] leading-relaxed">
-                            {q.questionText}
-                          </p>
-                        </div>
-
-                        {/* Finalized Answer Display */}
-                        <div className="sm:text-right shrink-0 mt-2 sm:mt-0">
-                          <div
-                            className={`inline-block px-3.5 py-1.5 rounded-lg text-xs font-bold ${
-                              isNotAnswered
-                                ? "bg-[#F0F2F6] text-[#738096] border border-[#E2E6EE]"
-                                : "bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]"
-                            }`}
-                          >
-                            {displayValue}
-                          </div>
-                        </div>
-                      </div>
+              return (
+                <div
+                  key={section.id}
+                  className="rounded-2xl border border-[#E2E6EE] bg-white overflow-hidden shadow-xs transition-shadow duration-200"
+                >
+                  {/* Section Header */}
+                  <div className="px-6 py-4 bg-[#F7F8FA] border-b border-[#E2E6EE] flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="w-6 h-6 rounded-md bg-[#E2E6EE] text-[#172033] font-bold text-xs flex items-center justify-center">
+                        {section.id}
+                      </span>
+                      <h2 className="text-sm font-bold text-[#172033] tracking-tight">
+                        {section.title}
+                      </h2>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+                    <span className="text-xs font-medium text-[#738096]">
+                      {sectionQuestions.length} Questions
+                    </span>
+                  </div>
+
+                  {/* Questions List */}
+                  <div className="divide-y divide-[#E2E6EE]">
+                    {sectionQuestions.map((q) => {
+                      const displayValue = formatAnswerDisplay(q);
+                      const isNotAnswered = displayValue === "Not answered" || displayValue === "Not provided";
+
+                      return (
+                        <div
+                          key={q.id}
+                          className="p-5 sm:p-6 hover:bg-[#FAFBFD] transition-colors"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                            <div className="space-y-1.5 max-w-xl">
+                              <div className="flex items-center space-x-2">
+                                <span className="px-2 py-0.5 rounded bg-[#F0F2F6] text-[#5B6579] font-mono text-[11px] font-semibold border border-[#E2E6EE]">
+                                  {q.id}
+                                </span>
+                                <span className="text-xs font-bold text-[#172033]">
+                                  {q.title}
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#5B6579] leading-relaxed">
+                                {q.questionText}
+                              </p>
+                            </div>
+
+                            {/* Finalized Answer Display */}
+                            <div className="sm:text-right shrink-0 mt-2 sm:mt-0">
+                              <div
+                                className={`inline-block px-3.5 py-1.5 rounded-lg text-xs font-bold ${
+                                  isNotAnswered
+                                    ? "bg-[#F0F2F6] text-[#738096] border border-[#E2E6EE]"
+                                    : "bg-[#EEF8F0] text-[#008638] border border-[#A8E2B5]"
+                                }`}
+                              >
+                                {displayValue}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Read-Only Notice Footer */}
@@ -271,3 +364,4 @@ export const SubmittedResponsesView: React.FC<SubmittedResponsesViewProps> = ({
     </div>
   );
 };
+

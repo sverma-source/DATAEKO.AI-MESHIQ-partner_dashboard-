@@ -28,13 +28,13 @@ describe("Q04 Authoritative Exact Numeric Intake & Validation", () => {
       />
     );
 
-    const input = screen.getByLabelText("Exact Quarterly Administration Hours");
+    const input = screen.getByLabelText("Estimated quarterly hours (approximate is fine)");
     expect(input).toBeInTheDocument();
     expect(input).toHaveValue(80);
     expect(screen.getByText("hours / quarter")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Total combined staff hours per typical quarter spent on routine IBM MQ administration and management."
+        "Over a typical quarter, approximately how many total staff hours are spent on routine IBM MQ administration and management?"
       )
     ).toBeInTheDocument();
   });
@@ -52,7 +52,7 @@ describe("Q04 Authoritative Exact Numeric Intake & Validation", () => {
       />
     );
 
-    const input = screen.getByLabelText("Exact Quarterly Administration Hours");
+    const input = screen.getByLabelText("Estimated quarterly hours (approximate is fine)");
     expect(input).toHaveValue(12.5);
 
     fireEvent.change(input, { target: { value: "15.75" } });
@@ -72,7 +72,7 @@ describe("Q04 Authoritative Exact Numeric Intake & Validation", () => {
       />
     );
 
-    const input = screen.getByLabelText("Exact Quarterly Administration Hours");
+    const input = screen.getByLabelText("Estimated quarterly hours (approximate is fine)");
     expect(input).toHaveValue(0);
 
     // Border should be green (#D4EAD8) indicating answered and valid (not error)
@@ -91,7 +91,7 @@ describe("Q04 Authoritative Exact Numeric Intake & Validation", () => {
       />
     );
 
-    const input = screen.getByLabelText("Exact Quarterly Administration Hours");
+    const input = screen.getByLabelText("Estimated quarterly hours (approximate is fine)");
     expect(input).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByRole("alert")).toHaveTextContent(
       "Quarterly administration hours cannot be negative."
@@ -118,7 +118,7 @@ describe("Q04 Authoritative Exact Numeric Intake & Validation", () => {
     expect(selectEl).toHaveValue("UNKNOWN");
 
     // Override numeric input should be hidden when UNKNOWN
-    expect(screen.queryByLabelText("Exact Quarterly Administration Hours")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Estimated quarterly hours (approximate is fine)")).not.toBeInTheDocument();
   });
 
   it("6. repopulates exact stored numeric value upon resuming an assessment", () => {
@@ -162,11 +162,11 @@ describe("Q04 Authoritative Exact Numeric Intake & Validation", () => {
     // Expect the legacy guidance banner to guide user
     const banner = screen.getByText(/Previous draft selection:/).parentElement;
     expect(banner).toHaveTextContent(
-      "Previous draft selection: 101–250 hours. Please enter exact quarterly hours below or select \"Not sure\"."
+      "Previous draft selection: 101–250 hours. Please enter quarterly hours below or select \"Not sure\"."
     );
 
     // The numeric input should be open and ready for the user to enter their value
-    expect(screen.getByLabelText("Exact Quarterly Administration Hours")).toBeInTheDocument();
+    expect(screen.getByLabelText("Estimated quarterly hours (approximate is fine)")).toBeInTheDocument();
   });
 
   it("8. renders exact numeric value formatted with 'hours / quarter' across review components", () => {

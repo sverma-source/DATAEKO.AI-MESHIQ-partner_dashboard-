@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { QuestionDefinition } from "../types/assessment";
+import { useAuth } from "../context/AuthContext";
 
 interface QuestionCardProps {
   question: QuestionDefinition;
@@ -23,6 +24,8 @@ interface QuestionCardProps {
   onUnknownToggle?: (isUnknown: boolean) => void;
   onDefaultToggle?: (useDefault: boolean) => void;
   error?: string;
+  userRole?: string;
+  showConsultantDetails?: boolean;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -36,7 +39,20 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   onUnknownToggle,
   onDefaultToggle,
   error,
+  userRole,
+  showConsultantDetails,
 }) => {
+  const { user } = useAuth();
+  const effectiveRole = userRole || user?.role;
+  const isConsultantOrAdmin =
+    Boolean(showConsultantDetails) ||
+    effectiveRole === "CONSULTANT" ||
+    effectiveRole === "PLATFORM_ADMIN" ||
+    effectiveRole === "PARTNER_ADMIN" ||
+    effectiveRole === "TENANT_ADMIN" ||
+    effectiveRole === "SUPER_ADMIN" ||
+    effectiveRole === "DATAEKO_ADMIN";
+
   const [showSellerNotes, setShowSellerNotes] = useState<boolean>(false);
 
   // Match selectedValue against options resiliently by value, label, or normalized dash
@@ -94,6 +110,30 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
   const displayError = error || (q04NegativeError ? "Quarterly administration hours cannot be negative." : undefined);
 
+  // Not Sure Detection & Action Handler
+  const notSureOption = question.options?.find((opt) => opt.isUnknownOrNotSure);
+  const supportsNotSure =
+    Boolean(notSureOption) ||
+    question.code === "Q04" ||
+    question.code === "Q15" ||
+    question.code === "Q21";
+
+  const isNotSureSelected =
+    effectiveSelectedValue === "Not sure" ||
+    effectiveSelectedValue === "UNKNOWN" ||
+    Boolean(isUnknown);
+
+  const handleNotSureClick = () => {
+    if (notSureOption) {
+      onSelectOption(notSureOption.value);
+    } else if (question.code === "Q04" || question.code === "Q15" || question.code === "Q21") {
+      onSelectOption("UNKNOWN");
+    }
+    if (onOverrideChange) {
+      onOverrideChange(undefined);
+    }
+  };
+
   return (
     <div
       className={`rounded-xl border bg-white p-4 sm:p-5 shadow-xs transition-colors duration-150 ${
@@ -121,14 +161,16 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             <h2 className="text-sm sm:text-base font-bold text-[#172033] tracking-tight leading-snug">
               {question.title}
             </h2>
-            <span className="text-[11px] text-[#5B6579] font-medium block mt-0.5">
-              Theme: {question.theme}
-            </span>
+            {isConsultantOrAdmin && (
+              <span className="text-[11px] text-[#5B6579] font-medium block mt-0.5">
+                Theme: {question.theme}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Calculation Badge */}
-        {question.feedsCalculation && (
+        {/* Calculation Badge (Consultant / Admin only) */}
+        {isConsultantOrAdmin && question.feedsCalculation && (
           <div
             className="flex items-center space-x-1.5 rounded-full bg-[#EEF8F0] px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-[#008638] border border-[#A8E2B5] shrink-0"
             title={question.calculationNote || "Directly feeds economic engine"}
@@ -149,19 +191,36 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         {/* Legacy Draft Context Banner for Q04 */}
         {isLegacyDraft && (
           <div className="rounded-lg bg-amber-50 p-2.5 border border-amber-200 text-xs text-amber-900">
-            <span className="font-semibold">Previous draft selection:</span> {selectedValue}. Please enter exact quarterly hours below or select &quot;Not sure&quot;.
+            <span className="font-semibold">Previous draft selection:</span> {selectedValue}. Please enter quarterly hours below or select &quot;Not sure&quot;.
           </div>
         )}
 
         {/* Type A: Controlled Dropdown Options */}
         {question.options && question.options.length > 0 && (
           <div>
-            <label
-              htmlFor={`select-${question.id}`}
-              className="block text-xs font-semibold text-[#5B6579] mb-1"
-            >
-              Select Approved Response
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label
+                htmlFor={`select-${question.id}`}
+                className="block text-xs font-semibold text-[#5B6579]"
+              >
+                Select Approved Response
+              </label>
+              {supportsNotSure && (
+                <button
+                  type="button"
+                  onClick={handleNotSureClick}
+                  className={`inline-flex items-center space-x-1 px-2 py-0.5 text-[11px] rounded-md border font-semibold transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
+                    isNotSureSelected
+                      ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]"
+                      : "bg-[#F7F8FA] text-[#5B6579] border-[#E2E6EE] hover:bg-[#EEF8F0]/60 hover:text-[#172033]"
+                  }`}
+                  aria-label={`${question.code}: Mark as Not sure`}
+                >
+                  <HelpCircle className="h-3 w-3" />
+                  <span>Not sure</span>
+                </button>
+              )}
+            </div>
             <div className="relative">
               <select
                 id={`select-${question.id}`}
@@ -178,7 +237,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     : "border-[#CBD2DE] hover:border-[#008638] hover:bg-[#FBFDFB]"
                 }`}
               >
-                <option value="">-- Choose an assessment response --</option>
+                <option value="">-- Choose a response --</option>
                 {question.options.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -205,24 +264,41 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 <Sparkles className="h-3.5 w-3.5 text-[#008638]" />
                 <span>
                   {useOverrideMode
-                    ? (question.code === "Q04" ? "Hide quarterly hours input" : "Hide exact numeric customer fact")
-                    : (question.code === "Q04" ? "Provide exact quarterly hours" : `Provide exact customer fact (${question.overrideLabel || "Exact Number"})`)}
+                    ? (question.code === "Q04" ? "Hide quarterly hours input" : "Hide custom input")
+                    : (question.code === "Q04" ? "Provide estimated quarterly hours" : `Provide custom input (${question.overrideLabel || "Custom Value"})`)}
                 </span>
               </button>
 
-              {question.code === "Q20" && onDefaultToggle && (
-                <button
-                  type="button"
-                  onClick={() => onDefaultToggle(!useDefault)}
-                  className={`text-[11px] px-2.5 py-0.5 rounded-md border font-semibold transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
-                    useDefault
-                      ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5] hover:bg-[#E2F5E6] hover:border-[#008638]"
-                      : "bg-[#F1F3F7] text-[#667085] border-[#CBD2DE] hover:bg-[#E8ECF2] hover:text-[#172033] hover:border-[#94A3B8]"
-                  }`}
-                >
-                  {useDefault ? "Using Model Default ($180k/yr)" : "Using Custom Salary"}
-                </button>
-              )}
+              <div className="flex items-center space-x-2">
+                {supportsNotSure && !question.options?.length && (
+                  <button
+                    type="button"
+                    onClick={handleNotSureClick}
+                    className={`inline-flex items-center space-x-1 px-2 py-0.5 text-[11px] rounded-md border font-semibold transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
+                      isNotSureSelected
+                        ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5]"
+                        : "bg-[#F7F8FA] text-[#5B6579] border-[#E2E6EE] hover:bg-[#EEF8F0]/60 hover:text-[#172033]"
+                    }`}
+                  >
+                    <HelpCircle className="h-3 w-3" />
+                    <span>Not sure</span>
+                  </button>
+                )}
+
+                {question.code === "Q20" && onDefaultToggle && (
+                  <button
+                    type="button"
+                    onClick={() => onDefaultToggle(!useDefault)}
+                    className={`text-[11px] px-2.5 py-0.5 rounded-md border font-semibold transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008638] ${
+                      useDefault
+                        ? "bg-[#EEF8F0] text-[#008638] border-[#A8E2B5] hover:bg-[#E2F5E6] hover:border-[#008638]"
+                        : "bg-[#F1F3F7] text-[#667085] border-[#CBD2DE] hover:bg-[#E8ECF2] hover:text-[#172033] hover:border-[#94A3B8]"
+                    }`}
+                  >
+                    {useDefault ? "Using Model Default ($180k/yr)" : "Using Custom Salary"}
+                  </button>
+                )}
+              </div>
             </div>
 
             {useOverrideMode && (
@@ -232,11 +308,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     htmlFor={`override-${question.id}`}
                     className="block text-xs font-bold text-[#172033]"
                   >
-                    {question.overrideLabel || "Exact Numeric Override"}
+                    {question.overrideLabel || "Custom Input"}
                   </label>
-                  <span className="text-[10px] font-semibold text-[#008638] bg-[#EEF8F0] px-2 py-0.5 rounded border border-[#A8E2B5]">
-                    {question.code === "Q04" ? "Customer Fact" : "Customer Fact Override"}
-                  </span>
+                  {isConsultantOrAdmin && (
+                    <span className="text-[10px] font-semibold text-[#008638] bg-[#EEF8F0] px-2 py-0.5 rounded border border-[#A8E2B5]">
+                      {question.code === "Q04" ? "Customer Fact" : "Customer Fact Override"}
+                    </span>
+                  )}
                 </div>
                 <div className="relative flex items-center">
                   <input
@@ -244,8 +322,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     type="number"
                     step="any"
                     min={question.code === "Q04" ? "0" : undefined}
-                    placeholder={question.overridePlaceholder || "0.00"}
-                    aria-label={`${question.code} exact numeric value: ${question.overrideLabel || "Exact Numeric Override"}`}
+                    placeholder={question.overridePlaceholder || "0"}
+                    aria-label={`${question.code} exact numeric value: ${question.overrideLabel || "Custom Input"}`}
                     aria-invalid={!!displayError}
                     aria-describedby={displayError ? `error-${question.id}` : undefined}
                     value={overrideValue !== undefined && overrideValue !== null ? overrideValue : ""}
@@ -262,11 +340,23 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-[#5B6579]">
-                  {question.code === "Q04"
-                    ? "Total combined staff hours per typical quarter spent on routine IBM MQ administration and management."
-                    : "Customer verified figure overrides categorical estimate in calculation engine."}
-                </p>
+
+                {/* Helper hint / description */}
+                {question.code === "Q04" ? (
+                  <p className="text-[11px] text-[#5B6579] leading-normal">
+                    Enter a rough estimate of total team hours per quarter. An exact figure isn&apos;t required.
+                  </p>
+                ) : question.exampleHint ? (
+                  <p className="text-[11px] text-[#5B6579]">
+                    {question.exampleHint}
+                  </p>
+                ) : null}
+
+                {question.code === "Q04" && question.exampleHint && (
+                  <p className="text-[10px] text-[#738096] italic">
+                    {question.exampleHint}
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -280,8 +370,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           </div>
         )}
 
-        {/* Compact Engine Impact Banner */}
-        {question.calculationNote && (
+        {/* Compact Engine Impact Banner (Consultant / Admin only) */}
+        {isConsultantOrAdmin && question.calculationNote && (
           <div className="rounded-lg bg-[#F8FAFC] px-3 py-2 border border-[#E2E6EE] text-xs">
             <div className="flex items-center space-x-1.5 text-[10px] font-bold uppercase tracking-wider text-[#008638]">
               <Info className="h-3.5 w-3.5 shrink-0 text-[#008638]" />
@@ -293,8 +383,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           </div>
         )}
 
-        {/* Seller Guidance Accordion */}
-        {question.sellerGuidance && (
+        {/* Seller Guidance Accordion (Consultant / Admin only) */}
+        {isConsultantOrAdmin && question.sellerGuidance && (
           <div className="pt-1">
             <button
               type="button"
@@ -323,3 +413,4 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     </div>
   );
 };
+
