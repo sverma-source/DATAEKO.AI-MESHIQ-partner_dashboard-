@@ -70,6 +70,10 @@ describe("Role-Aware Application Workspaces", () => {
     expect(screen.getByText("Queue Manager Estate Scale")).toBeInTheDocument();
     expect(screen.queryByText("Customer & Assessment Portfolio")).not.toBeInTheDocument();
     expect(screen.queryByText("Administration & Governance Workspace")).not.toBeInTheDocument();
+
+    // CUSTOMER_USER top bar must not display internal engine version or connection status badges
+    expect(screen.queryByText(/Engine v1\.0\.0/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Connected$/i)).not.toBeInTheDocument();
   });
 
   it("renders Consultant Workspace when authenticated as CONSULTANT", async () => {
@@ -81,6 +85,10 @@ describe("Role-Aware Application Workspaces", () => {
     expect(screen.getByText("Advisory & Review Workspace")).toBeInTheDocument();
     expect(screen.getByText(/Welcome to the Consultant Engagement Workspace/i)).toBeInTheDocument();
     expect(screen.getByText("Consultant Workspace")).toBeInTheDocument();
+
+    // Consultant retains technical engine version and connected status badges in top bar
+    expect(screen.getByText("Engine v1.0.0")).toBeInTheDocument();
+    expect(screen.getByText("Connected")).toBeInTheDocument();
 
     // Client wizard questions should NOT be rendered
     expect(screen.queryByRole("heading", { name: "A. Environment & Cost Baseline" })).not.toBeInTheDocument();
@@ -96,6 +104,10 @@ describe("Role-Aware Application Workspaces", () => {
     expect(screen.getAllByText("Platform Administration").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/User Directory/i)).toBeInTheDocument();
     expect(screen.getByText(/Audit Trail & Compliance/i)).toBeInTheDocument();
+
+    // Admin retains technical engine version and connected status badges in top bar
+    expect(screen.getByText("Engine v1.0.0")).toBeInTheDocument();
+    expect(screen.getByText("Connected")).toBeInTheDocument();
 
     // Client wizard questions should NOT be rendered
     expect(screen.queryByRole("heading", { name: "A. Environment & Cost Baseline" })).not.toBeInTheDocument();

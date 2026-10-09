@@ -38,6 +38,8 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
     };
   }, []);
 
+  const showTechnicalStatus = Boolean(user && user.role !== "CUSTOMER_USER");
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#E2E6EE] bg-white text-[#172033] shadow-xs relative">
       {/* meshIQ Brand Accent Hairline */}
@@ -142,49 +144,51 @@ export const Navbar: React.FC<NavbarProps> = ({ customerName, assessmentTitle })
         {/* Zone 3 (Right): Engine Metadata & User Profile */}
         <div className="flex items-center space-x-2 sm:space-x-3 text-xs shrink-0">
           {/* Subtle Technical Engine & Health Cluster */}
-          <div className="hidden lg:flex items-center space-x-1.5 sm:space-x-2 text-[11px] shrink-0">
-            {/* Calculation Engine Version Indicator */}
-            <div
-              className="group relative font-mono text-[10px] sm:text-[11px] text-[#5B6579] bg-[#F1F3F7] hover:bg-[#E8ECF2] px-2 py-0.5 rounded border border-[#E2E6EE] transition-colors duration-150 cursor-help shrink-0"
-              tabIndex={0}
-              aria-label={`Calculation Engine version ${engineVersion}, Deterministic Decimal arithmetic`}
-            >
-              <span>Engine v{engineVersion}</span>
-              <div className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-[#172033] text-white text-[10px] rounded shadow-md opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-150 whitespace-nowrap z-50">
-                Calculation Engine • Version {engineVersion} • Pure Python Decimal
+          {showTechnicalStatus && (
+            <div className="hidden lg:flex items-center space-x-1.5 sm:space-x-2 text-[11px] shrink-0">
+              {/* Calculation Engine Version Indicator */}
+              <div
+                className="group relative font-mono text-[10px] sm:text-[11px] text-[#5B6579] bg-[#F1F3F7] hover:bg-[#E8ECF2] px-2 py-0.5 rounded border border-[#E2E6EE] transition-colors duration-150 cursor-help shrink-0"
+                tabIndex={0}
+                aria-label={`Calculation Engine version ${engineVersion}, Deterministic Decimal arithmetic`}
+              >
+                <span>Engine v{engineVersion}</span>
+                <div className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-[#172033] text-white text-[10px] rounded shadow-md opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-150 whitespace-nowrap z-50">
+                  Calculation Engine • Version {engineVersion} • Pure Python Decimal
+                </div>
               </div>
-            </div>
 
-            {/* Backend Connectivity Status Indicator */}
-            <div
-              className={`group relative inline-flex items-center space-x-1.5 font-medium px-2 py-0.5 rounded transition-colors duration-150 cursor-help shrink-0 ${
-                backendHealth === "healthy"
-                  ? "text-[#008638] bg-[#EEF8F0]/60 hover:bg-[#EEF8F0]"
-                  : backendHealth === "checking"
-                  ? "text-amber-700 bg-amber-50 hover:bg-amber-100"
-                  : "text-rose-700 bg-rose-50 hover:bg-rose-100"
-              }`}
-              tabIndex={0}
-              aria-label={`System Status: ${backendHealth === "healthy" ? "API Connected and Calculation Engine Ready" : backendHealth === "checking" ? "Checking backend connectivity" : "Backend service offline"}`}
-            >
-              <span
-                className={`h-2 w-2 rounded-full ${
+              {/* Backend Connectivity Status Indicator */}
+              <div
+                className={`group relative inline-flex items-center space-x-1.5 font-medium px-2 py-0.5 rounded transition-colors duration-150 cursor-help shrink-0 ${
                   backendHealth === "healthy"
-                    ? "bg-[#38B449]"
+                    ? "text-[#008638] bg-[#EEF8F0]/60 hover:bg-[#EEF8F0]"
                     : backendHealth === "checking"
-                    ? "bg-amber-500 animate-pulse"
-                    : "bg-rose-500"
+                    ? "text-amber-700 bg-amber-50 hover:bg-amber-100"
+                    : "text-rose-700 bg-rose-50 hover:bg-rose-100"
                 }`}
-                aria-hidden="true"
-              />
-              <span className="text-[10px] sm:text-[11px] font-semibold">
-                {backendHealth === "healthy" ? "Connected" : backendHealth === "checking" ? "Connecting" : "Offline"}
-              </span>
-              <div className="pointer-events-none absolute -bottom-9 right-0 px-2.5 py-1 bg-[#172033] text-white text-[10px] rounded shadow-md opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-150 whitespace-nowrap z-50">
-                {backendHealth === "healthy" ? "System Status: API Connected • Engine Ready" : "System Status: Connecting to Service..."}
+                tabIndex={0}
+                aria-label={`System Status: ${backendHealth === "healthy" ? "API Connected and Calculation Engine Ready" : backendHealth === "checking" ? "Checking backend connectivity" : "Backend service offline"}`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    backendHealth === "healthy"
+                      ? "bg-[#38B449]"
+                      : backendHealth === "checking"
+                      ? "bg-amber-500 animate-pulse"
+                      : "bg-rose-500"
+                  }`}
+                  aria-hidden="true"
+                />
+                <span className="text-[10px] sm:text-[11px] font-semibold">
+                  {backendHealth === "healthy" ? "Connected" : backendHealth === "checking" ? "Connecting" : "Offline"}
+                </span>
+                <div className="pointer-events-none absolute -bottom-9 right-0 px-2.5 py-1 bg-[#172033] text-white text-[10px] rounded shadow-md opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-150 whitespace-nowrap z-50">
+                  {backendHealth === "healthy" ? "System Status: API Connected • Engine Ready" : "System Status: Connecting to Service..."}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* User Menu */}
           <div className="shrink-0">
