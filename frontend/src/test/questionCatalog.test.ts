@@ -70,4 +70,77 @@ describe("Authoritative Question Catalog (Q01-Q22)", () => {
     expect(QUESTIONS.Q19.feedsCalculation).toBe(false);
     expect(QUESTIONS.Q21.feedsCalculation).toBe(false);
   });
+
+  it("verifies 'Not sure' availability adheres strictly to the question-by-question audit", () => {
+    // Approved questions retaining 'Not sure' / unknown option
+    const approvedNotSureQuestions = ["Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q12", "Q13", "Q14", "Q15", "Q21"];
+
+    // Questions where 'Not sure' is excluded / inappropriate
+    const excludedNotSureQuestions = ["Q01", "Q02", "Q03", "Q10", "Q11", "Q16", "Q17", "Q18", "Q19", "Q20", "Q22"];
+
+    expect(approvedNotSureQuestions.length + excludedNotSureQuestions.length).toBe(22);
+
+    for (const qCode of approvedNotSureQuestions) {
+      const q = QUESTIONS[qCode];
+      const hasUnknownOrNotSureOption = q.options?.some((opt) => opt.isUnknownOrNotSure === true);
+      expect(
+        hasUnknownOrNotSureOption,
+        `Expected ${qCode} to have an approved Not sure / Unknown option`
+      ).toBe(true);
+    }
+
+    for (const qCode of excludedNotSureQuestions) {
+      const q = QUESTIONS[qCode];
+      const hasUnknownOrNotSureOption = q.options?.some((opt) => opt.isUnknownOrNotSure === true);
+      expect(
+        hasUnknownOrNotSureOption,
+        `Expected ${qCode} NOT to offer a Not sure / Unknown option`
+      ).toBe(false);
+      const hasNotSureValue = q.options?.some((opt) => opt.value === "Not sure" || opt.label.toLowerCase().includes("not sure"));
+      expect(
+        hasNotSureValue,
+        `Expected ${qCode} options not to contain 'Not sure'`
+      ).toBe(false);
+    }
+  });
+
+  it("verifies Q15 exact customer-facing question text", () => {
+    expect(QUESTIONS.Q15.questionText).toBe(
+      "How much does an hour of critical system downtime cost your organization?"
+    );
+    expect(QUESTIONS.Q15.allowNumericOverride).toBe(true);
+    expect(QUESTIONS.Q15.overrideUnit).toBe("$ / hour");
+    expect(QUESTIONS.Q15.feedsCalculation).toBe(true);
+  });
+
+  it("verifies Q16 remains generic and distinct from Q17 percentage target", () => {
+    // Q16 is generic executive mandate question
+    expect(QUESTIONS.Q16.title).toBe("Cost Reduction & Modernization Focus");
+    expect(QUESTIONS.Q16.questionText).toBe(
+      "Is your infrastructure / middleware leadership under an active mandate to reduce operating expenditures (OpEx) or modernize legacy messaging?"
+    );
+    expect(QUESTIONS.Q16.allowNumericOverride).toBe(false);
+    expect(QUESTIONS.Q16.options?.map((o) => o.value)).toEqual([
+      "Yes, aggressive OpEx reduction target",
+      "Yes, moderate efficiency goal",
+      "Cost-neutral / Flat budget",
+      "Growing investment budget",
+    ]);
+
+    // Q17 is quantitative target percentage question
+    expect(QUESTIONS.Q17.title).toBe("Target Cost Reduction Percentage");
+    expect(QUESTIONS.Q17.questionText).toBe(
+      "What percentage reduction in operational effort or middleware tooling spend is leadership targeting over the next 12–24 months?"
+    );
+    expect(QUESTIONS.Q17.allowNumericOverride).toBe(true);
+    expect(QUESTIONS.Q17.overrideUnit).toBe("%");
+    expect(QUESTIONS.Q17.options?.map((o) => o.value)).toEqual([
+      "5–10%",
+      "10–20%",
+      "20–30%",
+      "30%+",
+      "No specific % target",
+    ]);
+  });
 });
+

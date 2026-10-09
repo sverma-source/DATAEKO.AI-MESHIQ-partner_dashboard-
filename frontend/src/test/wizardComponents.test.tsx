@@ -301,7 +301,59 @@ describe("QuestionCard Component", () => {
     expect(guidanceBtn).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText(QUESTIONS.Q01.sellerGuidance!)).toBeInTheDocument();
   });
+
+  it("renders 'Not sure' button on approved questions (e.g. Q06, Q09, Q13) and triggers selection", () => {
+    const handleSelectOption = vi.fn();
+    const handleOverrideChange = vi.fn();
+
+    const { unmount } = render(
+      <QuestionCard
+        question={QUESTIONS.Q09}
+        selectedValue="2–3 disparate tools"
+        onSelectOption={handleSelectOption}
+        onOverrideChange={handleOverrideChange}
+      />
+    );
+
+    const notSureBtn = screen.getByRole("button", { name: /Q09: Mark as Not sure/i });
+    expect(notSureBtn).toBeInTheDocument();
+
+    fireEvent.click(notSureBtn);
+    expect(handleSelectOption).toHaveBeenCalledWith("Not sure");
+    expect(handleOverrideChange).toHaveBeenCalledWith(undefined);
+    unmount();
+
+    // Verify Q13 also renders the Not sure button
+    render(
+      <QuestionCard
+        question={QUESTIONS.Q13}
+        onSelectOption={vi.fn()}
+        onOverrideChange={vi.fn()}
+      />
+    );
+    expect(screen.getByRole("button", { name: /Q13: Mark as Not sure/i })).toBeInTheDocument();
+  });
+
+  it("does NOT render 'Not sure' button on excluded questions (e.g. Q01, Q03, Q10, Q11, Q16, Q17)", () => {
+    const excludedQuestions = [QUESTIONS.Q01, QUESTIONS.Q03, QUESTIONS.Q10, QUESTIONS.Q11, QUESTIONS.Q16, QUESTIONS.Q17];
+
+    for (const q of excludedQuestions) {
+      const { unmount } = render(
+        <QuestionCard
+          question={q}
+          onSelectOption={vi.fn()}
+          onOverrideChange={vi.fn()}
+        />
+      );
+
+      expect(
+        screen.queryByRole("button", { name: new RegExp(`${q.code}: Mark as Not sure`, "i") })
+      ).not.toBeInTheDocument();
+      unmount();
+    }
+  });
 });
+
 
 describe("CustomerModal Component", () => {
   const mockCustomers = [
